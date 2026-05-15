@@ -1,0 +1,78 @@
+/* ─────────────────────────────────────────────
+   Lynqo — Global Stylesheet
+   Mobile-first. 375px → 768px → 1024px → 1280px+
+   ───────────────────────────────────────────── */
+
+/* Google Fonts — Inter */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* Tailwind base layers */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Base resets ── */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    /* Prevents horizontal overflow on all screen sizes */
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply font-sans bg-gray-50 text-gray-900 antialiased;
+    /* Prevent iOS tap highlight */
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Enforce minimum touch target height on interactive elements */
+  button, a, [role="button"] {
+    @apply min-h-[44px];
+  }
+
+  img, video {
+    max-width: 100%;
+    display: block;
+  }
+}
+
+/* ── Reusable component classes ── */
+@layer components {
+  /* Primary button */
+  .btn-primary {
+    @apply inline-flex items-center justify-center min-h-[44px] px-5 py-2.5
+           bg-brand-500 hover:bg-brand-600 active:bg-brand-700
+           text-white text-sm font-semibold rounded-xl
+           transition-all duration-200 ease-in-out
+           focus:outline-none focus:ring-2 focus:ring-brand-400 focus:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Secondary / outline button */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center min-h-[44px] px-5 py-2.5
+           border border-gray-300 hover:border-brand-400 hover:bg-brand-50
+           text-gray-700 text-sm font-medium rounded-xl
+           transition-all duration-200 ease-in-out
+           focus:outline-none focus:ring-2 focus:ring-brand-400 focus:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Input field */
+  .input-field {
+    @apply w-full min-h-[44px] px-4 py-2.5
+           border border-gray-200 rounded-xl bg-white
+           text-sm text-gray-900 placeholder-gray-400
+           focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent
+           transition duration-200;
+  }
+
+  /* Card wrapper */
+  .card {
+    @apply bg-white rounded-2xl shadow-sm border border-gray-100 p-4;
+  }
+}

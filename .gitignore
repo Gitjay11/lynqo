@@ -1,0 +1,13 @@
+# Root-level gitignore — catches anything missed by backend/ and frontend/ gitignores
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Environment files (safety net)
+.env
+*.env
