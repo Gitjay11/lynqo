@@ -2,12 +2,12 @@
  * server.js — Lynqo Backend Entry Point
  *
  * Responsibilities:
- *  - Load environment variables
- *  - Connect to MongoDB
- *  - Configure Express middleware (security, logging, CORS, parsing)
- *  - Mount all API routes
- *  - Attach global error handlers
- *  - Start HTTP server + Socket.IO
+ *  - Load environment variables from .env
+ *  - Connect to MongoDB via config/db.js
+ *  - Configure Express middleware (CORS, JSON body parser, morgan)
+ *  - Register all API route files
+ *  - Mount error-handling middleware (must be LAST)
+ *  - Start HTTP server with Socket.IO attached
  */
 
 import "dotenv/config";
@@ -15,79 +15,60 @@ import express from "express";
 import http from "http";
 import { Server } from "socket.io";
 import cors from "cors";
-import helmet from "helmet";
 import morgan from "morgan";
-import rateLimit from "express-rate-limit";
 
 import connectDB from "./config/db.js";
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 
-// ── Route imports (stubs — will be filled in later stages) ──
+// ── Route imports (stubs — filled in per feature stage) ────────────────────
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import postRoutes from "./routes/postRoutes.js";
-import anonRoutes from "./routes/anonRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
+import anonRoutes from "./routes/anonRoutes.js";
 
-// ── Socket handler (stub — will be filled in the chat stage) ──
-import { initSocket } from "./socket/socketHandler.js";
-
-// ── Connect to database ─────────────────────────────────────────────────────
+// ── Connect to MongoDB ─────────────────────────────────────────────────────
 connectDB();
 
 // ── Express app ────────────────────────────────────────────────────────────
 const app = express();
 
-// ── Security headers (helmet) ───────────────────────────────────────────────
-app.use(helmet());
+// ── Request logging — only in development ──────────────────────────────────
+if (process.env.NODE_ENV !== "production") {
+  app.use(morgan("dev"));
+}
 
-// ── CORS — allow frontend dev server and future production origin ───────────
+// ── CORS — allow requests from the Vite dev server ─────────────────────────
 app.use(
   cors({
     origin: [
-      "http://localhost:5173", // Vite dev server
+      "http://localhost:5173", // Vite dev server default
       process.env.CLIENT_URL || "http://localhost:5173",
     ],
     credentials: true, // Allow cookies / auth headers
   })
 );
 
-// ── HTTP request logging (dev only) ────────────────────────────────────────
-if (process.env.NODE_ENV === "development") {
-  app.use(morgan("dev"));
-}
+// ── Body parser — parse incoming JSON payloads ─────────────────────────────
+app.use(express.json());
 
-// ── Body parsers ────────────────────────────────────────────────────────────
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
-
-// ── Global rate limiter — prevents brute-force on all /api routes ───────────
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200,                  // max 200 requests per window per IP
-  message: { success: false, message: "Too many requests. Please try again later." },
-  standardHeaders: true,
-  legacyHeaders: false,
+// ── Test route — verifies the API is up ────────────────────────────────────
+app.get("/", (req, res) => {
+  res.status(200).json({ message: "Campus Platform API running" });
 });
-app.use("/api", limiter);
 
-// ── API Routes ──────────────────────────────────────────────────────────────
-app.use("/api/auth",  authRoutes);
+// ── API Routes ─────────────────────────────────────────────────────────────
+app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
-app.use("/api/anon",  anonRoutes);
-app.use("/api/chat",  chatRoutes);
+app.use("/api/chats", chatRoutes);
+app.use("/api/anon", anonRoutes);
 
-// ── Health check endpoint ───────────────────────────────────────────────────
-app.get("/api/health", (req, res) => {
-  res.status(200).json({ success: true, message: "Lynqo API is running 🚀" });
-});
+// ── Error Handling — must be mounted AFTER all routes ──────────────────────
+app.use(notFound);     // Catch any request that didn't match a route → 404
+app.use(errorHandler); // Handle all errors with consistent JSON response
 
-// ── Global error handlers (must be last) ────────────────────────────────────
-app.use(notFound);
-app.use(errorHandler);
-
-// ── HTTP Server + Socket.IO ─────────────────────────────────────────────────
+// ── HTTP Server + Socket.IO (initial setup, no events yet) ─────────────────
 const httpServer = http.createServer(app);
 
 const io = new Server(httpServer, {
@@ -101,12 +82,20 @@ const io = new Server(httpServer, {
   },
 });
 
-// Initialise all socket event handlers
-initSocket(io);
+// Socket.IO connection listener — events will be added in later stages
+io.on("connection", (socket) => {
+  console.log(`🔌 Socket connected: ${socket.id}`);
+
+  socket.on("disconnect", () => {
+    console.log(`❌ Socket disconnected: ${socket.id}`);
+  });
+});
 
 // ── Start listening ─────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
 
 httpServer.listen(PORT, () => {
-  console.log(`🚀 Lynqo server running on port ${PORT} [${process.env.NODE_ENV}]`);
+  console.log(
+    `🚀 Lynqo server running on port ${PORT} [${process.env.NODE_ENV || "development"}]`
+  );
 });
