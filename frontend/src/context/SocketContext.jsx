@@ -15,11 +15,11 @@ import { useAuth } from "../hooks/useAuth.js";
 export const SocketContext = createContext(null);
 
 export const SocketProvider = ({ children }) => {
-  const { currentUser } = useAuth();
+  const { user } = useAuth();
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    if (!currentUser) {
+    if (!user) {
       // If user logs out, disconnect existing socket
       if (socket) {
         socket.disconnect();
@@ -30,7 +30,7 @@ export const SocketProvider = ({ children }) => {
 
     // Create socket connection only when user is logged in
     const newSocket = io(import.meta.env.VITE_SOCKET_URL, {
-      query: { userId: currentUser._id },
+      query: { userId: user._id },
       autoConnect: true,
       reconnection: true,
       reconnectionAttempts: 5,
@@ -43,7 +43,7 @@ export const SocketProvider = ({ children }) => {
     return () => {
       newSocket.disconnect();
     };
-  }, [currentUser]);
+  }, [user]); // re-run when auth state changes
 
   return (
     <SocketContext.Provider value={socket}>

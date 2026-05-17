@@ -1,6 +1,6 @@
 /**
  * useAuth.js — Custom hook to consume AuthContext
- * Usage: const { currentUser, login, logout } = useAuth();
+ * Usage: const { user, token, loading, login, logout } = useAuth();
  */
 
 import { useContext } from "react";

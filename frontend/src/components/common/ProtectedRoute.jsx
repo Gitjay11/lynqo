@@ -11,13 +11,13 @@ import { useAuth } from "../../hooks/useAuth.js";
 import Loader from "./Loader.jsx";
 
 const ProtectedRoute = () => {
-  const { currentUser, isLoading } = useAuth();
+  const { user, loading } = useAuth();
 
-  // Show loader while checking stored auth state
-  if (isLoading) return <Loader fullScreen />;
+  // Show loader while /api/auth/me is in-flight
+  if (loading) return <Loader fullScreen />;
 
   // Not authenticated → redirect to login
-  if (!currentUser) return <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/login" replace />;
 
   // Authenticated → render the nested route
   return <Outlet />;
