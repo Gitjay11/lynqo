@@ -64,7 +64,9 @@ const Navbar = () => {
 
   const handleProfile = () => {
     setOpen(false);
-    navigate(`/profile/${user?._id}`);
+    // The backend's buildUserPayload returns "id" (not "_id").
+    // Use `?? user?._id` as a fallback in case the raw Mongoose doc is ever stored.
+    navigate(`/profile/${user?.id ?? user?._id}`);
   };
 
   // ── Active link style helper for desktop center nav ───────────────────────
@@ -137,7 +139,7 @@ const Navbar = () => {
               focus:ring-2 focus:ring-brand-400 focus:ring-offset-1
             "
           >
-            <Avatar src={user.avatar} name={user.name} size="sm" />
+            <Avatar src={user.profilePicture} name={user.name} size="sm" />
 
             {/* Name + chevron — desktop only */}
             <span className="hidden lg:flex items-center gap-1">

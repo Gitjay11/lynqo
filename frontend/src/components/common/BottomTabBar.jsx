@@ -84,7 +84,7 @@ const BottomTabBar = () => {
 
       {/* ── Profile tab (dynamic link) ────────────────────────────────────── */}
       <NavLink
-        to={user ? `/profile/${user._id}` : "/login"}
+        to={user ? `/profile/${user.id ?? user._id}` : "/login"}
         className={tabClass}
         aria-label="Profile"
       >

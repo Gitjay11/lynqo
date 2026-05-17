@@ -2,11 +2,14 @@
  * AuthContext.jsx — Global Authentication State
  *
  * Provides:
- *  - user        : the verified, logged-in user object (or null)
- *  - token       : the stored JWT (or null)
- *  - loading     : true while the /me check is in-flight on first load
- *  - login()     : persist user + token → state + localStorage
- *  - logout()    : clear state + localStorage → redirect to /login
+ *  - user          : the verified, logged-in user object (or null)
+ *  - token         : the stored JWT (or null)
+ *  - loading       : true while the /me check is in-flight on first load
+ *  - login()       : persist user + token → state + localStorage
+ *  - logout()      : clear state + localStorage → redirect to /login
+ *  - updateUser()  : merge fresh user data into state + localStorage
+ *                    (used after profile edits / avatar uploads so the
+ *                     navbar avatar reflects changes without a re-login)
  *
  * Session restore strategy (on mount):
  *  1. Read lynqo_token from localStorage.
@@ -92,13 +95,29 @@ export const AuthProvider = ({ children }) => {
     window.location.href = "/login";
   }, []);
 
+  // ── updateUser() — merge fresh data after profile edit or avatar upload ─────
+  // Called by ProfilePage after a successful PUT /api/users/update or
+  // PUT /api/users/upload-avatar so the navbar avatar and user chip
+  // reflect the change instantly without requiring a page refresh.
+  const updateUser = useCallback((userData) => {
+    // Shallow-merge: keep existing fields (e.g. token) and overwrite with
+    // whatever the server returned (name, bio, profilePicture, etc.)
+    setUser((prev) => {
+      const merged = { ...prev, ...userData };
+      // Keep localStorage in sync so a page refresh restores the new data
+      localStorage.setItem("lynqo_user", JSON.stringify(merged));
+      return merged;
+    });
+  }, []);
+
   // ── Context value — stable shape consumed by useAuth() ────────────────────
   const value = {
-    user,     // the verified user object (or null)
-    token,    // raw JWT string (or null)
-    loading,  // true while /me is in-flight
-    login,    // (userData, token) => void
-    logout,   // () => void
+    user,         // the verified user object (or null)
+    token,        // raw JWT string (or null)
+    loading,      // true while /me is in-flight
+    login,        // (userData, token) => void
+    logout,       // () => void
+    updateUser,   // (userData) => void — merge fresh data without re-login
   };
 
   return (
