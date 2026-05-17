@@ -8,6 +8,7 @@
  *  - Register all API route files
  *  - Mount error-handling middleware (must be LAST)
  *  - Start HTTP server with Socket.IO attached
+ *  - Delegate all real-time events to socket/socketHandler.js
  */
 
 import "dotenv/config";
@@ -26,6 +27,7 @@ import userRoutes from "./routes/userRoutes.js";
 import postRoutes from "./routes/postRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import anonRoutes from "./routes/anonRoutes.js";
+import { initSocket } from "./socket/socketHandler.js";
 
 // ── Connect to MongoDB ─────────────────────────────────────────────────────
 connectDB();
@@ -61,7 +63,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
-app.use("/api/chats", chatRoutes);
+app.use("/api/chat", chatRoutes);
 app.use("/api/anon", anonRoutes);
 
 // ── Error Handling — must be mounted AFTER all routes ──────────────────────
@@ -82,14 +84,10 @@ const io = new Server(httpServer, {
   },
 });
 
-// Socket.IO connection listener — events will be added in later stages
-io.on("connection", (socket) => {
-  console.log(`🔌 Socket connected: ${socket.id}`);
-
-  socket.on("disconnect", () => {
-    console.log(`❌ Socket disconnected: ${socket.id}`);
-  });
-});
+// ── Socket.IO — delegate all real-time events to socketHandler ────────────
+// initSocket registers all connection / messaging / presence events.
+// Must be called AFTER the io instance is created.
+initSocket(io);
 
 // ── Start listening ─────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
