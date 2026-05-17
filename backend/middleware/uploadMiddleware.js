@@ -2,16 +2,19 @@
  * uploadMiddleware.js — Multer + Cloudinary Upload Middleware
  *
  * Configures multer with CloudinaryStorage to handle file uploads.
- * Uploaded images are stored directly in Cloudinary under the
- * "campus-platform/avatars" folder.
+ * Two separate multer instances are exported:
+ *
+ *  uploadAvatar    → stores to "campus-platform/avatars"  (2 MB limit)
+ *  uploadPostImage → stores to "campus-platform/posts"     (5 MB limit)
  *
  * Constraints:
- *  - Allowed formats: jpg, jpeg, png, webp
- *  - Max file size: 2 MB
+ *  - Allowed MIME types: image/jpeg, image/jpg, image/png, image/webp
+ *  - File size limits differ per upload type (see above)
  *
  * Usage in routes:
- *   import { uploadAvatar } from "../middleware/uploadMiddleware.js";
- *   router.post("/profile", uploadAvatar.single("avatar"), controller);
+ *   import { uploadAvatar, uploadPostImage } from "../middleware/uploadMiddleware.js";
+ *   router.post("/avatar",   uploadAvatar.single("avatar"),   controller);
+ *   router.post("/post",     uploadPostImage.single("image"),  controller);
  */
 
 import multer from "multer";
@@ -52,13 +55,37 @@ const imageFileFilter = (req, file, cb) => {
   }
 };
 
-// ── Multer instance — 2 MB size limit ─────────────────────────────────────
-const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024; // 2 MB
+// ── Multer instance — Avatar (2 MB limit) ────────────────────────────────
+const AVATAR_MAX_SIZE = 2 * 1024 * 1024; // 2 MB
 
 export const uploadAvatar = multer({
   storage: avatarStorage,
   fileFilter: imageFileFilter,
   limits: {
-    fileSize: MAX_FILE_SIZE_BYTES,
+    fileSize: AVATAR_MAX_SIZE,
+  },
+});
+
+// ── Cloudinary Storage — post images ─────────────────────────────────────
+// Separate storage config so post images land in their own Cloudinary folder,
+// making it easy to apply folder-level policies (e.g. auto-moderation) later.
+const postImageStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "campus-platform/posts",
+    allowed_formats: ["jpg", "jpeg", "png", "webp"],
+    // Wider crop for feed images — preserve aspect ratio up to 1200px wide
+    transformation: [{ width: 1200, crop: "limit" }],
+  },
+});
+
+// ── Multer instance — Post image (5 MB limit) ─────────────────────────────
+const POST_IMAGE_MAX_SIZE = 5 * 1024 * 1024; // 5 MB
+
+export const uploadPostImage = multer({
+  storage: postImageStorage,
+  fileFilter: imageFileFilter,
+  limits: {
+    fileSize: POST_IMAGE_MAX_SIZE,
   },
 });
