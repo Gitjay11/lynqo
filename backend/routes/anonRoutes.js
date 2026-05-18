@@ -5,10 +5,11 @@
  * realAuthor is NEVER exposed in any response from these routes.
  *
  * Route map:
- *  GET    /api/anon            → getAnonPosts    (paginated visible feed)
- *  POST   /api/anon            → createAnonPost  (new anon post)
- *  PUT    /api/anon/:id/like   → toggleAnonLike  (like / unlike)
- *  PUT    /api/anon/:id/report → reportAnonPost  (flag; auto-hide at 5 reports)
+ *  GET    /api/anon               → getAnonPosts      (paginated visible feed)
+ *  POST   /api/anon               → createAnonPost    (new anon post)
+ *  PUT    /api/anon/:id/like      → toggleAnonLike    (like / unlike)
+ *  PUT    /api/anon/:id/dislike   → toggleAnonDislike (dislike / un-dislike)
+ *  PUT    /api/anon/:id/report    → reportAnonPost    (flag; auto-hide at 5 reports)
  */
 
 import express from "express";
@@ -17,6 +18,7 @@ import {
   createAnonPost,
   getAnonPosts,
   toggleAnonLike,
+  toggleAnonDislike,
   reportAnonPost,
 } from "../controllers/anonController.js";
 
@@ -29,7 +31,8 @@ router.get("/", protect, getAnonPosts);
 router.post("/", protect, createAnonPost);
 
 // ── Reactions & Moderation ──────────────────────────────────────────────────
-router.put("/:id/like",   protect, toggleAnonLike);
-router.put("/:id/report", protect, reportAnonPost);
+router.put("/:id/like",    protect, toggleAnonLike);
+router.put("/:id/dislike", protect, toggleAnonDislike);
+router.put("/:id/report",  protect, reportAnonPost);
 
 export default router;

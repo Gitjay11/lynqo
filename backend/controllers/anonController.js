@@ -2,10 +2,11 @@
  * anonController.js — Anonymous Post Controllers
  *
  * Handles all anonymous board operations:
- *  - createAnonPost  → POST   /api/anon              (protected)
- *  - getAnonPosts    → GET    /api/anon               (protected + pagination)
- *  - toggleAnonLike  → PUT    /api/anon/:id/like      (protected)
- *  - reportAnonPost  → PUT    /api/anon/:id/report    (protected)
+ *  - createAnonPost    → POST   /api/anon                (protected)
+ *  - getAnonPosts      → GET    /api/anon                (protected + pagination)
+ *  - toggleAnonLike    → PUT    /api/anon/:id/like       (protected)
+ *  - toggleAnonDislike → PUT    /api/anon/:id/dislike    (protected)
+ *  - reportAnonPost    → PUT    /api/anon/:id/report     (protected)
  *
  * ┌─────────────────────────────────────────────────────────────┐
  * │  SECURITY RULE — CRITICAL                                   │
@@ -165,6 +166,55 @@ export const toggleAnonLike = async (req, res, next) => {
       success: true,
       likes:   post.likes.length,
       liked:   !alreadyLiked,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// @desc    Toggle dislike on an anonymous post (dislike / un-dislike)
+// @route   PUT /api/anon/:id/dislike
+// @access  Protected
+//
+// Business rule: like and dislike are mutually exclusive — disliking removes
+// any existing like from the same user (mirrors the regular post system).
+// realAuthor is NEVER included in the response.
+// ─────────────────────────────────────────────────────────────────────────────
+export const toggleAnonDislike = async (req, res, next) => {
+  try {
+    // Layer 2 defence: select('-realAuthor') on the fetch
+    const post = await AnonPost.findById(req.params.id).select("-realAuthor");
+
+    if (!post) {
+      res.status(404);
+      return next(new Error("Anonymous post not found"));
+    }
+
+    // Hidden posts cannot be disliked
+    if (post.isHidden) {
+      res.status(403);
+      return next(new Error("This post has been removed"));
+    }
+
+    const userId          = req.user._id;
+    const alreadyDisliked = post.dislikes.some((id) => id.equals(userId));
+
+    if (alreadyDisliked) {
+      // ── Un-dislike ──────────────────────────────────────────────────────
+      post.dislikes.pull(userId);
+    } else {
+      // ── Dislike + remove any existing like (mutual exclusivity) ─────────
+      post.dislikes.push(userId);
+      post.likes.pull(userId);
+    }
+
+    await post.save();
+
+    return res.status(200).json({
+      success:   true,
+      dislikes:  post.dislikes.length,
+      disliked:  !alreadyDisliked,
     });
   } catch (error) {
     next(error);

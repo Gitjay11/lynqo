@@ -8,6 +8,7 @@
  *  POST   /api/posts                        → protect, upload.single('image'), createPost
  *  DELETE /api/posts/:id                    → protect, deletePost     (owner only)
  *  PUT    /api/posts/:id/like               → protect, toggleLike
+ *  PUT    /api/posts/:id/dislike            → protect, toggleDislike
  *  POST   /api/posts/:id/comment            → protect, addComment
  *  DELETE /api/posts/:id/comment/:commentId → protect, deleteComment  (comment or post owner)
  */
@@ -20,6 +21,7 @@ import {
   getFeedPosts,
   deletePost,
   toggleLike,
+  toggleDislike,
   addComment,
   deleteComment,
 } from "../controllers/postController.js";
@@ -42,8 +44,11 @@ router.delete("/:id", protect, deletePost);
 
 // ── Reactions ─────────────────────────────────────────────────────────────
 
-// PUT /api/posts/:id/like — Toggle like on a post
-router.put("/:id/like", protect, toggleLike);
+// PUT /api/posts/:id/like    — Toggle like on a post
+router.put("/:id/like",    protect, toggleLike);
+
+// PUT /api/posts/:id/dislike — Toggle dislike on a post (mutually exclusive with like)
+router.put("/:id/dislike", protect, toggleDislike);
 
 // ── Comments ──────────────────────────────────────────────────────────────
 
