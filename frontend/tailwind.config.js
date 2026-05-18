@@ -50,7 +50,12 @@ export default {
       },
 
       // ── Spacing tokens ────────────────────────────────────────────────────
-      // Fixed sidebar width used across Sidebar.jsx and the main layout
+      // Fixed sidebar width used across Sidebar.jsx and the main layout.
+      // Must be in BOTH `spacing` (for ml-*, p-*, gap-* utilities) and
+      // `width` (for w-* utilities). Without `spacing`, lg:ml-sidebar won't work.
+      spacing: {
+        sidebar: "240px",
+      },
       width: {
         sidebar: "240px",
       },

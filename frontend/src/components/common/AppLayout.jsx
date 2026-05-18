@@ -45,12 +45,12 @@ const AppLayout = () => {
       {/* ── Main scrollable content area ───────────────────────────────────
           pt-14   → clear Navbar height (56px)
           pb-16   → clear BottomTabBar on mobile (removed on lg:)
-          lg:ml-sidebar → offset left for the fixed sidebar
+          lg:ml-[240px] → offset left for the fixed sidebar
       ─────────────────────────────────────────────────────────────────── */}
       <main
         className="
           pt-14 pb-16
-          lg:ml-sidebar lg:pb-0
+          lg:ml-[240px] lg:pb-0
           min-h-screen
         "
       >

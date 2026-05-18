@@ -9,8 +9,8 @@
  *
  *  Desktop (lg: and above):
  *    Left   → Logo / name
- *    Center → Nav links: Feed | Anon | Chat
  *    Right  → Avatar + user name chip with dropdown (My Profile, Logout)
+ *    (Nav links live in the Sidebar — not duplicated here)
  *
  * The dropdown is a controlled state (open/closed) and closes when the user
  * clicks outside — implemented via a useEffect with a document click listener.
@@ -20,24 +20,13 @@
  */
 
 import { useState, useRef, useEffect } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
-import {
-  Home,
-  Ghost,
-  MessageCircle,
-  User,
-  LogOut,
-  ChevronDown,
-} from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { User, LogOut, ChevronDown } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth.js";
 import Avatar from "./Avatar.jsx";
 
-// ── Nav link definitions (center links on desktop) ────────────────────────────
-const NAV_LINKS = [
-  { to: "/",     label: "Feed",  icon: Home          },
-  { to: "/anon", label: "Anon",  icon: Ghost         },
-  { to: "/chat", label: "Chat",  icon: MessageCircle },
-];
+// Nav links are intentionally NOT in the Navbar — they live in Sidebar (desktop)
+// and BottomTabBar (mobile), keeping the top bar clean and uncluttered.
 
 // ─────────────────────────────────────────────────────────────────────────────
 const Navbar = () => {
@@ -69,14 +58,7 @@ const Navbar = () => {
     navigate(`/profile/${user?.id ?? user?._id}`);
   };
 
-  // ── Active link style helper for desktop center nav ───────────────────────
-  const desktopNavClass = ({ isActive }) =>
-    `flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium
-     transition-all duration-150
-     ${isActive
-       ? "bg-brand-50 text-brand-600"
-       : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-     }`;
+
 
   return (
     <header
@@ -110,15 +92,7 @@ const Navbar = () => {
         <span className="hidden sm:block">Lynqo</span>
       </Link>
 
-      {/* ── Desktop center nav links (lg+ only) ───────────────────────────── */}
-      <nav className="hidden lg:flex items-center gap-1 ml-10" aria-label="Main navigation">
-        {NAV_LINKS.map(({ to, label, icon: Icon }) => (
-          <NavLink key={to} to={to} end={to === "/"} className={desktopNavClass}>
-            <Icon size={16} strokeWidth={2} />
-            {label}
-          </NavLink>
-        ))}
-      </nav>
+
 
       {/* ── Spacer ────────────────────────────────────────────────────────── */}
       <div className="flex-1" />
