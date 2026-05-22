@@ -1,6 +1,16 @@
 /**
  * useSocket.js — Custom hook to consume SocketContext
- * Usage: const socket = useSocket();
+ *
+ * Returns: { socket: Socket | null, onlineUsers: Set<string> }
+ *
+ * Usage:
+ *   const { socket, onlineUsers } = useSocket();
+ *
+ *   // Check if a user is online
+ *   const isOnline = onlineUsers.has(userId);
+ *
+ *   // Emit a socket event
+ *   socket?.emit("join_room", { conversationId });
  */
 
 import { useContext } from "react";

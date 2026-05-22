@@ -36,11 +36,12 @@ const getValidationErrors = (req) => {
 // ── Helper — build the safe user payload (no password) ────────────────────
 // Used consistently across all responses that return user data.
 const buildUserPayload = (user) => ({
-  id: user._id,
-  name: user.name,
-  email: user.email,
-  branch: user.branch,
-  semester: user.semester,
+  id:             user._id,   // always "id" — never "_id" — on the client
+  name:           user.name,
+  email:          user.email,
+  branch:         user.branch,
+  semester:       user.semester,
+  bio:            user.bio,
   profilePicture: user.profilePicture,
 });
 
@@ -143,12 +144,12 @@ export const loginUser = async (req, res, next) => {
 // ─────────────────────────────────────────────────────────────────────────────
 export const getMe = async (req, res, next) => {
   try {
-    // req.user is populated by the `protect` middleware in authMiddleware.js.
-    // It already excludes the password field (.select("-password")).
-    // No extra DB query needed — the user is already attached to the request.
+    // Return the same normalised shape as login/register so the client
+    // always receives { id, name, email, ... } — never the raw Mongoose doc
+    // with _id. This prevents _id vs id mismatches after a page refresh.
     return res.status(200).json({
       success: true,
-      user: req.user,
+      user: buildUserPayload(req.user),
     });
   } catch (error) {
     next(error);
