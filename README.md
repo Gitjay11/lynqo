@@ -7,7 +7,8 @@ built exclusively for college students. Connect with your entire
 college through a real-time feed, anonymous confessions, direct 
 messaging, and student profiles — all in one private space.
 
-![Lynqo Banner](link-to-screenshot-or-banner)
+<img width="1866" height="805" alt="image" src="https://github.com/user-attachments/assets/f189f201-a7ee-44e0-a861-8bfc2150dc94" />
+
 
 ## ✨ Features
 
