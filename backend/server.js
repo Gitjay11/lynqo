@@ -61,12 +61,24 @@ const generalLimiter = rateLimit({
 });
 
 // ── CORS — allow requests from the Vite dev server ─────────────────────────
+// In development: allow ANY localhost port (Vite may land on 5173, 5174, etc.)
+// In production:  only allow CLIENT_URL from environment.
+const allowedOrigin = (origin, callback) => {
+  // Allow requests with no origin (curl, Postman, mobile apps)
+  if (!origin) return callback(null, true);
+
+  const isDev = process.env.NODE_ENV !== "production";
+  const isLocalhost = /^http:\/\/localhost:\d+$/.test(origin);
+
+  if (isDev && isLocalhost) return callback(null, true);
+  if (process.env.CLIENT_URL && origin === process.env.CLIENT_URL) return callback(null, true);
+
+  callback(new Error(`CORS: origin '${origin}' not allowed`));
+};
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173", // Vite dev server default
-      process.env.CLIENT_URL || "http://localhost:5173",
-    ],
+    origin: allowedOrigin,
     credentials: true, // Allow cookies / auth headers
   })
 );
@@ -100,10 +112,7 @@ const httpServer = http.createServer(app);
 
 const io = new Server(httpServer, {
   cors: {
-    origin: [
-      "http://localhost:5173",
-      process.env.CLIENT_URL || "http://localhost:5173",
-    ],
+    origin: allowedOrigin, // same dynamic origin function as Express CORS
     methods: ["GET", "POST"],
     credentials: true,
   },

@@ -28,7 +28,7 @@ import Avatar from "./Avatar.jsx";
 
 // ── Nav link definitions ──────────────────────────────────────────────────────
 const NAV_LINKS = [
-  { to: "/",     label: "Feed",      icon: Home          },
+  { to: "/feed", label: "Feed",      icon: Home          },
   { to: "/anon", label: "Anonymous", icon: Ghost         },
   { to: "/chat", label: "Chat",      icon: MessageCircle },
 ];
@@ -67,7 +67,7 @@ const Sidebar = () => {
           <NavLink
             key={to}
             to={to}
-            end={to === "/"}
+            end={to === "/feed"}
             className={linkClass}
             aria-label={label}
           >

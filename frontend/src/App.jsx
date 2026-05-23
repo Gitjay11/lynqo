@@ -6,17 +6,19 @@
  *  2. Wrap in <SocketProvider> (nested inside AuthProvider so it can call useAuth).
  *  3. Define the complete client-side route tree using React Router v7.
  *  4. Gate all private routes behind <ProtectedRoute> (checks auth + loading state).
- *  5. Mount <Toaster> globally for react-hot-toast notifications.
+ *  5. Gate public-only routes behind <PublicRoute> (redirects logged-in users).
+ *  6. Mount <Toaster> globally for react-hot-toast notifications.
  *
  * Route map:
- *  /login            → LoginPage       (public)
- *  /signup           → SignupPage      (public)
- *  /                 → ProtectedRoute → FeedPage
- *  /anon             → ProtectedRoute → AnonPage
- *  /chat             → ProtectedRoute → ChatPage
- *  /chat/:convId     → ProtectedRoute → ChatPage
- *  /profile/:id      → ProtectedRoute → ProfilePage
- *  *                 → NotFoundPage
+ *  /             → PublicRoute  → LandingPage   (unauthenticated only → /feed if logged in)
+ *  /login        → PublicRoute  → LoginPage      (unauthenticated only → /feed if logged in)
+ *  /signup       → PublicRoute  → SignupPage     (unauthenticated only → /feed if logged in)
+ *  /feed         → ProtectedRoute → FeedPage
+ *  /anon         → ProtectedRoute → AnonPage
+ *  /chat         → ProtectedRoute → ChatPage
+ *  /chat/:convId → ProtectedRoute → ChatPage
+ *  /profile/:id  → ProtectedRoute → ProfilePage
+ *  *             → NotFoundPage
  */
 
 import { Routes, Route } from "react-router-dom";
@@ -26,13 +28,15 @@ import { Toaster } from "react-hot-toast";
 import { AuthProvider }   from "./context/AuthContext.jsx";
 import { SocketProvider } from "./context/SocketContext.jsx";
 
-// ── Route guard ───────────────────────────────────────────────────────────────
+// ── Route guards ──────────────────────────────────────────────────────────────
 import ProtectedRoute from "./components/common/ProtectedRoute.jsx";
+import PublicRoute    from "./components/common/PublicRoute.jsx";
 import AppLayout      from "./components/common/AppLayout.jsx";
 
-// ── Public pages ──────────────────────────────────────────────────────────────
-import LoginPage  from "./pages/auth/LoginPage.jsx";
-import SignupPage from "./pages/auth/SignupPage.jsx";
+// ── Public / landing pages ────────────────────────────────────────────────────
+import LandingPage from "./pages/LandingPage.jsx";
+import LoginPage   from "./pages/auth/LoginPage.jsx";
+import SignupPage  from "./pages/auth/SignupPage.jsx";
 
 // ── Protected pages ───────────────────────────────────────────────────────────
 import FeedPage    from "./pages/FeedPage.jsx";
@@ -54,10 +58,6 @@ const App = () => {
     <AuthProvider>
       <SocketProvider>
 
-        {/*
-         * Global toast notifications — positioned at the bottom-center
-         * for mobile ergonomics (thumb-reachable zone).
-         */}
         {/*
          * Toaster — positioned top-center so toasts never collide with the
          * fixed BottomTabBar (which is always visible at bottom-0 on mobile).
@@ -95,11 +95,21 @@ const App = () => {
         />
 
         <Routes>
-          {/* ── Public routes (no auth required) ───────────────────────── */}
-          <Route path="/login"  element={<LoginPage />}  />
-          <Route path="/signup" element={<SignupPage />} />
+          {/* ── Public-only routes (logged-in users redirected to /feed) ─── */}
+          {/*
+           * PublicRoute checks auth state:
+           *   loading → full-screen spinner (no flash)
+           *   user    → <Navigate to="/feed" replace />
+           *   no user → <Outlet /> (renders the public page)
+           */}
+          <Route element={<PublicRoute />}>
+            {/* Landing page — first thing unauthenticated visitors see */}
+            <Route path="/"       element={<LandingPage />} />
+            <Route path="/login"  element={<LoginPage />}   />
+            <Route path="/signup" element={<SignupPage />}  />
+          </Route>
 
-          {/* ── Protected routes (redirect to /login if unauthenticated) ─ */}
+          {/* ── Protected routes (redirect to /login if unauthenticated) ─── */}
           {/*
            * ProtectedRoute guards auth. AppLayout provides the shell:
            *   Navbar (top) + Sidebar (desktop) + BottomTabBar (mobile).
@@ -107,8 +117,8 @@ const App = () => {
            */}
           <Route element={<ProtectedRoute />}>
             <Route element={<AppLayout />}>
-              {/* Home / Community Feed */}
-              <Route path="/" element={<FeedPage />} />
+              {/* Community Feed — now at /feed (was /) */}
+              <Route path="/feed" element={<FeedPage />} />
 
               {/* Anonymous board */}
               <Route path="/anon" element={<AnonPage />} />
@@ -124,7 +134,7 @@ const App = () => {
             </Route>
           </Route>
 
-          {/* ── 404 catch-all ─────────────────────────────────────────── */}
+          {/* ── 404 catch-all ──────────────────────────────────────────── */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
 

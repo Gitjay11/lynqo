@@ -70,7 +70,7 @@ const Navbar = () => {
     >
       {/* ── Logo ──────────────────────────────────────────────────────────── */}
       <Link
-        to="/"
+        to="/feed"
         className="
           flex items-center gap-2 min-h-[44px]
           text-brand-600 font-bold text-xl tracking-tight

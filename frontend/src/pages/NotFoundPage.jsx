@@ -10,7 +10,7 @@ const NotFoundPage = () => (
     <p className="text-gray-600 text-base mb-6">
       Oops! This page doesn't exist.
     </p>
-    <Link to="/" className="btn-primary w-full max-w-[200px]">
+    <Link to="/feed" className="btn-primary w-full max-w-[200px]">
       Go Home
     </Link>
   </div>

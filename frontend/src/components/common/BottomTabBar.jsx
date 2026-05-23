@@ -26,7 +26,7 @@ import { useAuth } from "../../hooks/useAuth.js";
 // ── Tab definitions ───────────────────────────────────────────────────────────
 // Profile tab is special — its `to` is dynamic (depends on logged-in user's _id)
 const STATIC_TABS = [
-  { to: "/",     label: "Feed",  icon: Home          },
+  { to: "/feed", label: "Feed",  icon: Home          },
   { to: "/anon", label: "Anon",  icon: Ghost         },
   { to: "/chat", label: "Chat",  icon: MessageCircle },
 ];
@@ -65,7 +65,7 @@ const BottomTabBar = () => {
         <NavLink
           key={to}
           to={to}
-          end={to === "/"}   // exact match for Feed ("/") so /anon doesn't also highlight Feed
+          end={to === "/feed"}  // exact match for Feed ("/feed") so /anon doesn't also highlight Feed
           className={tabClass}
           aria-label={label}
         >

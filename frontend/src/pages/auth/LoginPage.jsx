@@ -12,7 +12,7 @@
  *  - Client-side validation fires on submit (not on each keystroke).
  *  - Field-level inline errors shown below each input.
  *  - On valid submit → POST /api/auth/login.
- *  - On success   → login(user, token) from AuthContext → navigate to /.
+ *  - On success   → login(user, token) from AuthContext → navigate to /feed.
  *  - On API error → show error toast with the server message.
  *  - Submit button disabled + spinner while request is in flight.
  */
@@ -102,7 +102,7 @@ const LoginPage = () => {
       // Persist auth state globally and redirect to feed
       login(data.user, data.token);
       toast.success("Welcome back! 👋");
-      navigate("/");
+      navigate("/feed");
     } catch (err) {
       // Extract the server's error message (or fall back gracefully)
       const message =
