@@ -31,12 +31,14 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, MessageCircle, X, Loader2 } from "lucide-react";
-import { useAuth }   from "../../hooks/useAuth.js";
-import { useSocket } from "../../hooks/useSocket.js";
-import api           from "../../api/axios.js";
-import Avatar        from "../common/Avatar.jsx";
-import OnlineDot     from "./OnlineDot.jsx";
+import { Search, MessageCircle, X, Loader2, Users } from "lucide-react";
+import toast              from "react-hot-toast";
+import { useAuth }        from "../../hooks/useAuth.js";
+import { useSocket }      from "../../hooks/useSocket.js";
+import api                from "../../api/axios.js";
+import Avatar             from "../common/Avatar.jsx";
+import OnlineDot          from "./OnlineDot.jsx";
+import ChatListSkeleton   from "../common/ChatListSkeleton.jsx";
 
 // ── Timestamp helper for last-message preview ─────────────────────────────────
 const formatPreviewTime = (dateString) => {
@@ -74,6 +76,10 @@ const ChatList = ({ onSelectConv }) => {
       setConversations(data.conversations ?? []);
     } catch (err) {
       console.error("[ChatList] Failed to fetch conversations:", err.message);
+      toast.error(
+        err?.response?.data?.message ||
+          "Couldn’t load your conversations. Please refresh."
+      );
     } finally {
       setLoading(false);
     }
@@ -158,6 +164,10 @@ const ChatList = ({ onSelectConv }) => {
       navigate(`/chat/${convId}`);
     } catch (err) {
       console.error("[ChatList] Failed to start conversation:", err.message);
+      toast.error(
+        err?.response?.data?.message ||
+          "Couldn’t open that conversation. Please try again."
+      );
     } finally {
       setStartingConv(null);
     }
@@ -238,9 +248,15 @@ const ChatList = ({ onSelectConv }) => {
                 <Loader2 size={20} className="animate-spin text-brand-500" />
               </div>
             ) : searchResults.length === 0 ? (
-              <div className="flex flex-col items-center py-12 text-gray-400">
-                <Search size={32} className="mb-2 opacity-40" />
-                <p className="text-sm">No users found</p>
+              /* ── No search results empty state ──────────────────────────── */
+              <div className="flex flex-col items-center py-12 px-6 text-center">
+                <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+                  <Search size={22} className="text-gray-300" />
+                </div>
+                <p className="text-sm font-semibold text-gray-600">No students found</p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Try a different name or check the spelling.
+                </p>
               </div>
             ) : (
               <ul aria-label="Search results">
@@ -291,18 +307,17 @@ const ChatList = ({ onSelectConv }) => {
         {!searchQuery.trim() && (
           <>
             {loading ? (
-              <div className="flex items-center justify-center py-16">
-                <Loader2 size={24} className="animate-spin text-brand-500" />
-              </div>
+              /* ── Skeleton rows while conversations load ──────────────────── */
+              <ChatListSkeleton />
             ) : conversations.length === 0 ? (
-              /* Empty state */
+              /* ── No conversations empty state ───────────────────────────── */
               <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
                 <div className="w-16 h-16 rounded-full bg-brand-50 flex items-center justify-center mb-4">
                   <MessageCircle size={28} className="text-brand-400" />
                 </div>
-                <p className="text-gray-800 font-semibold mb-1">No conversations yet</p>
+                <p className="text-gray-800 font-semibold mb-1">No chats yet</p>
                 <p className="text-gray-400 text-sm">
-                  Search for a classmate above to start chatting
+                  Find a student and say hi.
                 </p>
               </div>
             ) : (

@@ -16,6 +16,7 @@
 
 import express from "express";
 import { body } from "express-validator";
+import rateLimit from "express-rate-limit";
 
 import { protect } from "../middleware/authMiddleware.js";
 import {
@@ -24,6 +25,22 @@ import {
   getMe,
   logoutUser,
 } from "../controllers/authController.js";
+
+// ── Auth-specific rate limiter: 10 requests per 15 minutes per IP ──────────
+// Applied only to the public login + register endpoints to prevent brute‑force
+// and credential‑stuffing attacks. /me and /logout are already behind
+// the JWT `protect` guard, so they don’t need this extra layer.
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message:
+      "Too many attempts. Please wait 15 minutes before trying again.",
+  },
+});
 
 const router = express.Router();
 
@@ -77,11 +94,11 @@ const loginValidation = [
 
 // ── Routes ────────────────────────────────────────────────────────────────
 
-// POST /api/auth/register — Public
-router.post("/register", registerValidation, registerUser);
+// POST /api/auth/register — Public (rate-limited)
+router.post("/register", authLimiter, registerValidation, registerUser);
 
-// POST /api/auth/login — Public
-router.post("/login", loginValidation, loginUser);
+// POST /api/auth/login — Public (rate-limited)
+router.post("/login", authLimiter, loginValidation, loginUser);
 
 // GET /api/auth/me — Protected: requires valid JWT
 router.get("/me", protect, getMe);

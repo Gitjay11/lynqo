@@ -58,20 +58,36 @@ const App = () => {
          * Global toast notifications — positioned at the bottom-center
          * for mobile ergonomics (thumb-reachable zone).
          */}
+        {/*
+         * Toaster — positioned top-center so toasts never collide with the
+         * fixed BottomTabBar (which is always visible at bottom-0 on mobile).
+         * containerStyle.paddingTop clears the 56px fixed Navbar so the first
+         * toast isn't hidden behind it.
+         * Max 3 visible toasts at once (gutter size).
+         */}
         <Toaster
-          position="bottom-center"
+          position="top-center"
+          gutter={8}
+          containerStyle={{ paddingTop: "60px" }}
           toastOptions={{
-            duration: 3000,
+            duration: 3500,
             style: {
               background: "#1f2937", // gray-800
               color: "#f9fafb",      // gray-50
               borderRadius: "12px",
               fontSize: "14px",
               padding: "12px 16px",
+              maxWidth: "340px",
             },
             success: {
               iconTheme: {
                 primary: "#6366f1", // brand-500
+                secondary: "#fff",
+              },
+            },
+            error: {
+              iconTheme: {
+                primary: "#f43f5e", // rose-500
                 secondary: "#fff",
               },
             },

@@ -30,7 +30,7 @@ import api from "../api/axios.js";
 import { useAuth } from "../hooks/useAuth.js";
 import AnonPostForm from "../components/anon/AnonPostForm.jsx";
 import AnonPostCard from "../components/anon/AnonPostCard.jsx";
-import Loader from "../components/common/Loader.jsx";
+import PostCardSkeleton from "../components/common/PostCardSkeleton.jsx";
 
 // ── Right sidebar info widget (lg+ only) ────────────────────────────────────
 const AnonInfoWidget = () => (
@@ -180,8 +180,14 @@ const AnonPage = () => {
 
         {/* ── Feed states ──────────────────────────────────────────────────── */}
 
-        {/* Loading skeleton */}
-        {loading && <Loader />}
+        {/* ── Loading skeleton — 3 shimmer cards while data fetches ────────── */}
+        {loading && (
+          <div className="space-y-0 md:space-y-3">
+            <PostCardSkeleton />
+            <PostCardSkeleton />
+            <PostCardSkeleton />
+          </div>
+        )}
 
         {/* Error with retry */}
         {!loading && error && (
@@ -197,13 +203,18 @@ const AnonPage = () => {
           </div>
         )}
 
-        {/* Empty state */}
+        {/* ── Empty state ───────────────────────────────────────────────────── */}
         {!loading && !error && posts.length === 0 && (
-          <div className="flex flex-col items-center gap-2 py-16 px-4">
-            <Ghost size={32} className="text-violet-200" />
-            <p className="text-base font-semibold text-gray-700">Nothing here yet</p>
-            <p className="text-sm text-gray-400 text-center">
-              Be the first to post something anonymously to the campus!
+          <div className="flex flex-col items-center gap-3 py-16 px-4 text-center">
+            {/* Ghost icon with violet tint — on-brand for the anon board */}
+            <div className="w-16 h-16 rounded-full bg-violet-50 flex items-center justify-center mb-1">
+              <Ghost size={28} className="text-violet-400" />
+            </div>
+            <p className="text-base font-semibold text-gray-800">
+              No confessions yet
+            </p>
+            <p className="text-sm text-gray-400 max-w-[240px] leading-relaxed">
+              You go first.
             </p>
           </div>
         )}

@@ -58,7 +58,7 @@ export const SocketProvider = ({ children }) => {
 
     // Create socket connection only when user is logged in
     const newSocket = io(import.meta.env.VITE_SOCKET_URL, {
-      query: { userId: user._id },
+      query: { userId: user.id },
       autoConnect: true,
       reconnection: true,
       reconnectionAttempts: 5,

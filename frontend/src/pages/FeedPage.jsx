@@ -28,13 +28,13 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Newspaper } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "../api/axios.js";
 import { useAuth } from "../hooks/useAuth.js";
 import PostForm from "../components/feed/PostForm.jsx";
 import PostCard from "../components/feed/PostCard.jsx";
-import Loader from "../components/common/Loader.jsx";
+import PostCardSkeleton from "../components/common/PostCardSkeleton.jsx";
 import TrendingWidget from "../components/feed/TrendingWidget.jsx";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -129,8 +129,14 @@ const FeedPage = () => {
 
         {/* ── Feed states ─────────────────────────────────────────────────── */}
 
-        {/* Initial loading skeleton */}
-        {loading && <Loader />}
+        {/* ── Loading skeleton — 3 shimmer cards while data fetches ────────── */}
+        {loading && (
+          <div className="space-y-0 md:space-y-3">
+            <PostCardSkeleton />
+            <PostCardSkeleton />
+            <PostCardSkeleton />
+          </div>
+        )}
 
         {/* Error with retry */}
         {!loading && error && (
@@ -146,13 +152,18 @@ const FeedPage = () => {
           </div>
         )}
 
-        {/* Empty state */}
+        {/* ── Empty state ───────────────────────────────────────────────────── */}
         {!loading && !error && posts.length === 0 && (
-          <div className="flex flex-col items-center gap-2 py-16 px-4">
-            <p className="text-2xl">👋</p>
-            <p className="text-base font-semibold text-gray-700">No posts yet</p>
-            <p className="text-sm text-gray-400 text-center">
-              Be the first to share something with your campus community!
+          <div className="flex flex-col items-center gap-3 py-16 px-4 text-center">
+            {/* Icon composition */}
+            <div className="w-16 h-16 rounded-full bg-brand-50 flex items-center justify-center mb-1">
+              <Newspaper size={28} className="text-brand-400" />
+            </div>
+            <p className="text-base font-semibold text-gray-800">
+              No posts yet
+            </p>
+            <p className="text-sm text-gray-400 max-w-[240px] leading-relaxed">
+              Be the first to post something!
             </p>
           </div>
         )}

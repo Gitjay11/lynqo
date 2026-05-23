@@ -32,6 +32,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate }   from "react-router-dom";
 import { ArrowLeft, Send, Loader2, AlertCircle } from "lucide-react";
+import toast             from "react-hot-toast";
 import { useAuth }       from "../../hooks/useAuth.js";
 import { useSocket }     from "../../hooks/useSocket.js";
 import api               from "../../api/axios.js";
@@ -107,6 +108,11 @@ const ChatWindow = ({ convId }) => {
       }
     } catch (err) {
       console.error("[ChatWindow] load error:", err.message);
+      // Show a toast so the user knows why the chat is empty
+      toast.error(
+        err?.response?.data?.message ||
+          "Couldn’t load messages. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -139,7 +145,11 @@ const ChatWindow = ({ convId }) => {
 
     const onTyping     = () => setIsTyping(true);
     const onStopTyping = () => setIsTyping(false);
-    const onError      = () => setSendError(true);
+    // message_error: socket server couldn't persist the message
+    const onError      = () => {
+      setSendError(true);
+      toast.error("Message failed to send. Please try again.");
+    };
 
     socket.on("receive_message", onReceive);
     socket.on("user_typing",     onTyping);

@@ -105,17 +105,25 @@ const AnonPostForm = ({ currentUser, onPost }) => {
               "
             />
 
-            {/* Character counter — shown at ≤ 100 remaining */}
-            {remaining <= 100 && (
-              <div className="flex justify-end mt-1">
-                <span className={`
+            {/* ── Character counter — always visible, 3-stage color ─────── */}
+            <div className="flex justify-end mt-1">
+              <span
+                className={`
                   text-xs tabular-nums font-medium
-                  ${remaining <= 20 ? "text-red-500" : "text-gray-400"}
-                `}>
-                  {remaining} / {MAX}
-                </span>
-              </div>
-            )}
+                  ${
+                    remaining <= 20
+                      ? "text-red-500"      // danger — almost out
+                      : remaining <= 100
+                      ? "text-amber-500"    // warning — getting close
+                      : "text-gray-400"     // safe — plenty left
+                  }
+                `}
+                aria-live="polite"
+                aria-label={`${remaining} characters remaining`}
+              >
+                {content.length}/{MAX}
+              </span>
+            </div>
           </div>
         </div>
 

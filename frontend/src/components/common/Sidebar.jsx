@@ -92,7 +92,7 @@ const Sidebar = () => {
         {/* Profile link — dynamic path */}
         {user && (
           <NavLink
-            to={`/profile/${user._id}`}
+            to={`/profile/${user.id}`}
             className={linkClass}
             aria-label="My Profile"
           >
@@ -118,7 +118,7 @@ const Sidebar = () => {
         <div className="px-3 py-4 border-t border-gray-100">
           {/* User info chip */}
           <button
-            onClick={() => navigate(`/profile/${user._id}`)}
+            onClick={() => navigate(`/profile/${user.id}`)}
             className="
               w-full flex items-center gap-3 p-3
               rounded-xl hover:bg-gray-50
