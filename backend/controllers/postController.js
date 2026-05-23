@@ -68,8 +68,8 @@ export const createPost = async (req, res, next) => {
     }
 
     // ── Image upload (optional) ───────────────────────────────────────────
-    // If an image was attached, uploadPostImage middleware (multer-storage-cloudinary)
-    // has already streamed it to Cloudinary and placed the hosted URL in req.file.path.
+    // If an image was attached, the uploadPostImage middleware (multer memoryStorage +
+    // cloudinary upload_stream) has already uploaded it and placed the hosted URL in req.file.path.
     const imageUrl = req.file ? req.file.path : null;
 
     // ── Create and persist the post ───────────────────────────────────────

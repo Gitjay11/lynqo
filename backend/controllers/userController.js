@@ -116,8 +116,8 @@ export const updateProfile = async (req, res, next) => {
 // @access  Protected (requires valid JWT + multer upload middleware)
 //
 // Flow:
-//  1. `uploadAvatar.single("avatar")` middleware intercepts the multipart body.
-//  2. multer-storage-cloudinary streams the file to Cloudinary.
+//  1. multer (memoryStorage) intercepts the multipart body, stores the file in memory.
+//  2. The toCloudinary middleware streams the buffer to Cloudinary via upload_stream.
 //  3. Cloudinary returns metadata; req.file.path holds the hosted HTTPS URL.
 //  4. We save that URL to profilePicture and return the updated user.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -134,7 +134,7 @@ export const uploadAvatar = async (req, res, next) => {
       );
     }
 
-    // req.file.path is the Cloudinary-hosted URL set by multer-storage-cloudinary.
+    // req.file.path is the Cloudinary-hosted URL set by the toCloudinary middleware.
     const cloudinaryUrl = req.file.path;
 
     // findByIdAndUpdate is used for efficiency — no need to load the full
