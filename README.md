@@ -100,7 +100,7 @@ MIT License — see LICENSE file for details.
 
 ## 👨‍💻 Author
 
-Your Name — @yourusername
+Your Name — Ajay Rajera
 
 ---
 
