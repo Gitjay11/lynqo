@@ -56,8 +56,8 @@ const AnonPostForm = ({ currentUser, onPost }) => {
   return (
     /* Mobile: bare — md+: card wrapper */
     <div className="
-      bg-white
-      md:rounded-2xl md:shadow-sm md:border md:border-gray-100
+      bg-zinc-900
+      md:rounded-2xl md:shadow-sm md:border md:border-zinc-800
     ">
       <form onSubmit={handleSubmit} className="p-4">
 
@@ -66,12 +66,12 @@ const AnonPostForm = ({ currentUser, onPost }) => {
           <span className="
             flex items-center gap-1.5
             text-[11px] font-medium text-violet-600
-            bg-violet-50 rounded-full px-2.5 py-1
+            bg-violet-600/10 rounded-full px-2.5 py-1
           ">
             <EyeOff size={11} />
             Posting as Anonymous
           </span>
-          <p className="text-[11px] text-gray-400 leading-tight">
+          <p className="text-[11px] text-zinc-500 leading-tight">
             Your identity is always hidden
           </p>
         </div>
@@ -99,7 +99,7 @@ const AnonPostForm = ({ currentUser, onPost }) => {
               rows={3}
               className="
                 w-full px-0 py-1
-                text-sm text-gray-900 placeholder-gray-400
+                text-sm text-zinc-100 placeholder-zinc-500
                 bg-transparent border-none outline-none resize-none
                 leading-relaxed
               "
@@ -115,7 +115,7 @@ const AnonPostForm = ({ currentUser, onPost }) => {
                       ? "text-red-500"      // danger — almost out
                       : remaining <= 100
                       ? "text-amber-500"    // warning — getting close
-                      : "text-gray-400"     // safe — plenty left
+                      : "text-zinc-500"     // safe — plenty left
                   }
                 `}
                 aria-live="polite"
@@ -128,11 +128,11 @@ const AnonPostForm = ({ currentUser, onPost }) => {
         </div>
 
         {/* ── Divider ──────────────────────────────────────────────────────── */}
-        <hr className="border-gray-100 mt-3" />
+        <hr className="border-zinc-800 mt-3" />
 
         {/* ── Bottom toolbar ───────────────────────────────────────────────── */}
         <div className="flex items-center mt-3">
-          <p className="text-xs text-gray-400 flex-1">
+          <p className="text-xs text-zinc-500 flex-1">
             Posts on the Anon board are visible to all campus members
           </p>
 

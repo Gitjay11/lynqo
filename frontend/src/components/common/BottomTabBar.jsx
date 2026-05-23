@@ -1,22 +1,9 @@
 /**
- * BottomTabBar.jsx — Mobile Primary Navigation
+ * BottomTabBar.jsx — Mobile Primary Navigation (Dark Theme)
  *
- * Visible only on mobile / tablet (hidden at lg: breakpoint and above).
- * Fixed at the bottom of the viewport — mimics the Instagram / WhatsApp pattern.
- *
- * Spec:
- *  Height:     56px (min-h-tabbar)
- *  Full width, white background, top shadow
- *  Four tabs:  Feed | Anon | Chat | Profile
- *  Active tab: icon + label highlighted with brand-600 (primary indigo)
- *  Inactive:   gray-400 icon + label
- *
- * IMPORTANT — Page container padding:
- *  Every protected page must add pb-14 (56px) to its root container
- *  so content is never hidden beneath this bar. This is enforced via the
- *  AppLayout wrapper which automatically adds that padding on mobile.
- *
- * Touch targets: each tab button is full height (56px) → ≥ 44px requirement met.
+ * bg-zinc-900 border-t border-zinc-800
+ * Active tab: text-violet-400
+ * Inactive:   text-zinc-500
  */
 
 import { NavLink, useNavigate } from "react-router-dom";
@@ -24,7 +11,6 @@ import { Home, Ghost, MessageCircle, User } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth.js";
 
 // ── Tab definitions ───────────────────────────────────────────────────────────
-// Profile tab is special — its `to` is dynamic (depends on logged-in user's _id)
 const STATIC_TABS = [
   { to: "/feed", label: "Feed",  icon: Home          },
   { to: "/anon", label: "Anon",  icon: Ghost         },
@@ -41,10 +27,10 @@ const BottomTabBar = () => {
     flex-1 h-full
     text-[10px] font-semibold tracking-wide
     transition-colors duration-150 select-none
-    focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-400
+    focus:outline-none focus:ring-2 focus:ring-inset focus:ring-violet-500
     ${isActive
-      ? "text-brand-600"           // active: primary indigo
-      : "text-gray-400 hover:text-gray-600" // inactive
+      ? "text-violet-400"           // active: violet
+      : "text-zinc-500 hover:text-zinc-300" // inactive
     }
   `;
 
@@ -56,7 +42,7 @@ const BottomTabBar = () => {
         lg:hidden
         flex items-stretch
         h-14 w-full
-        bg-white shadow-tab-top
+        bg-zinc-900 border-t border-zinc-800
         safe-area-inset-bottom
       "
     >
@@ -65,7 +51,7 @@ const BottomTabBar = () => {
         <NavLink
           key={to}
           to={to}
-          end={to === "/feed"}  // exact match for Feed ("/feed") so /anon doesn't also highlight Feed
+          end={to === "/feed"}
           className={tabClass}
           aria-label={label}
         >
@@ -74,7 +60,7 @@ const BottomTabBar = () => {
               <Icon
                 size={22}
                 strokeWidth={isActive ? 2.5 : 2}
-                className={isActive ? "text-brand-600" : "text-gray-400"}
+                className={isActive ? "text-violet-400" : "text-zinc-500"}
               />
               <span>{label}</span>
             </>
@@ -93,7 +79,7 @@ const BottomTabBar = () => {
             <User
               size={22}
               strokeWidth={isActive ? 2.5 : 2}
-              className={isActive ? "text-brand-600" : "text-gray-400"}
+              className={isActive ? "text-violet-400" : "text-zinc-500"}
             />
             <span>Profile</span>
           </>

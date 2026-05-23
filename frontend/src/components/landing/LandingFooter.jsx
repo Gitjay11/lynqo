@@ -1,24 +1,10 @@
 /**
- * LandingFooter.jsx — Landing Page Footer
+ * LandingFooter.jsx — Landing Page Footer (Dark Theme)
  *
- * Background: bg-gray-900
- * Padding:    py-12 px-4
- * Container:  max-w-6xl mx-auto text-center
- *
- * Row 1 — Brand:
- *  Lynqo wordmark  text-white font-bold text-2xl
- *  Tagline below   text-white/40 text-sm mt-2
- *
- * Row 2 — Nav links (mt-8 flex flex-wrap justify-center gap-6):
- *  Privacy Policy | Terms of Service | Contact
- *  Each: text-white/40 text-sm hover:text-white/70 transition-colors
- *
- * Row 3 — Bottom bar (mt-8 pt-8 border-t border-white/10):
- *  Copyright line: text-white/30 text-sm
+ * Background: bg-zinc-950 border-t border-zinc-800
  */
 
 const LandingFooter = () => {
-  // ── Nav link data ───────────────────────────────────────────────────────────
   const LINKS = [
     { label: "Privacy Policy" },
     { label: "Terms of Service" },
@@ -28,15 +14,15 @@ const LandingFooter = () => {
   return (
     <footer
       id="footer"
-      className="bg-gray-900 py-12 px-4"
+      className="bg-zinc-950 border-t border-zinc-800 py-12 px-4"
     >
       <div className="max-w-6xl mx-auto text-center">
 
         {/* ── Row 1: Brand ───────────────────────────────────────────────────── */}
-        <p className="text-white font-bold text-2xl">
+        <p className="text-zinc-50 font-bold text-2xl">
           Lynqo
         </p>
-        <p className="text-white/40 text-sm mt-2">
+        <p className="text-zinc-600 text-sm mt-2">
           Made for you. Built with ❤️.
         </p>
 
@@ -46,8 +32,8 @@ const LandingFooter = () => {
             <button
               key={label}
               className="
-                text-white/40 text-sm
-                hover:text-white/70
+                text-zinc-600 text-sm
+                hover:text-zinc-400
                 transition-colors duration-150
                 cursor-pointer
                 min-h-0
@@ -59,8 +45,8 @@ const LandingFooter = () => {
         </div>
 
         {/* ── Row 3: Bottom bar ──────────────────────────────────────────────── */}
-        <div className="mt-8 pt-8 border-t border-white/10">
-          <p className="text-white/30 text-sm">
+        <div className="mt-8 pt-8 border-t border-zinc-800">
+          <p className="text-zinc-700 text-sm">
             © 2025 Lynqo. Made for you. Built with ❤️.
           </p>
         </div>

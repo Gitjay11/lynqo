@@ -8,51 +8,50 @@ export default {
 
   theme: {
     extend: {
-      // ── Brand / Primary palette (indigo) ─────────────────────────────────
-      // Primary action color: brand-600 (#4F46E5) per the design spec.
-      // brand-500 (#6366f1) is used for rings, highlights, and icon fills.
+      // ── Brand / Primary palette — VIOLET (was indigo) ─────────────────────
+      // Primary action color: brand-600 (#7C3AED) per the Deep Violet design spec.
       colors: {
         brand: {
-          50:  "#eef2ff",
-          100: "#e0e7ff",
-          200: "#c7d2fe",
-          300: "#a5b4fc",
-          400: "#818cf8",
-          500: "#6366f1", // rings, highlights, active state fills
-          600: "#4f46e5", // PRIMARY action color (buttons, active nav)
-          700: "#4338ca",
-          800: "#3730a3",
-          900: "#312e81",
+          50:  "#f5f3ff", // violet-50  — light tint backgrounds
+          100: "#ede9fe", // violet-100
+          200: "#ddd6fe", // violet-200
+          300: "#c4b5fd", // violet-300
+          400: "#a78bfa", // violet-400 — active tabs, read receipts
+          500: "#8b5cf6", // violet-500 — rings, highlights
+          600: "#7c3aed", // violet-600 — PRIMARY action (buttons, active nav)
+          700: "#6d28d9", // violet-700 — hover state
+          800: "#5b21b6", // violet-800 — active/pressed
+          900: "#4c1d95", // violet-900 — hero gradient anchor
         },
 
-        // ── Accent palette (violet) ─────────────────────────────────────────
+        // ── Accent palette (violet — matches brand now) ─────────────────────
         accent: {
           50:  "#f5f3ff",
           100: "#ede9fe",
           200: "#ddd6fe",
           300: "#c4b5fd",
           400: "#a78bfa",
-          500: "#8b5cf6", // primary accent
+          500: "#8b5cf6",
           600: "#7c3aed",
           700: "#6d28d9",
           800: "#5b21b6",
           900: "#4c1d95",
         },
 
-        // ── Neutral surface tones (warm gray) ─────────────────────────────
-        // Supplements Tailwind's default gray for background surfaces
+        // ── Dark surface tones (zinc) ─────────────────────────────────────────
+        // App background: zinc-950 (#09090B)
+        // Card surfaces:  zinc-900 (#18181B)
+        // Elevated cards: zinc-800 (#27272A)
+        // Borders:        zinc-700 (#3F3F46)
         surface: {
-          50:  "#fafafa",
-          100: "#f5f5f5",
-          200: "#e5e5e5",
-          300: "#d4d4d4",
+          50:  "#09090b", // zinc-950 — page background
+          100: "#18181b", // zinc-900 — card surface
+          200: "#27272a", // zinc-800 — elevated card / input bg
+          300: "#3f3f46", // zinc-700 — borders
         },
       },
 
       // ── Spacing tokens ────────────────────────────────────────────────────
-      // Fixed sidebar width used across Sidebar.jsx and the main layout.
-      // Must be in BOTH `spacing` (for ml-*, p-*, gap-* utilities) and
-      // `width` (for w-* utilities). Without `spacing`, lg:ml-sidebar won't work.
       spacing: {
         sidebar: "240px",
       },
@@ -63,7 +62,7 @@ export default {
       // Mobile touch target minimum
       minHeight: {
         touch:  "44px",
-        tabbar: "56px", // BottomTabBar fixed height
+        tabbar: "56px",
       },
 
       // ── Typography ────────────────────────────────────────────────────────
@@ -73,10 +72,10 @@ export default {
 
       // ── Shadows ───────────────────────────────────────────────────────────
       boxShadow: {
-        // Subtle top shadow for the bottom tab bar
-        "tab-top": "0 -1px 0 0 #e5e7eb, 0 -4px 12px 0 rgba(0,0,0,0.04)",
+        // Subtle top shadow for the bottom tab bar (dark-mode aware)
+        "tab-top": "0 -1px 0 0 #3f3f46, 0 -4px 12px 0 rgba(0,0,0,0.3)",
         // Subtle right shadow for the sidebar
-        "sidebar-r": "2px 0 12px 0 rgba(0,0,0,0.06)",
+        "sidebar-r": "2px 0 12px 0 rgba(0,0,0,0.4)",
       },
     },
   },

@@ -227,19 +227,19 @@ const ProfilePage = () => {
   // ─────────────────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-start justify-center pt-10 px-4">
+      <div className="min-h-screen bg-zinc-950 flex items-start justify-center pt-10 px-4">
         <div className="w-full max-w-2xl">
           <div className="card animate-pulse">
             {/* Mobile skeleton: centered column */}
             <div className="flex flex-col items-center gap-4 md:flex-row md:items-start md:gap-6">
               {/* Avatar skeleton */}
-              <div className="w-32 h-32 rounded-full bg-gray-200 flex-shrink-0" />
+              <div className="w-32 h-32 rounded-full bg-zinc-800 flex-shrink-0" />
               {/* Info skeleton */}
               <div className="flex-1 w-full space-y-3">
-                <div className="h-6 bg-gray-200 rounded-lg w-48 mx-auto md:mx-0" />
-                <div className="h-4 bg-gray-200 rounded-lg w-32 mx-auto md:mx-0" />
-                <div className="h-4 bg-gray-200 rounded-lg w-24 mx-auto md:mx-0" />
-                <div className="h-16 bg-gray-200 rounded-lg w-full mt-2" />
+                <div className="h-6 bg-zinc-800 rounded-lg w-48 mx-auto md:mx-0" />
+                <div className="h-4 bg-zinc-800 rounded-lg w-32 mx-auto md:mx-0" />
+                <div className="h-4 bg-zinc-800 rounded-lg w-24 mx-auto md:mx-0" />
+                <div className="h-16 bg-zinc-800 rounded-lg w-full mt-2" />
               </div>
             </div>
           </div>
@@ -253,11 +253,11 @@ const ProfilePage = () => {
   // ─────────────────────────────────────────────────────────────────────────
   if (!profile) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center px-4">
         <div className="text-center">
           <p className="text-5xl mb-4">👤</p>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">User not found</h2>
-          <p className="text-sm text-gray-500">This profile doesn't exist or has been removed.</p>
+          <h2 className="text-xl font-semibold text-zinc-50 mb-2">User not found</h2>
+          <p className="text-sm text-zinc-400">This profile doesn't exist or has been removed.</p>
         </div>
       </div>
     );
@@ -269,7 +269,7 @@ const ProfilePage = () => {
   const displaySrc = avatarPreview ?? profile.profilePicture ?? null;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-zinc-950 py-8 px-4">
       {/*
         Outer container:
           Mobile : full width, single column
@@ -362,8 +362,8 @@ const ProfilePage = () => {
                     aria-label="Cancel avatar upload"
                     className="
                       flex items-center gap-1.5 px-3 py-1.5
-                      border border-gray-300 hover:border-red-400 hover:bg-red-50
-                      text-gray-600 hover:text-red-500 text-xs font-medium
+                      border border-zinc-700 hover:border-red-500 hover:bg-red-500/10
+                      text-zinc-400 hover:text-red-500 text-xs font-medium
                       rounded-lg min-h-[36px]
                       disabled:opacity-50 disabled:cursor-not-allowed
                       transition-colors duration-150
@@ -377,7 +377,7 @@ const ProfilePage = () => {
 
               {/* Upload hint — only on own profile, only in view mode */}
               {isOwnProfile && !avatarPreview && !isEditing && (
-                <p className="text-xs text-gray-400 text-center">
+                <p className="text-xs text-zinc-500 text-center">
                   Tap photo to change
                 </p>
               )}
@@ -391,13 +391,13 @@ const ProfilePage = () => {
                 <div className="flex flex-col items-center md:items-start gap-2">
 
                   {/* Name */}
-                  <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+                  <h1 className="text-2xl font-bold text-zinc-50 tracking-tight">
                     {profile.name}
                   </h1>
 
                   {/* Branch */}
                   {profile.branch && (
-                    <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                    <div className="flex items-center gap-1.5 text-sm text-zinc-400">
                       <BookOpen size={15} className="text-brand-500 flex-shrink-0" />
                       <span>{profile.branch}</span>
                     </div>
@@ -405,7 +405,7 @@ const ProfilePage = () => {
 
                   {/* Semester */}
                   {profile.semester && (
-                    <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                    <div className="flex items-center gap-1.5 text-sm text-zinc-400">
                       <GraduationCap size={15} className="text-brand-500 flex-shrink-0" />
                       <span>Semester {profile.semester}</span>
                     </div>
@@ -414,13 +414,13 @@ const ProfilePage = () => {
                   {/* Bio */}
                   {profile.bio ? (
                     <div className="mt-3 w-full">
-                      <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap text-left">
+                      <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap text-left">
                         {profile.bio}
                       </p>
                     </div>
                   ) : (
                     isOwnProfile && (
-                      <p className="text-sm text-gray-400 italic mt-2">
+                      <p className="text-sm text-zinc-500 italic mt-2">
                         Add a bio to tell people about yourself.
                       </p>
                     )
@@ -455,7 +455,7 @@ const ProfilePage = () => {
                   <div>
                     <label
                       htmlFor="edit-name"
-                      className="block text-sm font-medium text-gray-700 mb-1"
+                      className="block text-sm font-medium text-zinc-300 mb-1"
                     >
                       Full Name
                     </label>
@@ -476,7 +476,7 @@ const ProfilePage = () => {
                   <div>
                     <label
                       htmlFor="edit-branch"
-                      className="block text-sm font-medium text-gray-700 mb-1"
+                      className="block text-sm font-medium text-zinc-300 mb-1"
                     >
                       Branch
                     </label>
@@ -498,7 +498,7 @@ const ProfilePage = () => {
                   <div>
                     <label
                       htmlFor="edit-semester"
-                      className="block text-sm font-medium text-gray-700 mb-1"
+                      className="block text-sm font-medium text-zinc-300 mb-1"
                     >
                       Semester
                     </label>
@@ -520,10 +520,10 @@ const ProfilePage = () => {
                   <div>
                     <label
                       htmlFor="edit-bio"
-                      className="block text-sm font-medium text-gray-700 mb-1"
+                      className="block text-sm font-medium text-zinc-300 mb-1"
                     >
                       Bio
-                      <span className="text-xs text-gray-400 font-normal ml-1">
+                      <span className="text-xs text-zinc-500 font-normal ml-1">
                         (optional)
                       </span>
                     </label>
@@ -540,7 +540,7 @@ const ProfilePage = () => {
                         min-h-[80px] leading-relaxed
                       "
                     />
-                    <p className="text-xs text-gray-400 text-right mt-0.5">
+                    <p className="text-xs text-zinc-500 text-right mt-0.5">
                       {formData.bio.length}/300
                     </p>
                   </div>

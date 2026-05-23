@@ -1,245 +1,189 @@
 /**
- * PostForm.jsx — Post Creation Form
+ * PostForm.jsx — Post Composer (Dark Theme)
  *
- * Allows the logged-in user to compose and submit a new community post.
- *
- * Features:
- *  - Textarea (max 500 chars) with live descending character counter
- *  - Image attachment with local preview (before upload); cleared on post success
- *  - Anonymous toggle — when ON, posts to POST /api/anon (JSON, no image)
- *    instead of POST /api/posts (multipart/form-data)
- *  - "Post" button disabled while content is empty or submission is in-flight
- *  - On success → calls onPost(newPost) to prepend to the feed (no full reload)
- *
- * Responsive:
- *  - Mobile: full-width, flush against screen edges (px-4 internal padding only)
- *  - md+: rendered inside a white card (rounded-2xl shadow-sm border)
- *
- * Props:
- *  currentUser {Object}   — Auth user from AuthContext
- *  onPost      {function} — (newPostObj) => void — parent prepends to feed list
+ * bg-zinc-900 card, bg-zinc-800 textarea area, violet submit button
  */
 
 import { useState, useRef } from "react";
-import { ImagePlus, X, EyeOff, Eye } from "lucide-react";
+import { Image, X, Loader2, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "../../api/axios.js";
 import Avatar from "../common/Avatar.jsx";
 
+const MAX_CHARS = 500;
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MB
+
 // ─────────────────────────────────────────────────────────────────────────────
 const PostForm = ({ currentUser, onPost }) => {
-  const [content,   setContent]   = useState("");
-  const [imageFile, setImageFile] = useState(null);   // File object
-  const [imagePreview, setPreview] = useState(null);  // base64 data URL
-  const [isAnon,    setIsAnon]    = useState(false);
-  const [loading,   setLoading]   = useState(false);
-
+  const [content,    setContent]    = useState("");
+  const [imageFile,  setImageFile]  = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [loading,    setLoading]    = useState(false);
+  const [isAnon,     setIsAnon]     = useState(false);
   const fileInputRef = useRef(null);
-  const MAX = 500;
-  const remaining = MAX - content.length;
-  const isEmpty = content.trim() === "";
-  const canPost = !isEmpty && !loading;
 
-  // ── Image selection ─────────────────────────────────────────────────────
-  const handleFileChange = (e) => {
+  const remaining = MAX_CHARS - content.length;
+  const canPost   = content.trim().length > 0 && !loading;
+
+  // ── Image selection ───────────────────────────────────────────────────────
+  const handleImageSelect = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    // Guard: only images
     if (!file.type.startsWith("image/")) {
-      toast.error("Please select an image file");
+      toast.error("Only image files are allowed.");
       return;
     }
-
-    // Guard: 5 MB limit client-side for fast feedback
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be under 5 MB");
+    if (file.size > MAX_IMAGE_BYTES) {
+      toast.error("Image must be under 5 MB.");
       return;
     }
-
+    if (imagePreview) URL.revokeObjectURL(imagePreview);
     setImageFile(file);
-    const reader = new FileReader();
-    reader.onload = (ev) => setPreview(ev.target.result);
-    reader.readAsDataURL(file);
+    setImagePreview(URL.createObjectURL(file));
+    e.target.value = "";
   };
 
-  const clearImage = () => {
+  const removeImage = () => {
+    if (imagePreview) URL.revokeObjectURL(imagePreview);
     setImageFile(null);
-    setPreview(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    setImagePreview(null);
   };
 
-  // ── Anon toggle ─────────────────────────────────────────────────────────
-  const toggleAnon = () => {
-    setIsAnon((v) => {
-      const next = !v;
-      // Anon posts have no image support — clear any attached image when enabling
-      if (next) clearImage();
-      return next;
-    });
-  };
-
-  // ── Submit ───────────────────────────────────────────────────────────────
+  // ── Submit ────────────────────────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!canPost) return;
 
     setLoading(true);
     try {
-      let data;
+      let newPost;
 
       if (isAnon) {
-        // Anonymous post — JSON body, no image
-        const res = await api.post("/anon", { content: content.trim() });
-        data = res.data;
-        toast.success("Posted anonymously to the Anon board!");
-        // Anon posts don't appear in the community feed — notify parent
-        // with null so FeedPage knows not to prepend it
-        onPost(null, "anon");
+        // Anonymous post — JSON, no image
+        const { data } = await api.post("/anon", { content: content.trim() });
+        toast.success("Posted anonymously!");
+        newPost = data.post;
+        onPost?.(newPost, "anon");
       } else {
-        // Community post — multipart/form-data (required for image upload)
-        const formData = new FormData();
-        formData.append("content", content.trim());
-        if (imageFile) formData.append("image", imageFile);
+        // Regular post — multipart/form-data if image present
+        const fd = new FormData();
+        fd.append("content", content.trim());
+        if (imageFile) fd.append("image", imageFile);
 
-        const res = await api.post("/posts", formData, {
+        const { data } = await api.post("/posts", fd, {
           headers: { "Content-Type": "multipart/form-data" },
         });
-        data = res.data;
-        toast.success("Post shared with the community!");
-        onPost(data.post, "feed");
+        toast.success("Posted!");
+        newPost = data.post;
+        onPost?.(newPost, "feed");
       }
 
-      // Reset form
       setContent("");
-      clearImage();
-      setIsAnon(false);
+      removeImage();
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to create post");
+      toast.error(err.response?.data?.message ?? "Failed to create post");
     } finally {
       setLoading(false);
     }
   };
 
-  // ──────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────
   return (
-    /* Mobile: bare (no card chrome) — md+: card wrapper */
     <div className="
-      bg-white
-      md:rounded-2xl md:shadow-sm md:border md:border-gray-100
+      bg-zinc-900
+      md:rounded-2xl md:shadow-sm md:border md:border-zinc-800
     ">
       <form onSubmit={handleSubmit} className="p-4">
 
-        {/* ── Top row: avatar + textarea ─────────────────────────────────── */}
+        {/* ── Top row: avatar + textarea ──────────────────────────────────── */}
         <div className="flex items-start gap-3">
           <Avatar
-            src={currentUser?.profilePicture}
-            name={currentUser?.name ?? ""}
+            src={isAnon ? null : currentUser?.profilePicture}
+            name={isAnon ? "?" : (currentUser?.name ?? "")}
             size="sm"
-            className="flex-shrink-0 mt-0.5"
+            className={`flex-shrink-0 mt-0.5 ${isAnon ? "opacity-30" : ""}`}
           />
 
           <div className="flex-1 min-w-0">
             <textarea
               id="post-content-textarea"
               value={content}
-              onChange={(e) => setContent(e.target.value.slice(0, MAX))}
-              placeholder={
-                isAnon
-                  ? "Share something anonymously on the Anon board…"
-                  : "What's on your mind?"
-              }
+              onChange={(e) => setContent(e.target.value.slice(0, MAX_CHARS))}
+              placeholder={isAnon ? "Share something anonymously…" : "What's on your mind?"}
               rows={3}
               className="
                 w-full px-0 py-1
-                text-sm text-gray-900 placeholder-gray-400
-                bg-transparent border-none outline-none resize-none
-                leading-relaxed
+                text-sm text-zinc-100 placeholder-zinc-600
+                bg-transparent border-none outline-none resize-none leading-relaxed
               "
             />
 
-            {/* ── Character counter — always visible, 3-stage color ─────── */}
+            {/* Image preview */}
+            {imagePreview && (
+              <div className="relative mt-2 inline-block">
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="max-h-40 rounded-xl object-cover border border-zinc-700"
+                />
+                <button
+                  type="button"
+                  onClick={removeImage}
+                  aria-label="Remove image"
+                  className="
+                    absolute -top-2 -right-2
+                    w-6 h-6 rounded-full bg-zinc-800 border border-zinc-700
+                    flex items-center justify-center
+                    text-zinc-400 hover:text-zinc-100 transition-colors min-h-0
+                  "
+                >
+                  <X size={12} strokeWidth={2.5} />
+                </button>
+              </div>
+            )}
+
+            {/* Character counter */}
             <div className="flex justify-end mt-1">
-              <span
-                className={`
-                  text-xs tabular-nums font-medium
-                  ${
-                    remaining <= 20
-                      ? "text-red-500"      // danger — almost out
-                      : remaining <= 100
-                      ? "text-amber-500"    // warning — getting close
-                      : "text-gray-400"     // safe — plenty left
-                  }
-                `}
-                aria-live="polite"
-                aria-label={`${remaining} characters remaining`}
-              >
-                {content.length}/{MAX}
+              <span className={`text-xs tabular-nums font-medium ${
+                remaining <= 20 ? "text-red-400"
+                : remaining <= 100 ? "text-amber-400"
+                : "text-zinc-600"
+              }`}>
+                {content.length}/{MAX_CHARS}
               </span>
             </div>
           </div>
         </div>
 
-        {/* ── Image preview ─────────────────────────────────────────────── */}
-        {imagePreview && (
-          <div className="relative mt-3 ml-11">
-            <img
-              src={imagePreview}
-              alt="Attachment preview"
-              className="w-full max-h-60 object-cover rounded-xl bg-gray-100"
-            />
-            <button
-              type="button"
-              onClick={clearImage}
-              aria-label="Remove image"
-              className="
-                absolute top-2 right-2
-                flex items-center justify-center
-                w-7 h-7 min-h-0 rounded-full
-                bg-black/50 hover:bg-black/70
-                text-white
-                transition-colors duration-150
-                focus:outline-none focus:ring-2 focus:ring-white
-              "
-            >
-              <X size={14} />
-            </button>
-          </div>
-        )}
+        {/* ── Divider ──────────────────────────────────────────────────────── */}
+        <hr className="border-zinc-800 mt-3" />
 
-        {/* ── Divider ───────────────────────────────────────────────────── */}
-        <hr className="border-gray-100 mt-3" />
+        {/* ── Bottom toolbar ────────────────────────────────────────────────── */}
+        <div className="flex items-center gap-2 mt-3">
 
-        {/* ── Bottom toolbar: attach + anon toggle + post button ─────────
-            flex-wrap so on very small screens (<350px) it wraps cleanly   */}
-        <div className="flex items-center gap-2 flex-wrap mt-3">
-
-          {/* Image attach — hidden when anonymous (backend doesn't support it) */}
+          {/* Image attach — hidden when anon */}
           {!isAnon && (
             <>
               <input
                 ref={fileInputRef}
                 type="file"
-                id={`post-image-input-${currentUser?._id}`}
                 accept="image/*"
                 className="hidden"
-                onChange={handleFileChange}
+                onChange={handleImageSelect}
+                aria-hidden="true"
               />
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 aria-label="Attach image"
                 className="
-                  flex items-center gap-1.5
-                  min-h-[44px] px-3 rounded-xl
-                  text-sm font-medium text-gray-500
-                  hover:bg-gray-100 hover:text-brand-600
-                  transition-colors duration-150 active:scale-95
-                  focus:outline-none focus:ring-2 focus:ring-brand-400
+                  p-2 rounded-xl min-h-0
+                  text-zinc-500 hover:bg-zinc-800 hover:text-violet-400
+                  transition-colors duration-150
+                  focus:outline-none focus:ring-2 focus:ring-violet-500
                 "
               >
-                <ImagePlus size={18} />
-                <span className="hidden sm:inline">Photo</span>
+                <Image size={18} />
               </button>
             </>
           )}
@@ -247,57 +191,38 @@ const PostForm = ({ currentUser, onPost }) => {
           {/* Anonymous toggle */}
           <button
             type="button"
-            onClick={toggleAnon}
+            onClick={() => setIsAnon((v) => !v)}
+            aria-label={isAnon ? "Switch to public post" : "Switch to anonymous post"}
             aria-pressed={isAnon}
-            aria-label={isAnon ? "Disable anonymous mode" : "Enable anonymous mode"}
             className={`
-              flex items-center gap-1.5
-              min-h-[44px] px-3 rounded-xl
-              text-sm font-medium
-              transition-all duration-150 active:scale-95
-              focus:outline-none focus:ring-2 focus:ring-brand-400
+              flex items-center gap-1.5 px-3 py-1.5 rounded-xl
+              text-xs font-medium transition-all duration-150 min-h-0
               ${isAnon
-                ? "bg-violet-50 text-violet-700 hover:bg-violet-100"
-                : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                ? "bg-violet-600/10 text-violet-400 border border-violet-700/30"
+                : "text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300 border border-transparent"
               }
             `}
           >
-            {isAnon ? <EyeOff size={18} /> : <Eye size={18} />}
-            <span className="hidden sm:inline">{isAnon ? "Anonymous" : "Public"}</span>
-
-            {/* Pill indicator when active */}
-            {isAnon && (
-              <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full bg-violet-200 text-violet-700 text-[10px] font-semibold tracking-wide">
-                ON
-              </span>
-            )}
+            <EyeOff size={13} />
+            {isAnon ? "Anon" : "Go Anon"}
           </button>
 
-          {/* Anonymous mode info note */}
-          {isAnon && (
-            <p className="w-full text-[11px] text-violet-500 mt-1 pl-1">
-              This post will appear on the <strong>Anon board</strong>, not the community feed.
-            </p>
-          )}
+          {/* Spacer */}
+          <div className="flex-1" />
 
-          {/* Post button — pushed to right */}
+          {/* Submit */}
           <button
             type="submit"
             id="post-submit-btn"
             disabled={!canPost}
-            className="
-              ml-auto
-              btn-primary
-              px-5 py-2 text-sm
-              min-h-[40px]
-            "
+            className="btn-primary px-5 py-2 text-sm min-h-[40px]"
           >
             {loading
               ? <span className="flex items-center gap-2">
-                  <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                  <Loader2 size={14} className="animate-spin" />
                   Posting…
                 </span>
-              : "Post"
+              : (isAnon ? "Post Anonymously" : "Post")
             }
           </button>
         </div>

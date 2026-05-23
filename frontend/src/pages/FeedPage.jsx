@@ -125,7 +125,7 @@ const FeedPage = () => {
         <PostForm currentUser={user} onPost={handleNewPost} />
 
         {/* ── Feed divider (mobile only) ──────────────────────────────────── */}
-        <div className="md:hidden h-2 bg-gray-50" aria-hidden="true" />
+        <div className="md:hidden h-2 bg-zinc-900" aria-hidden="true" />
 
         {/* ── Feed states ─────────────────────────────────────────────────── */}
 
@@ -141,7 +141,7 @@ const FeedPage = () => {
         {/* Error with retry */}
         {!loading && error && (
           <div className="flex flex-col items-center gap-3 py-12 px-4">
-            <p className="text-sm text-gray-500 text-center">{error}</p>
+            <p className="text-sm text-zinc-500 text-center">{error}</p>
             <button
               onClick={() => fetchPosts(1, false)}
               className="btn-secondary flex items-center gap-2 text-sm"
@@ -159,10 +159,10 @@ const FeedPage = () => {
             <div className="w-16 h-16 rounded-full bg-brand-50 flex items-center justify-center mb-1">
               <Newspaper size={28} className="text-brand-400" />
             </div>
-            <p className="text-base font-semibold text-gray-800">
+            <p className="text-base font-semibold text-zinc-100">
               No posts yet
             </p>
-            <p className="text-sm text-gray-400 max-w-[240px] leading-relaxed">
+            <p className="text-sm text-zinc-400 max-w-[240px] leading-relaxed">
               Be the first to post something!
             </p>
           </div>
@@ -201,7 +201,7 @@ const FeedPage = () => {
                   }
                 </button>
               ) : (
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-zinc-500">
                   You've reached the end of the feed 🎉
                 </p>
               )}

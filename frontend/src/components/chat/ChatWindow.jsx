@@ -47,7 +47,7 @@ const TypingDots = ({ name }) => (
       {[0, 1, 2].map((i) => (
         <span
           key={i}
-          className="w-1.5 h-1.5 rounded-full bg-gray-400 inline-block"
+          className="w-1.5 h-1.5 rounded-full bg-zinc-500 inline-block"
           style={{
             animation: "typing-bounce 1.2s ease-in-out infinite",
             animationDelay: `${i * 0.2}s`,
@@ -55,7 +55,7 @@ const TypingDots = ({ name }) => (
         />
       ))}
     </div>
-    <span className="text-xs text-gray-400">{name} is typing…</span>
+    <span className="text-xs text-zinc-500">{name} is typing…</span>
   </div>
 );
 
@@ -239,17 +239,17 @@ const ChatWindow = ({ convId }) => {
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
-    <div className="h-full flex flex-col bg-gray-50 overflow-hidden">
+    <div className="h-full flex flex-col bg-zinc-950 overflow-hidden">
 
       {/* ══ Sticky top header ═══════════════════════════════════════════════ */}
-      <div className="sticky top-0 z-10 flex-shrink-0 h-14 flex items-center gap-3 px-3 bg-white border-b border-gray-100 shadow-sm">
+      <div className="sticky top-0 z-10 flex-shrink-0 h-14 flex items-center gap-3 px-3 bg-zinc-900 border-b border-zinc-800 shadow-sm">
 
         {/* Back button */}
         <button
           id="chat-back-btn"
           onClick={() => navigate("/chat")}
           aria-label="Back to conversations"
-          className="p-2 -ml-1 rounded-full text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-colors min-h-0 flex-shrink-0"
+          className="p-2 -ml-1 rounded-full text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors min-h-0 flex-shrink-0"
         >
           <ArrowLeft size={20} />
         </button>
@@ -262,10 +262,10 @@ const ChatWindow = ({ convId }) => {
 
         {/* Name + status */}
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-gray-900 truncate leading-tight">
+          <p className="text-sm font-semibold text-zinc-50 truncate leading-tight">
             {otherUser?.name ?? (loading ? "Loading…" : "Chat")}
           </p>
-          <p className={`text-[11px] leading-tight ${otherIsOnline ? "text-emerald-500" : "text-gray-400"}`}>
+          <p className={`text-[11px] leading-tight ${otherIsOnline ? "text-emerald-500" : "text-zinc-500"}`}>
             {otherIsOnline ? "Online" : "Offline"}
           </p>
         </div>
@@ -282,10 +282,10 @@ const ChatWindow = ({ convId }) => {
         {!loading && messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center px-6">
             <Avatar src={otherUser?.profilePicture} name={otherUser?.name ?? "?"} size="lg" className="mb-3" />
-            <p className="text-gray-700 font-semibold text-sm mb-1">
+            <p className="text-zinc-300 font-semibold text-sm mb-1">
               Say hi to {otherUser?.name ?? "them"} 👋
             </p>
-            <p className="text-gray-400 text-xs">Start the conversation below.</p>
+            <p className="text-zinc-500 text-xs">Start the conversation below.</p>
           </div>
         )}
 
@@ -307,7 +307,7 @@ const ChatWindow = ({ convId }) => {
       <div
         className="
           sticky bottom-0 flex-shrink-0
-          bg-white border-t border-gray-100
+          bg-zinc-900 border-t border-zinc-800
           px-3 pt-2 pb-16 lg:pb-2
           flex flex-col gap-1.5
         "
@@ -336,8 +336,8 @@ const ChatWindow = ({ convId }) => {
               flex-1 resize-none overflow-y-auto
               min-h-[44px] max-h-[120px]
               px-4 py-2.5
-              bg-gray-50 border border-gray-200 rounded-2xl
-              text-sm text-gray-900 placeholder-gray-400
+              bg-zinc-800 border border-zinc-700 rounded-2xl
+              text-sm text-zinc-50 placeholder-zinc-500
               focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent
               transition duration-200 leading-[1.5]
             "

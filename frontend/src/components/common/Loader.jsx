@@ -1,24 +1,34 @@
 /**
- * Loader.jsx — Full-screen or Inline Spinner
+ * Loader.jsx — Full-screen loading spinner (Dark Theme)
  *
- * Props:
- *  fullScreen {boolean} — if true, centers the spinner over the entire viewport
+ * bg-zinc-950, violet-600 spinner.
  */
 
-const Loader = ({ fullScreen = false }) => {
-  if (fullScreen) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
-        <div className="w-10 h-10 border-4 border-brand-200 border-t-brand-500 rounded-full animate-spin" />
-      </div>
-    );
-  }
+const Loader = () => (
+  <div
+    role="status"
+    aria-label="Loading"
+    className="
+      min-h-[100dvh] w-full
+      flex flex-col items-center justify-center
+      bg-zinc-950
+    "
+  >
+    {/* Spinner ring */}
+    <span
+      className="
+        w-10 h-10 rounded-full
+        border-4 border-zinc-800 border-t-violet-500
+        animate-spin
+      "
+      aria-hidden="true"
+    />
 
-  return (
-    <div className="flex items-center justify-center py-8">
-      <div className="w-8 h-8 border-4 border-brand-200 border-t-brand-500 rounded-full animate-spin" />
-    </div>
-  );
-};
+    {/* Label */}
+    <p className="mt-4 text-sm text-zinc-500 font-medium select-none">
+      Loading…
+    </p>
+  </div>
+);
 
 export default Loader;

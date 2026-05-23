@@ -1,27 +1,10 @@
 /**
- * ChatPreviewSection.jsx — Real-Time Chat Feature Showcase
+ * ChatPreviewSection.jsx — Real-Time Chat Feature Showcase (Dark Theme)
  *
- * Background: bg-indigo-50
- * Padding:    py-20 px-4
- *
- * Layout:
- *  - Mobile: single column — text first, visual second
- *  - lg:     two-column grid, VISUAL LEFT / TEXT RIGHT (reversed from AnonymousSection)
- *            lg:grid lg:grid-cols-2 lg:gap-16 lg:items-center max-w-6xl mx-auto
- *
- * Left — mock chat UI (pure HTML/CSS, no real data):
- *  - White card, top bar with avatar + name + online dot
- *  - 3 messages: received / sent / received
- *  - Typing indicator (3 bouncing dots with staggered delay)
- *  - Fake input bar with send button
- *
- * Right — text content:
- *  - Label pill (indigo-100)
- *  - Headline + description
- *  - 3 feature pills (white bordered, rounded-full)
- *  - Solid indigo CTA → /signup
- *
- * Mobile-first. All touch targets ≥ 44px.
+ * Background: bg-zinc-900
+ * Mock chat card: bg-zinc-800
+ * Sent bubble: bg-violet-600 text-white
+ * Received bubble: bg-zinc-700 text-zinc-100
  */
 
 import { Link } from "react-router-dom";
@@ -33,7 +16,7 @@ const TypingIndicator = () => (
     {[0, 1, 2].map((i) => (
       <span
         key={i}
-        className="w-2 h-2 rounded-full bg-gray-300"
+        className="w-2 h-2 rounded-full bg-zinc-500 inline-block"
         style={{
           animation: "typing-bounce 1.2s ease-in-out infinite",
           animationDelay: `${i * 0.2}s`,
@@ -46,8 +29,8 @@ const TypingIndicator = () => (
 // ── Feature pill ──────────────────────────────────────────────────────────────
 const FeaturePill = ({ emoji, text }) => (
   <span className="
-    bg-white border border-gray-200 rounded-full
-    px-4 py-2 text-sm text-gray-700
+    bg-zinc-800 border border-zinc-700 rounded-full
+    px-4 py-2 text-sm text-zinc-300
     flex items-center gap-2
   ">
     <span>{emoji}</span>
@@ -60,7 +43,7 @@ const ChatPreviewSection = () => {
   return (
     <section
       id="chat"
-      className="bg-indigo-50 py-20 px-4"
+      className="bg-zinc-900 border-t border-zinc-800 py-20 px-4"
     >
       <div className="max-w-6xl mx-auto lg:grid lg:grid-cols-2 lg:gap-16 lg:items-center">
 
@@ -68,27 +51,27 @@ const ChatPreviewSection = () => {
             On mobile this renders AFTER the text (order-last),
             on lg it becomes the left column (lg:order-first).         ──── */}
         <div className="mt-10 lg:mt-0 lg:order-first order-last">
-          <div className="bg-white rounded-2xl shadow-xl p-4 max-w-sm mx-auto">
+          <div className="bg-zinc-800 rounded-2xl shadow-xl shadow-black/40 p-4 max-w-sm mx-auto border border-zinc-700">
 
             {/* Top bar */}
-            <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
+            <div className="flex items-center gap-3 pb-3 border-b border-zinc-700">
               {/* Avatar — initials "RS" */}
               <div className="
-                w-8 h-8 rounded-full bg-indigo-200
+                w-8 h-8 rounded-full bg-violet-600/30
                 flex items-center justify-center
-                text-xs font-bold text-indigo-700
+                text-xs font-bold text-violet-300
                 flex-shrink-0
               ">
                 RS
               </div>
 
               {/* Name */}
-              <span className="font-semibold text-sm text-gray-800 flex-1">
+              <span className="font-semibold text-sm text-zinc-100 flex-1">
                 Rahul Sharma
               </span>
 
-              {/* Online dot */}
-              <span className="w-2 h-2 rounded-full bg-green-500 ml-auto flex-shrink-0" />
+              {/* Online dot — stays emerald */}
+              <span className="w-2 h-2 rounded-full bg-emerald-500 ml-auto flex-shrink-0" />
             </div>
 
             {/* Messages area */}
@@ -97,7 +80,7 @@ const ChatPreviewSection = () => {
               {/* Received bubble */}
               <div className="flex">
                 <p className="
-                  bg-gray-100 text-gray-800 text-sm
+                  bg-zinc-700 text-zinc-100 text-sm
                   px-4 py-2 rounded-2xl rounded-tl-none
                   max-w-[80%]
                 ">
@@ -108,7 +91,7 @@ const ChatPreviewSection = () => {
               {/* Sent bubble */}
               <div className="flex justify-end">
                 <p className="
-                  bg-indigo-500 text-white text-sm
+                  bg-violet-600 text-white text-sm
                   px-4 py-2 rounded-2xl rounded-tr-none
                   max-w-[80%]
                 ">
@@ -119,7 +102,7 @@ const ChatPreviewSection = () => {
               {/* Received bubble */}
               <div className="flex">
                 <p className="
-                  bg-gray-100 text-gray-800 text-sm
+                  bg-zinc-700 text-zinc-100 text-sm
                   px-4 py-2 rounded-2xl rounded-tl-none
                   max-w-[80%]
                 ">
@@ -129,7 +112,7 @@ const ChatPreviewSection = () => {
 
               {/* Typing indicator */}
               <div className="flex">
-                <div className="bg-gray-100 rounded-2xl rounded-tl-none">
+                <div className="bg-zinc-700 rounded-2xl rounded-tl-none">
                   <TypingIndicator />
                 </div>
               </div>
@@ -137,12 +120,12 @@ const ChatPreviewSection = () => {
             </div>
 
             {/* Input bar */}
-            <div className="flex gap-2 pt-3 border-t border-gray-100 items-center">
+            <div className="flex gap-2 pt-3 border-t border-zinc-700 items-center">
               {/* Fake text input */}
               <div className="
-                flex-1 bg-gray-100 rounded-full
-                px-4 py-2 text-sm text-gray-400
-                select-none
+                flex-1 bg-zinc-900 rounded-full
+                px-4 py-2 text-sm text-zinc-500
+                select-none border border-zinc-700
               ">
                 Type a message...
               </div>
@@ -151,10 +134,10 @@ const ChatPreviewSection = () => {
               <button
                 aria-label="Send message"
                 className="
-                  w-8 h-8 rounded-full bg-indigo-500
+                  w-8 h-8 rounded-full bg-violet-600
                   flex items-center justify-center
                   flex-shrink-0 min-h-0
-                  hover:bg-indigo-600 transition-colors
+                  hover:bg-violet-700 transition-colors
                 "
               >
                 <Send size={14} className="text-white" strokeWidth={2.5} />
@@ -172,19 +155,20 @@ const ChatPreviewSection = () => {
           {/* Label pill */}
           <span className="
             inline-block
-            bg-indigo-100 text-indigo-700 text-xs
+            bg-violet-600/10 text-violet-400 text-xs
+            border border-violet-700/30
             px-3 py-1.5 rounded-full
           ">
             ⚡ Real-time Chat
           </span>
 
           {/* Headline */}
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-zinc-50 mt-4">
             Talk to anyone on campus. Instantly.
           </h2>
 
           {/* Description */}
-          <p className="text-gray-600 mt-4 leading-relaxed">
+          <p className="text-zinc-400 mt-4 leading-relaxed">
             No phone numbers needed. Find any student by name and start chatting.
             See when they are online and when they are typing.
           </p>
@@ -203,11 +187,11 @@ const ChatPreviewSection = () => {
             className="
               inline-flex items-center justify-center
               min-h-[48px] px-6 py-3 mt-8
-              bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800
+              bg-violet-600 hover:bg-violet-700 active:bg-violet-800
               text-white font-semibold text-base
               rounded-full
               transition-all duration-200
-              focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2
+              focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 focus:ring-offset-zinc-950
             "
           >
             Start Chatting →

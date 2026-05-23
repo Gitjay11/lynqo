@@ -30,12 +30,12 @@ import ChatWindow                 from "../components/chat/ChatWindow.jsx";
 
 // ── Desktop right-panel empty state ──────────────────────────────────────────
 const NoConversationSelected = () => (
-  <div className="flex flex-col items-center justify-center h-full text-center px-8 bg-gray-50">
+  <div className="flex flex-col items-center justify-center h-full text-center px-8 bg-zinc-950">
     <div className="w-20 h-20 rounded-full bg-brand-50 flex items-center justify-center mb-5">
       <MessageCircle size={36} className="text-brand-400" />
     </div>
-    <h2 className="text-gray-800 font-semibold text-base mb-2">Select a conversation</h2>
-    <p className="text-gray-400 text-sm max-w-[200px]">
+    <h2 className="text-zinc-100 font-semibold text-base mb-2">Select a conversation</h2>
+    <p className="text-zinc-400 text-sm max-w-[200px]">
       Choose a thread on the left or search for a classmate to start chatting.
     </p>
   </div>
@@ -85,7 +85,7 @@ const ChatPage = () => {
         "
       >
         {/* Left panel — conversation list */}
-        <div className="w-80 flex-shrink-0 border-r border-gray-200 h-full overflow-hidden">
+        <div className="w-80 flex-shrink-0 border-r border-zinc-800 h-full overflow-hidden">
           <ChatList onSelectConv={handleSelectConv} />
         </div>
 

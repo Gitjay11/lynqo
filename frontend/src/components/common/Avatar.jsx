@@ -1,102 +1,101 @@
 /**
- * Avatar.jsx — User Avatar Component
+ * Avatar.jsx — User Avatar Component (Dark Theme)
  *
- * Displays a user's profile photo, or a generated initial-letter fallback
- * when no photo URL is available. Used in Navbar, Sidebar, posts, comments,
- * and the ProfilePage upload trigger.
+ * Renders a user's profile picture, or a generated initials-based fallback.
  *
- * Props:
- *  src       {string}   — Cloudinary (or any) image URL. Optional.
- *  name      {string}   — User's display name. Used for alt text + fallback initials.
- *  size      {string}   — 'xs' | 'sm' | 'md' | 'lg' | 'xl'  (default: 'md')
- *  className {string}   — Additional Tailwind classes passed by the parent.
- *  onClick   {function} — Optional click handler (used by ProfilePage upload trigger).
- *  style     {object}   — Optional inline styles for the root element.
+ * Sizes:
+ *   xs   → 24px  (chat message bubbles)
+ *   sm   → 32px  (nav, post headers)
+ *   md   → 40px  (chat list rows)
+ *   lg   → 56px  (chat window empty state)
+ *   xl   → 80px  (profile page)
+ *   2xl  → 128px (profile hero)
  *
- * Size map (diameter):
- *  xs  →  24px   (inline / comment thread)
- *  sm  →  32px   (post header)
- *  md  →  40px   (navbar / most UI)
- *  lg  →  80px   (profile header — large card context)
- *  xl  →  128px  (full profile page hero)
+ * Fallback palette: 8 violet/zinc tones — deterministic from name.
  */
 
+import { useMemo } from "react";
+
+// ── Size map ──────────────────────────────────────────────────────────────────
 const SIZE_MAP = {
-  xs: "w-6 h-6 text-[10px]",
-  sm: "w-8 h-8 text-xs",
-  md: "w-10 h-10 text-sm",
-  lg: "w-20 h-20 text-xl",    // 80px — corrected from w-14 h-14
-  xl: "w-32 h-32 text-4xl",   // 128px — corrected from w-20 h-20
+  xs:  { wrapper: "w-6 h-6",   text: "text-[9px]"  },
+  sm:  { wrapper: "w-8 h-8",   text: "text-[11px]" },
+  md:  { wrapper: "w-10 h-10", text: "text-sm"     },
+  lg:  { wrapper: "w-14 h-14", text: "text-xl"     },
+  xl:  { wrapper: "w-20 h-20", text: "text-2xl"    },
+  "2xl": { wrapper: "w-32 h-32", text: "text-4xl"  },
 };
 
-// Generate a deterministic background color from the user's name
-// so different users always get a different (but consistent) hue.
-const PALETTE = [
-  "bg-indigo-500",
-  "bg-violet-500",
-  "bg-sky-500",
-  "bg-emerald-500",
-  "bg-rose-500",
-  "bg-amber-500",
-  "bg-pink-500",
-  "bg-teal-500",
+// ── Dark-mode-aware fallback palette (violet + zinc tones) ────────────────────
+const FALLBACK_COLORS = [
+  "bg-violet-700 text-violet-100",
+  "bg-violet-600 text-white",
+  "bg-purple-700 text-purple-100",
+  "bg-violet-700 text-violet-100",
+  "bg-zinc-700 text-zinc-100",
+  "bg-fuchsia-700 text-fuchsia-100",
+  "bg-violet-800 text-violet-200",
+  "bg-purple-600 text-white",
 ];
 
-const getColorClass = (name = "") => {
+// ── Deterministic color from name string ──────────────────────────────────────
+const colorFromName = (name = "") => {
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash);
   }
-  return PALETTE[Math.abs(hash) % PALETTE.length];
+  return FALLBACK_COLORS[Math.abs(hash) % FALLBACK_COLORS.length];
 };
 
-// Extract up to two initials from a display name ("Jay Singh" → "JS")
+// ── Extract up to 2 initials ──────────────────────────────────────────────────
 const getInitials = (name = "") => {
-  const parts = name.trim().split(/\s+/);
-  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-  return (parts[0]?.[0] ?? "?").toUpperCase();
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0][0].toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-const Avatar = ({ src, name = "", size = "md", className = "", onClick, style }) => {
-  const sizeClass  = SIZE_MAP[size] ?? SIZE_MAP.md;
-  const colorClass = getColorClass(name);
-  const initials   = getInitials(name);
+const Avatar = ({
+  src,
+  name = "",
+  size = "md",
+  onClick,
+  className = "",
+}) => {
+  const { wrapper, text } = SIZE_MAP[size] ?? SIZE_MAP.md;
+  const initials           = useMemo(() => getInitials(name), [name]);
+  const colorClass         = useMemo(() => colorFromName(name), [name]);
 
-  // Add cursor-pointer automatically when a click handler is provided
-  // (e.g. when used as the avatar upload trigger on ProfilePage)
-  const clickable = onClick ? "cursor-pointer" : "";
-  const base = `rounded-full object-cover flex-shrink-0 select-none ${sizeClass} ${clickable} ${className}`;
+  const base = `
+    ${wrapper} rounded-full flex-shrink-0 select-none overflow-hidden
+    ${onClick ? "cursor-pointer" : ""}
+    ${className}
+  `;
 
+  // ── Image avatar ─────────────────────────────────────────────────────────
   if (src) {
     return (
       <img
         src={src}
-        alt={name}
-        style={style}
-        className={`${base} bg-gray-100`}
+        alt={name ? `${name}'s avatar` : "User avatar"}
+        className={`${base} object-cover`}
+        loading="lazy"
         onClick={onClick}
-        onError={(e) => {
-          // Hide broken image; the parent should handle fallback via state
-          e.currentTarget.style.display = "none";
-        }}
+        onError={(e) => { e.currentTarget.style.display = "none"; }}
       />
     );
   }
 
-  // ── Fallback: colored circle with initials ────────────────────────────────
+  // ── Initials fallback ─────────────────────────────────────────────────────
   return (
     <div
-      aria-label={name}
-      style={style}
+      className={`${base} flex items-center justify-center ${colorClass}`}
+      aria-label={name ? `${name}'s avatar` : "User avatar"}
+      role={onClick ? "button" : undefined}
       onClick={onClick}
-      className={`
-        ${base} ${colorClass}
-        flex items-center justify-center
-        text-white font-semibold tracking-wide
-      `}
     >
-      {initials}
+      <span className={`${text} font-bold leading-none`}>{initials}</span>
     </div>
   );
 };

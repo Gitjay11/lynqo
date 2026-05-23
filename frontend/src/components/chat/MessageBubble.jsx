@@ -1,8 +1,8 @@
 /**
- * MessageBubble.jsx — Chat Message Bubble
+ * MessageBubble.jsx — Chat Message Bubble (Dark Theme)
  *
- * Own messages  : right-aligned, brand-600 bg, white text, read receipt tick
- * Other messages: left-aligned, gray-100 bg, gray-900 text, sender avatar
+ * Own messages  : right-aligned, violet-600 bg, white text, read receipt tick
+ * Other messages: left-aligned, zinc-800 bg, zinc-100 text, sender avatar
  */
 
 import { Check, CheckCheck } from "lucide-react";
@@ -42,12 +42,12 @@ const MessageBubble = ({ message, isOwn }) => {
 
           {/* Time + read receipt */}
           <div className="flex items-center gap-1 mt-0.5 pr-0.5">
-            <span className="text-[10px] text-gray-400">{time}</span>
+            <span className="text-[10px] text-zinc-500">{time}</span>
             {/* Read receipt */}
             {!isOptimistic && (
               read
                 ? <CheckCheck size={12} className="text-brand-400 flex-shrink-0" />
-                : <Check      size={12} className="text-gray-400  flex-shrink-0" />
+                : <Check      size={12} className="text-zinc-500  flex-shrink-0" />
             )}
           </div>
         </div>
@@ -67,13 +67,13 @@ const MessageBubble = ({ message, isOwn }) => {
         <div
           className="
             px-4 py-2.5 rounded-2xl rounded-bl-md
-            bg-gray-100 text-gray-900
+            bg-zinc-800 text-zinc-100
             text-sm leading-relaxed shadow-sm
           "
         >
           {text}
         </div>
-        <span className="text-[10px] text-gray-400 mt-0.5 pl-1">{time}</span>
+        <span className="text-[10px] text-zinc-500 mt-0.5 pl-1">{time}</span>
       </div>
     </div>
   );

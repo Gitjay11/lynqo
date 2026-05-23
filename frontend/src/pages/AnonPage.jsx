@@ -37,11 +37,11 @@ const AnonInfoWidget = () => (
   <aside className="hidden lg:block sticky top-20 space-y-4" aria-label="About the Anon Board">
     <div className="card p-0 overflow-hidden">
       {/* Header */}
-      <div className="flex items-center gap-2 px-4 pt-4 pb-3 border-b border-gray-50">
-        <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-violet-50">
+      <div className="flex items-center gap-2 px-4 pt-4 pb-3 border-b border-zinc-800">
+        <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-violet-600/10">
           <Ghost size={14} className="text-violet-500" />
         </span>
-        <h2 className="text-sm font-semibold text-gray-800">About Anon Board</h2>
+        <h2 className="text-sm font-semibold text-zinc-100">About Anon Board</h2>
       </div>
 
       {/* Rules */}
@@ -50,21 +50,21 @@ const AnonInfoWidget = () => (
           {
             icon: EyeOff,
             color: "text-violet-500",
-            bg: "bg-violet-50",
+            bg: "bg-violet-600/10",
             title: "Your identity is hidden",
             desc: "Nobody, not even admins, can see who posted what on this board.",
           },
           {
             icon: ShieldCheck,
             color: "text-emerald-500",
-            bg: "bg-emerald-50",
+            bg: "bg-emerald-600/10",
             title: "Auto-moderation",
             desc: "Posts reported by 5+ users are automatically hidden to keep things safe.",
           },
           {
             icon: RefreshCw,
             color: "text-brand-500",
-            bg: "bg-brand-50",
+            bg: "bg-brand-600/10",
             title: "Newest first",
             desc: "The feed shows the most recent posts at the top.",
           },
@@ -74,8 +74,8 @@ const AnonInfoWidget = () => (
               <Icon size={13} />
             </span>
             <div>
-              <p className="text-xs font-semibold text-gray-700 leading-tight">{title}</p>
-              <p className="text-[11px] text-gray-400 leading-snug mt-0.5">{desc}</p>
+              <p className="text-xs font-semibold text-zinc-200 leading-tight">{title}</p>
+              <p className="text-[11px] text-zinc-500 leading-snug mt-0.5">{desc}</p>
             </div>
           </li>
         ))}
@@ -163,10 +163,10 @@ const AnonPage = () => {
         <div className="flex items-center gap-2 px-4 pt-4 pb-2 lg:hidden">
           <Ghost size={16} className="text-violet-500 flex-shrink-0" />
           <div>
-            <h1 className="text-base font-semibold text-gray-900 leading-tight">
+            <h1 className="text-base font-semibold text-zinc-50 leading-tight">
               Anon Board
             </h1>
-            <p className="text-xs text-gray-400 mt-0.5">
+            <p className="text-xs text-zinc-400 mt-0.5">
               Post freely — your identity is always hidden
             </p>
           </div>
@@ -176,7 +176,7 @@ const AnonPage = () => {
         <AnonPostForm currentUser={user} onPost={handleNewPost} />
 
         {/* ── Visual separator (mobile only) ──────────────────────────────── */}
-        <div className="md:hidden h-2 bg-gray-50" aria-hidden="true" />
+        <div className="md:hidden h-2 bg-zinc-900" aria-hidden="true" />
 
         {/* ── Feed states ──────────────────────────────────────────────────── */}
 
@@ -192,7 +192,7 @@ const AnonPage = () => {
         {/* Error with retry */}
         {!loading && error && (
           <div className="flex flex-col items-center gap-3 py-12 px-4">
-            <p className="text-sm text-gray-500 text-center">{error}</p>
+            <p className="text-sm text-zinc-500 text-center">{error}</p>
             <button
               onClick={() => fetchPosts(1, false)}
               className="btn-secondary flex items-center gap-2 text-sm"
@@ -207,13 +207,13 @@ const AnonPage = () => {
         {!loading && !error && posts.length === 0 && (
           <div className="flex flex-col items-center gap-3 py-16 px-4 text-center">
             {/* Ghost icon with violet tint — on-brand for the anon board */}
-            <div className="w-16 h-16 rounded-full bg-violet-50 flex items-center justify-center mb-1">
+            <div className="w-16 h-16 rounded-full bg-violet-600/10 flex items-center justify-center mb-1">
               <Ghost size={28} className="text-violet-400" />
             </div>
-            <p className="text-base font-semibold text-gray-800">
+            <p className="text-base font-semibold text-zinc-100">
               No confessions yet
             </p>
-            <p className="text-sm text-gray-400 max-w-[240px] leading-relaxed">
+            <p className="text-sm text-zinc-400 max-w-[240px] leading-relaxed">
               You go first.
             </p>
           </div>
@@ -252,7 +252,7 @@ const AnonPage = () => {
                   }
                 </button>
               ) : (
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-zinc-500">
                   You've reached the end of the Anon board 👻
                 </p>
               )}

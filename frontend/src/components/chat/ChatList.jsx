@@ -192,17 +192,17 @@ const ChatList = ({ onSelectConv }) => {
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
-    <div className="flex flex-col h-full bg-white">
+    <div className="flex flex-col h-full bg-zinc-900">
 
       {/* ── Header ────────────────────────────────────────────────────────── */}
-      <div className="px-4 pt-4 pb-3 border-b border-gray-100 flex-shrink-0">
-        <h1 className="text-xl font-bold text-gray-900 mb-3">Messages</h1>
+      <div className="px-4 pt-4 pb-3 border-b border-zinc-800 flex-shrink-0">
+        <h1 className="text-xl font-bold text-zinc-50 mb-3">Messages</h1>
 
         {/* Search bar */}
         <div className="relative">
           <Search
             size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none"
           />
           <input
             id="chat-search"
@@ -212,8 +212,8 @@ const ChatList = ({ onSelectConv }) => {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="
               w-full h-11 pl-9 pr-9
-              bg-gray-50 border border-gray-200 rounded-xl
-              text-sm text-gray-900 placeholder-gray-400
+              bg-zinc-800 border border-zinc-700 rounded-xl
+              text-sm text-zinc-50 placeholder-zinc-500
               focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent
               transition duration-200
             "
@@ -226,8 +226,8 @@ const ChatList = ({ onSelectConv }) => {
               aria-label="Clear search"
               className="
                 absolute right-2 top-1/2 -translate-y-1/2
-                p-1.5 rounded-full text-gray-400
-                hover:text-gray-600 hover:bg-gray-100
+                p-1.5 rounded-full text-zinc-500
+                hover:text-zinc-300 hover:bg-zinc-800
                 transition-colors min-h-0
               "
             >
@@ -250,11 +250,11 @@ const ChatList = ({ onSelectConv }) => {
             ) : searchResults.length === 0 ? (
               /* ── No search results empty state ──────────────────────────── */
               <div className="flex flex-col items-center py-12 px-6 text-center">
-                <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-3">
-                  <Search size={22} className="text-gray-300" />
+                <div className="w-14 h-14 rounded-full bg-zinc-800 flex items-center justify-center mb-3">
+                  <Search size={22} className="text-zinc-600" />
                 </div>
-                <p className="text-sm font-semibold text-gray-600">No students found</p>
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-sm font-semibold text-zinc-400">No students found</p>
+                <p className="text-xs text-zinc-500 mt-1">
                   Try a different name or check the spelling.
                 </p>
               </div>
@@ -268,7 +268,7 @@ const ChatList = ({ onSelectConv }) => {
                       disabled={startingConv === u.id}
                       className="
                         w-full flex items-center gap-3 px-4 py-3
-                        hover:bg-gray-50 active:bg-gray-100
+                        hover:bg-zinc-800 active:bg-zinc-700
                         transition-colors text-left min-h-[60px]
                         disabled:opacity-60
                       "
@@ -282,11 +282,11 @@ const ChatList = ({ onSelectConv }) => {
                         />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-gray-900 truncate">
+                        <p className="text-sm font-semibold text-zinc-50 truncate">
                           {u.name}
                         </p>
                         {u.branch && (
-                          <p className="text-xs text-gray-400 truncate">
+                          <p className="text-xs text-zinc-500 truncate">
                             {u.branch}
                             {u.semester ? ` · Sem ${u.semester}` : ""}
                           </p>
@@ -312,11 +312,11 @@ const ChatList = ({ onSelectConv }) => {
             ) : conversations.length === 0 ? (
               /* ── No conversations empty state ───────────────────────────── */
               <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-                <div className="w-16 h-16 rounded-full bg-brand-50 flex items-center justify-center mb-4">
+                <div className="w-16 h-16 rounded-full bg-brand-600/10 flex items-center justify-center mb-4">
                   <MessageCircle size={28} className="text-brand-400" />
                 </div>
-                <p className="text-gray-800 font-semibold mb-1">No chats yet</p>
-                <p className="text-gray-400 text-sm">
+                <p className="text-zinc-100 font-semibold mb-1">No chats yet</p>
+                <p className="text-zinc-400 text-sm">
                   Find a student and say hi.
                 </p>
               </div>
@@ -335,9 +335,9 @@ const ChatList = ({ onSelectConv }) => {
                         onClick={() => handleSelectConv(conv._id)}
                         className="
                           w-full flex items-center gap-3 px-4 py-3.5
-                          hover:bg-gray-50 active:bg-gray-100
+                          hover:bg-zinc-800 active:bg-zinc-700
                           transition-colors text-left min-h-[72px]
-                          border-b border-gray-50 last:border-b-0
+                          border-b border-zinc-800/50 last:border-b-0
                         "
                       >
                         {/* Avatar + online dot */}
@@ -357,14 +357,14 @@ const ChatList = ({ onSelectConv }) => {
                         {/* Name + preview */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between mb-0.5">
-                            <p className="text-sm font-semibold text-gray-900 truncate pr-2">
+                            <p className="text-sm font-semibold text-zinc-50 truncate pr-2">
                               {other?.name ?? "Unknown"}
                             </p>
-                            <span className="text-[11px] text-gray-400 flex-shrink-0">
+                            <span className="text-[11px] text-zinc-500 flex-shrink-0">
                               {time}
                             </span>
                           </div>
-                          <p className="text-xs text-gray-500 truncate">
+                          <p className="text-xs text-zinc-500 truncate">
                             {previewText}
                           </p>
                         </div>

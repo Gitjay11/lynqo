@@ -1,67 +1,50 @@
 /**
- * PostCardSkeleton.jsx — Shimmer Skeleton for PostCard
+ * PostCardSkeleton.jsx — Shimmer placeholder for feed posts (Dark Theme)
  *
- * Renders an animated placeholder that matches the visual layout of
- * <PostCard /> exactly:
- *  - Author row: avatar circle + two text lines (name + meta)
- *  - Three content lines of varying widths (mimics a real text paragraph)
- *  - Action row: three icon-button placeholders
- *
- * Usage:
- *  Render 3× while loading instead of a full-screen spinner.
- *  This gives users a preview of the content shape so the page
- *  feels faster even before data arrives.
- *
- *  {loading && [0, 1, 2].map((i) => <PostCardSkeleton key={i} />)}
- *
- * Responsive:
- *  Mobile: edge-to-edge, border-bottom (matches PostCard mobile style)
- *  md+:    rounded card with shadow (matches PostCard md+ style)
- *
- * No props — purely presentational.
+ * Uses zinc-800/zinc-700 shimmer on zinc-900 card background.
  */
+
+// ── Shimmer bar helper ────────────────────────────────────────────────────────
+const Bar = ({ className }) => (
+  <div className={`bg-zinc-800 rounded-lg animate-pulse ${className}`} />
+);
 
 // ─────────────────────────────────────────────────────────────────────────────
 const PostCardSkeleton = () => (
   <div
     aria-hidden="true"
+    aria-label="Loading post"
     className="
-      bg-white w-full
-      border-b border-gray-100
-      md:rounded-2xl md:border md:border-gray-100 md:shadow-sm
-      animate-pulse
+      bg-zinc-900 w-full
+      border-b border-zinc-800
+      md:rounded-2xl md:border md:border-zinc-800 md:shadow-sm
     "
   >
-    {/* ── Author row ──────────────────────────────────────────────────────── */}
-    <div className="flex items-center gap-3 px-4 pt-4 pb-3">
-      {/* Avatar circle */}
-      <div className="w-9 h-9 rounded-full bg-gray-200 flex-shrink-0" />
+    {/* ── Header row: avatar + name/timestamp ─────────────────────────────── */}
+    <div className="flex items-center gap-3 px-4 pt-4 pb-2">
+      {/* Avatar shimmer */}
+      <div className="w-8 h-8 rounded-full bg-zinc-800 animate-pulse flex-shrink-0" />
 
-      {/* Name + meta stack */}
+      {/* Name + time shimmer */}
       <div className="flex-1 space-y-2">
-        <div className="h-3.5 bg-gray-200 rounded-full w-32" />
-        <div className="h-3 bg-gray-200 rounded-full w-20" />
+        <Bar className="h-3 w-32" />
+        <Bar className="h-2.5 w-20" />
       </div>
     </div>
 
-    {/* ── Content lines ────────────────────────────────────────────────────── */}
-    <div className="px-4 pb-4 space-y-2.5">
-      {/* Line 1 — full width */}
-      <div className="h-3 bg-gray-200 rounded-full w-full" />
-      {/* Line 2 — ~85% width */}
-      <div className="h-3 bg-gray-200 rounded-full w-[85%]" />
-      {/* Line 3 — ~60% width — simulates paragraph trailing line */}
-      <div className="h-3 bg-gray-200 rounded-full w-[60%]" />
+    {/* ── Content shimmer ─────────────────────────────────────────────────── */}
+    <div className="px-4 pb-4 space-y-2">
+      <Bar className="h-3.5 w-full" />
+      <Bar className="h-3.5 w-[90%]" />
+      <Bar className="h-3.5 w-[75%]" />
     </div>
 
-    {/* ── Action row ───────────────────────────────────────────────────────── */}
-    <div className="flex items-center gap-3 px-4 pb-4 pt-1 border-t border-gray-50">
-      {/* Like placeholder */}
-      <div className="h-8 bg-gray-200 rounded-xl w-16" />
-      {/* Dislike placeholder */}
-      <div className="h-8 bg-gray-200 rounded-xl w-16" />
-      {/* Comment placeholder */}
-      <div className="h-8 bg-gray-200 rounded-xl w-16" />
+    {/* ── Action row shimmer ──────────────────────────────────────────────── */}
+    <div className="flex items-center gap-3 px-4 pb-4 border-t border-zinc-800 pt-3">
+      <Bar className="h-7 w-16 rounded-xl" />
+      <Bar className="h-7 w-16 rounded-xl" />
+      <div className="flex-1" />
+      <Bar className="h-7 w-12 rounded-xl" />
     </div>
   </div>
 );

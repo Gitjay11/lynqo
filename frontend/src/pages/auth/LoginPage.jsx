@@ -1,12 +1,12 @@
 /**
- * LoginPage.jsx — User Login Page
+ * LoginPage.jsx — User Login Page (Dark Theme)
  *
  * Layout rules (mobile-first — identical to SignupPage):
  *  - Mobile (default / < 640px): Full-screen form. No card. Logo at top center.
  *    px-6 py-8 padding. All inputs full-width, h-12. Button full-width, h-12.
- *  - sm: (640px+): White card — max-w-md mx-auto rounded-2xl shadow-md p-8.
- *    Page background becomes gray-100.
- *  - md: and above: Same card, page background stays gray-100.
+ *  - sm: (640px+): zinc-900 card — max-w-md mx-auto rounded-2xl shadow-lg p-8.
+ *    Page background stays zinc-950.
+ *  - md: and above: Same card, page background stays zinc-950.
  *
  * Behavior:
  *  - Client-side validation fires on submit (not on each keystroke).
@@ -118,26 +118,26 @@ const LoginPage = () => {
   return (
     /*
      * Outer shell:
-     *  - Mobile: white full-screen, vertically centered.
-     *  - sm+: gray-100 background to visually lift the card.
+     *  - Mobile: zinc-950 full-screen, vertically centered.
+     *  - sm+: same zinc-950 background; card visually lifts.
      */
-    <div className="min-h-screen bg-white sm:bg-gray-100 flex flex-col justify-center px-6 py-8 sm:px-4">
+    <div className="min-h-screen bg-zinc-950 flex flex-col justify-center px-6 py-8 sm:px-4">
 
       {/*
        * Card wrapper:
        *  - Mobile: no card — transparent, no shadow.
-       *  - sm+: centered white card with shadow.
+       *  - sm+: centered zinc-900 card with shadow.
        */}
-      <div className="w-full sm:max-w-md sm:mx-auto sm:bg-white sm:rounded-2xl sm:shadow-md sm:p-8 md:p-10">
+      <div className="w-full sm:max-w-md sm:mx-auto sm:bg-zinc-900 sm:rounded-2xl sm:shadow-lg sm:shadow-black/30 sm:border sm:border-zinc-800 sm:p-8 md:p-10">
 
         {/* ── Branding ──────────────────────────────────────────────────────── */}
         <div className="text-center mb-8">
           {/* Logo icon */}
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-brand-600 mb-3">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-violet-600 mb-3">
             <span className="text-white text-xl font-bold tracking-tight">L</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Welcome back</h1>
-          <p className="mt-1 text-sm text-gray-500">Log in to your Lynqo account</p>
+          <h1 className="text-2xl font-bold text-zinc-50">Welcome back</h1>
+          <p className="mt-1 text-sm text-zinc-400">Log in to your Lynqo account</p>
         </div>
 
         {/* ── Form ──────────────────────────────────────────────────────────── */}
@@ -147,7 +147,7 @@ const LoginPage = () => {
           <div>
             <label
               htmlFor="login-email"
-              className="block text-sm font-medium text-gray-700 mb-1.5"
+              className="block text-sm font-medium text-zinc-300 mb-1.5"
             >
               College Email
             </label>
@@ -164,7 +164,7 @@ const LoginPage = () => {
               className={`input-field h-12 ${
                 errors.email
                   ? "border-red-400 focus:ring-red-400"
-                  : "focus:ring-brand-400"
+                  : "focus:ring-violet-500"
               }`}
             />
             {errors.email && (
@@ -178,7 +178,7 @@ const LoginPage = () => {
           <div>
             <label
               htmlFor="login-password"
-              className="block text-sm font-medium text-gray-700 mb-1.5"
+              className="block text-sm font-medium text-zinc-300 mb-1.5"
             >
               Password
             </label>
@@ -199,7 +199,7 @@ const LoginPage = () => {
                 className={`input-field h-12 pr-12 ${
                   errors.password
                     ? "border-red-400 focus:ring-red-400"
-                    : "focus:ring-brand-400"
+                    : "focus:ring-violet-500"
                 }`}
               />
               {/* Eye toggle — 44px touch zone, anchored to the right of the input */}
@@ -208,8 +208,8 @@ const LoginPage = () => {
                 onClick={() => setShowPass((prev) => !prev)}
                 aria-label={showPass ? "Hide password" : "Show password"}
                 className="absolute right-0 top-0 h-12 w-12 flex items-center justify-center
-                           text-gray-400 hover:text-gray-600 transition-colors
-                           focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400
+                           text-zinc-500 hover:text-zinc-300 transition-colors
+                           focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500
                            rounded-r-lg min-h-[44px]"
               >
                 {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -228,7 +228,6 @@ const LoginPage = () => {
             type="submit"
             disabled={loading}
             className="btn-primary w-full h-12 mt-2 rounded-xl text-base font-semibold
-                       bg-brand-600 hover:bg-brand-700 active:bg-brand-700
                        disabled:opacity-60 disabled:cursor-not-allowed
                        flex items-center justify-center gap-2 transition-all duration-200"
           >
@@ -244,12 +243,12 @@ const LoginPage = () => {
         </form>
 
         {/* ── Footer link ───────────────────────────────────────────────────── */}
-        <p className="mt-6 text-center text-sm text-gray-500">
+        <p className="mt-6 text-center text-sm text-zinc-400">
           Don&apos;t have an account?{" "}
           <Link
             to="/signup"
             id="login-signup-link"
-            className="font-semibold text-brand-600 hover:text-brand-700 underline-offset-2
+            className="font-semibold text-violet-400 hover:text-violet-300 underline-offset-2
                        hover:underline transition-colors min-h-[44px] inline-flex items-center"
           >
             Sign up

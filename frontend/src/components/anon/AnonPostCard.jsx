@@ -226,11 +226,11 @@ const AnonPostCard = ({ post, currentUser, onHidden }) => {
     <article
       aria-label="Anonymous post"
       className="
-        bg-white w-full
+        bg-zinc-900 w-full
         /* Mobile: edge-to-edge, no rounding */
-        border-b border-gray-100
+        border-b border-zinc-800
         /* md+: card style */
-        md:rounded-2xl md:border md:border-gray-100 md:shadow-sm
+        md:rounded-2xl md:border md:border-zinc-800 md:shadow-sm
       "
     >
       {/* ── Author row — always shows "Anonymous", never real user ────────── */}
@@ -240,17 +240,17 @@ const AnonPostCard = ({ post, currentUser, onHidden }) => {
         <div className="
           flex-shrink-0 flex items-center justify-center
           w-8 h-8 rounded-full
-          bg-violet-100 text-violet-500
+          bg-violet-600/15 text-violet-400
         ">
           <Ghost size={16} />
         </div>
 
         {/* Identity + timestamp */}
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-gray-700 leading-tight">
+          <p className="text-sm font-semibold text-zinc-200 leading-tight">
             Anonymous
           </p>
-          <p className="text-xs text-gray-400 leading-tight mt-0.5">
+          <p className="text-xs text-zinc-500 leading-tight mt-0.5">
             {relTime(post.createdAt)}
           </p>
         </div>
@@ -260,7 +260,7 @@ const AnonPostCard = ({ post, currentUser, onHidden }) => {
           flex-shrink-0
           inline-flex items-center gap-1
           text-[10px] font-semibold text-violet-600
-          bg-violet-50 border border-violet-100
+          bg-violet-600/10 border border-violet-600/20
           rounded-full px-2 py-0.5
         ">
           <Ghost size={9} />
@@ -270,13 +270,13 @@ const AnonPostCard = ({ post, currentUser, onHidden }) => {
 
       {/* ── Post content ──────────────────────────────────────────────────── */}
       <div className="px-4 pb-3">
-        <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap break-words">
+        <p className="text-sm text-zinc-200 leading-relaxed whitespace-pre-wrap break-words">
           {post.content}
         </p>
       </div>
 
       {/* ── Action row ───────────────────────────────────────────────────── */}
-      <footer className="flex items-center gap-1 px-3 pb-2 border-t border-gray-50">
+      <footer className="flex items-center gap-1 px-3 pb-2 border-t border-zinc-800/50">
 
         {/* ── Like — optimistic ─────────────────────────────────────────── */}
         <button
@@ -293,7 +293,7 @@ const AnonPostCard = ({ post, currentUser, onHidden }) => {
             disabled:cursor-not-allowed disabled:opacity-60
             ${isLiked
               ? "text-brand-600 bg-brand-50"
-              : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+              : "text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
             }
           `}
         >
@@ -330,7 +330,7 @@ const AnonPostCard = ({ post, currentUser, onHidden }) => {
             disabled:cursor-not-allowed disabled:opacity-60
             ${isDisliked
               ? "text-rose-600 bg-rose-50"
-              : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+              : "text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
             }
           `}
         >
@@ -370,9 +370,9 @@ const AnonPostCard = ({ post, currentUser, onHidden }) => {
             disabled:opacity-50 disabled:cursor-not-allowed
             ${showConfirm
               ? "text-amber-600 bg-amber-50"
-              : "text-gray-400 hover:bg-gray-100 hover:text-amber-500"
+              : "text-zinc-500 hover:bg-zinc-800 hover:text-amber-400"
             }
-            ${reported ? "text-gray-300" : ""}
+            ${reported ? "text-zinc-600" : ""}
           `}
         >
           <Flag size={16} strokeWidth={showConfirm ? 2.5 : 2} className="flex-shrink-0" />

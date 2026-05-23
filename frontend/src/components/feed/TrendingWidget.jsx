@@ -1,246 +1,139 @@
 /**
- * TrendingWidget.jsx — Right Sidebar Widget (Desktop lg+ only)
+ * TrendingWidget.jsx — Right Sidebar Trending Widget (Dark Theme)
  *
- * Shown in the right column of the lg+ two-column FeedPage grid.
- * Hidden on mobile/tablet — the parent (FeedPage) gates it with
- * `hidden lg:block` so this component renders freely without media queries.
- *
- * Sections:
- *  1. Active Students — top 5 unique post authors from the latest 20 posts
- *     (derived from GET /api/posts?page=1&limit=20, no extra endpoint needed)
- *  2. Quick Links     — internal navigation shortcuts for common actions
- *
- * Design tokens used:
- *  - .card                → bg-white rounded-2xl shadow-sm border border-gray-100 p-4
- *  - brand-* colors       → defined in tailwind.config.js
- *  - text-sm / text-xs    → consistent type scale
- *
- * Accessibility:
- *  - <nav aria-label> wraps the quick-links list
- *  - Profile links carry descriptive aria-labels
- *  - Spinner has aria-hidden (decorative)
+ * bg-zinc-900 card, zinc-800 borders, violet accents
  */
 
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { MessageCircle, EyeOff, TrendingUp, Users, Flame } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { TrendingUp, Users, Loader2, RefreshCw } from "lucide-react";
 import api from "../../api/axios.js";
 import Avatar from "../common/Avatar.jsx";
+import OnlineDot from "./../../components/chat/OnlineDot.jsx";
 
 // ─────────────────────────────────────────────────────────────────────────────
 const TrendingWidget = () => {
-  const [contributors, setContributors] = useState([]);
+  const navigate = useNavigate();
+  const [data,    setData]    = useState({ trending: [], activeUsers: [] });
   const [loading, setLoading] = useState(true);
+  const [error,   setError]   = useState(null);
 
-  // ── Derive top contributors from recent posts ─────────────────────────────
-  // We reuse the existing GET /api/posts endpoint — no new backend work needed.
-  // We take the 20 most recent posts and extract up to 5 unique authors, in
-  // the order they first appear (most recent poster listed first).
-  useEffect(() => {
-    let mounted = true;
-
-    const fetchContributors = async () => {
-      try {
-        const { data } = await api.get("/posts?page=1&limit=20");
-        if (!mounted) return;
-
-        // Deduplicate authors by _id, preserving first-appearance order
-        const seen = new Set();
-        const unique = [];
-
-        for (const post of data.posts ?? []) {
-          const author = post.author;
-          if (!author?._id) continue;
-
-          const id = author._id.toString();
-          if (!seen.has(id)) {
-            seen.add(id);
-            unique.push({
-              _id: id,
-              name: author.name,
-              branch: author.branch,
-              profilePicture: author.profilePicture,
-            });
-          }
-
-          if (unique.length >= 5) break;
-        }
-
-        setContributors(unique);
-      } catch {
-        // Fail silently — the widget is non-critical, don't distract the user
-        setContributors([]);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    };
-
-    fetchContributors();
-    return () => { mounted = false; };
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data: res } = await api.get("/posts/trending");
+      setData({
+        trending:    res.trending    ?? [],
+        activeUsers: res.activeUsers ?? [],
+      });
+    } catch {
+      setError("Couldn't load trending data.");
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  // ── Quick links definition ─────────────────────────────────────────────────
-  const quickLinks = [
-    {
-      to: "/anon",
-      icon: EyeOff,
-      label: "Anon Board",
-      description: "Post anonymously",
-      color: "text-violet-600",
-      bg: "bg-violet-50 hover:bg-violet-100",
-    },
-    {
-      to: "/chat",
-      icon: MessageCircle,
-      label: "Messages",
-      description: "Chat with students",
-      color: "text-brand-600",
-      bg: "bg-brand-50 hover:bg-brand-100",
-    },
-  ];
+  useEffect(() => { fetchData(); }, [fetchData]);
 
-  // ──────────────────────────────────────────────────────────────────────────
+  // ── Loading state ─────────────────────────────────────────────────────────
+  if (loading) return (
+    <div className="card p-5 flex items-center justify-center min-h-[120px]">
+      <Loader2 size={20} className="animate-spin text-violet-500" />
+    </div>
+  );
+
+  // ── Error state ───────────────────────────────────────────────────────────
+  if (error) return (
+    <div className="card p-5 flex flex-col items-center gap-3">
+      <p className="text-sm text-zinc-500 text-center">{error}</p>
+      <button
+        onClick={fetchData}
+        className="text-xs text-violet-400 hover:text-violet-300 flex items-center gap-1.5 min-h-0"
+      >
+        <RefreshCw size={12} /> Retry
+      </button>
+    </div>
+  );
+
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="space-y-4">
 
-      {/* ── Section 1: Active Students ──────────────────────────────────────── */}
-      <section
-        aria-labelledby="active-students-heading"
-        className="card p-0 overflow-hidden"
-      >
-        {/* Card header */}
-        <div className="flex items-center gap-2 px-4 pt-4 pb-3 border-b border-gray-50">
-          <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-amber-50">
-            <Flame size={14} className="text-amber-500" />
-          </span>
-          <h2
-            id="active-students-heading"
-            className="text-sm font-semibold text-gray-800"
-          >
-            Active Students
-          </h2>
-        </div>
-
-        {/* Content */}
-        <div className="px-4 py-3 space-y-3">
-          {/* Loading state */}
-          {loading && (
-            <div className="flex items-center justify-center py-4">
-              <span
-                aria-hidden="true"
-                className="w-5 h-5 border-2 border-brand-200 border-t-brand-500 rounded-full animate-spin"
-              />
-            </div>
-          )}
-
-          {/* Empty state — no posts yet */}
-          {!loading && contributors.length === 0 && (
-            <div className="flex flex-col items-center gap-1.5 py-4 text-center">
-              <Users size={20} className="text-gray-300" />
-              <p className="text-xs text-gray-400">
-                No activity yet. Be the first to post!
-              </p>
-            </div>
-          )}
-
-          {/* Contributor rows */}
-          {!loading && contributors.map((user) => (
-            <Link
-              key={user._id}
-              to={`/profile/${user._id}`}
-              aria-label={`View ${user.name}'s profile`}
-              className="
-                flex items-center gap-2.5
-                group rounded-xl px-2 py-1.5 -mx-2
-                hover:bg-gray-50 active:bg-gray-100
-                transition-colors duration-150
-              "
-            >
-              {/* Avatar */}
-              <Avatar
-                src={user.profilePicture}
-                name={user.name ?? ""}
-                size="xs"
-                className="flex-shrink-0"
-              />
-
-              {/* Name + branch */}
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-gray-800 truncate leading-tight group-hover:text-brand-600 transition-colors duration-150">
-                  {user.name}
-                </p>
-                {user.branch && (
-                  <p className="text-[10px] text-gray-400 truncate leading-tight mt-0.5">
-                    {user.branch}
-                  </p>
-                )}
-              </div>
-
-              {/* Subtle chevron hint */}
-              <span className="text-gray-300 text-xs group-hover:text-brand-400 transition-colors duration-150 flex-shrink-0">
-                →
-              </span>
-            </Link>
-          ))}
-        </div>
-
-        {/* Footer link */}
-        {!loading && contributors.length > 0 && (
-          <div className="px-4 pb-3">
-            <p className="text-[10px] text-gray-400 text-center">
-              Based on recent community posts
-            </p>
+      {/* ── Trending Tags ──────────────────────────────────────────────────── */}
+      {data.trending.length > 0 && (
+        <div className="card p-0 overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center gap-2 px-4 pt-4 pb-3 border-b border-zinc-800">
+            <TrendingUp size={15} className="text-violet-400" />
+            <h2 className="text-sm font-semibold text-zinc-100">Trending</h2>
           </div>
-        )}
-      </section>
 
-      {/* ── Section 2: Quick Links ──────────────────────────────────────────── */}
-      <section
-        aria-labelledby="quick-links-heading"
-        className="card p-0 overflow-hidden"
-      >
-        {/* Card header */}
-        <div className="flex items-center gap-2 px-4 pt-4 pb-3 border-b border-gray-50">
-          <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-brand-50">
-            <TrendingUp size={14} className="text-brand-500" />
-          </span>
-          <h2
-            id="quick-links-heading"
-            className="text-sm font-semibold text-gray-800"
-          >
-            Quick Links
-          </h2>
+          {/* Tag rows */}
+          <ul>
+            {data.trending.slice(0, 5).map((tag, i) => (
+              <li key={tag.name ?? i}>
+                <button
+                  onClick={() => navigate(`/feed?tag=${encodeURIComponent(tag.name)}`)}
+                  className="
+                    w-full flex items-center justify-between
+                    px-4 py-2.5 min-h-0
+                    hover:bg-zinc-800 transition-colors duration-100 text-left
+                    border-b border-zinc-800/50 last:border-b-0
+                  "
+                >
+                  <span className="text-sm font-medium text-violet-400">
+                    #{tag.name}
+                  </span>
+                  <span className="text-xs text-zinc-600">{tag.count} posts</span>
+                </button>
+              </li>
+            ))}
+          </ul>
         </div>
+      )}
 
-        {/* Links */}
-        <nav aria-label="Campus quick links" className="px-3 py-3 space-y-1.5">
-          {quickLinks.map(({ to, icon: Icon, label, description, color, bg }) => (
-            <Link
-              key={to}
-              to={to}
-              className={`
-                flex items-center gap-3
-                px-3 py-2.5 rounded-xl
-                ${bg}
-                transition-colors duration-150
-                group
-              `}
-            >
-              <span className={`flex-shrink-0 ${color}`}>
-                <Icon size={16} />
-              </span>
-              <div className="min-w-0">
-                <p className={`text-xs font-semibold ${color} leading-tight`}>
-                  {label}
-                </p>
-                <p className="text-[10px] text-gray-500 leading-tight mt-0.5">
-                  {description}
-                </p>
-              </div>
-            </Link>
-          ))}
-        </nav>
-      </section>
+      {/* ── Active Students ────────────────────────────────────────────────── */}
+      {data.activeUsers.length > 0 && (
+        <div className="card p-0 overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center gap-2 px-4 pt-4 pb-3 border-b border-zinc-800">
+            <Users size={15} className="text-emerald-400" />
+            <h2 className="text-sm font-semibold text-zinc-100">Active Students</h2>
+          </div>
+
+          {/* User rows */}
+          <ul>
+            {data.activeUsers.slice(0, 5).map((u) => (
+              <li key={u._id}>
+                <button
+                  onClick={() => navigate(`/profile/${u._id}`)}
+                  className="
+                    w-full flex items-center gap-3 px-4 py-2.5 min-h-0
+                    hover:bg-zinc-800 transition-colors duration-100 text-left
+                    border-b border-zinc-800/50 last:border-b-0
+                  "
+                >
+                  <div className="relative flex-shrink-0">
+                    <Avatar src={u.profilePicture} name={u.name} size="sm" />
+                    <OnlineDot
+                      userId={u._id}
+                      size="sm"
+                      className="absolute -bottom-0.5 -right-0.5"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-zinc-100 truncate">{u.name}</p>
+                    {u.branch && (
+                      <p className="text-xs text-zinc-600 truncate">{u.branch}</p>
+                    )}
+                  </div>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
     </div>
   );
