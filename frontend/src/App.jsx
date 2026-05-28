@@ -72,8 +72,8 @@ const App = () => {
           toastOptions={{
             duration: 3500,
             style: {
-              background: "#1f2937", // gray-800
-              color: "#f9fafb",      // gray-50
+              background: "#18181B", // zinc-900
+              color: "#FAFAFA",      // zinc-50
               borderRadius: "12px",
               fontSize: "14px",
               padding: "12px 16px",
@@ -81,13 +81,13 @@ const App = () => {
             },
             success: {
               iconTheme: {
-                primary: "#6366f1", // brand-500
-                secondary: "#fff",
+                primary: "#FFFFFF", // white
+                secondary: "#18181B",  // zinc-900
               },
             },
             error: {
               iconTheme: {
-                primary: "#f43f5e", // rose-500
+                primary: "#EF4444", // red-500
                 secondary: "#fff",
               },
             },

@@ -94,11 +94,11 @@ class ErrorBoundary extends Component {
               w-full sm:w-auto
               flex items-center justify-center gap-2
               px-6 py-3 rounded-xl
-              bg-violet-600 hover:bg-violet-700
-              text-white text-sm font-semibold
+              bg-white hover:bg-zinc-100 active:bg-zinc-200
+              text-black text-sm font-semibold
               min-h-[44px]
               transition-colors duration-150 active:scale-95
-              focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 focus:ring-offset-zinc-950
+              focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-zinc-950
             "
           >
             <RefreshCw size={16} />

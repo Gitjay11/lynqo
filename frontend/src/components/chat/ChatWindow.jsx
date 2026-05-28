@@ -118,6 +118,7 @@ const ChatWindow = ({ convId }) => {
     }
   }, [convId, myId]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { loadMessages(); }, [loadMessages]);
 
   // ── Socket: join room + wire events ──────────────────────────────────────
@@ -275,7 +276,7 @@ const ChatWindow = ({ convId }) => {
       <div className="flex-1 overflow-y-auto overscroll-contain py-3">
         {loading && (
           <div className="flex justify-center items-center h-full">
-            <Loader2 size={24} className="animate-spin text-brand-500" />
+            <Loader2 size={24} className="animate-spin text-zinc-400" />
           </div>
         )}
 
@@ -314,7 +315,7 @@ const ChatWindow = ({ convId }) => {
       >
         {/* Send error banner */}
         {sendError && (
-          <div className="flex items-center gap-1.5 text-rose-500 text-xs px-1">
+          <div className="flex items-center gap-1.5 text-red-500 text-xs px-1">
             <AlertCircle size={12} />
             <span>Message failed — please try again.</span>
           </div>
@@ -338,7 +339,7 @@ const ChatWindow = ({ convId }) => {
               px-4 py-2.5
               bg-zinc-800 border border-zinc-700 rounded-2xl
               text-sm text-zinc-50 placeholder-zinc-500
-              focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent
+              focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:border-transparent
               transition duration-200 leading-[1.5]
             "
           />
@@ -352,9 +353,9 @@ const ChatWindow = ({ convId }) => {
             className="
               flex-shrink-0 w-11 h-11 rounded-full
               flex items-center justify-center
-              bg-brand-600 hover:bg-brand-700 active:bg-brand-800
+              bg-white hover:bg-zinc-100 active:bg-zinc-200
               disabled:opacity-40 disabled:cursor-not-allowed
-              text-white transition-all duration-150 shadow-sm min-h-0
+              text-black transition-all duration-150 shadow-sm min-h-0
             "
           >
             <Send size={18} />

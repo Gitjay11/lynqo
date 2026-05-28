@@ -11,14 +11,13 @@ import api from "../../api/axios.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 const LikeButton = ({
-  postId,
   icon:     Icon,
   initialCount,
   initialActive,
   endpoint,        // e.g. `/posts/${postId}/like`
-  activeColor,     // Tailwind text class when active, e.g. "text-violet-400"
-  activeBg,        // Tailwind bg class when active, e.g. "bg-violet-600/10"
-  ringColor,       // focus ring color, e.g. "focus:ring-violet-500"
+  activeColor,     // Tailwind text class when active, e.g. "text-white"
+  activeBg,        // Tailwind bg class when active, e.g. "bg-white/10"
+  ringColor,       // focus ring color, e.g. "focus:ring-zinc-400"
   ariaLabelActive,
   ariaLabelInactive,
 }) => {

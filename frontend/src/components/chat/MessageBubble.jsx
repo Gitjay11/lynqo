@@ -1,79 +1,49 @@
 /**
  * MessageBubble.jsx — Chat Message Bubble (Dark Theme)
  *
- * Own messages  : right-aligned, violet-600 bg, white text, read receipt tick
- * Other messages: left-aligned, zinc-800 bg, zinc-100 text, sender avatar
+ * Own messages  : right-aligned, zinc-100 bg (near-white), black text
+ * Other messages: left-aligned,  zinc-700 bg, zinc-100 text
  */
 
-import { Check, CheckCheck } from "lucide-react";
-import Avatar from "../common/Avatar.jsx";
-
-// ── Timestamp helper ──────────────────────────────────────────────────────────
-const formatTime = (dateString) => {
-  if (!dateString) return "";
-  const date  = new Date(dateString);
-  const diffH = (Date.now() - date) / 3_600_000;
-  return diffH < 24
-    ? date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-    : date.toLocaleDateString([], { day: "numeric", month: "short" });
-};
+import { CheckCheck, Check } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 
 // ─────────────────────────────────────────────────────────────────────────────
 const MessageBubble = ({ message, isOwn }) => {
-  const { text, sender, createdAt, read, isOptimistic } = message;
-  const time = formatTime(createdAt);
+  const relTime = (() => {
+    try {
+      return formatDistanceToNow(new Date(message.createdAt), { addSuffix: true });
+    } catch {
+      return "";
+    }
+  })();
 
-  // ── Own message ───────────────────────────────────────────────────────────
-  if (isOwn) {
-    return (
-      <div className="flex justify-end mb-1 px-3">
-        <div className="flex flex-col items-end max-w-[75%] sm:max-w-[60%]">
-          <div
-            className={`
-              px-4 py-2.5 rounded-2xl rounded-br-md
-              text-sm leading-relaxed shadow-sm
-              ${isOptimistic
-                ? "bg-brand-400 text-white opacity-70"
-                : "bg-brand-600 text-white"}
-            `}
-          >
-            {text}
-          </div>
-
-          {/* Time + read receipt */}
-          <div className="flex items-center gap-1 mt-0.5 pr-0.5">
-            <span className="text-[10px] text-zinc-500">{time}</span>
-            {/* Read receipt */}
-            {!isOptimistic && (
-              read
-                ? <CheckCheck size={12} className="text-brand-400 flex-shrink-0" />
-                : <Check      size={12} className="text-zinc-500  flex-shrink-0" />
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ── Other person's message ────────────────────────────────────────────────
   return (
-    <div className="flex items-end gap-2 mb-1 px-3">
-      {/* Sender avatar */}
-      <div className="flex-shrink-0 mb-4">
-        <Avatar src={sender?.profilePicture} name={sender?.name ?? "?"} size="xs" />
-      </div>
+    <div className={`flex ${isOwn ? "justify-end" : "justify-start"} mb-1`}>
+      <div
+        className={`
+          max-w-[75%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed
+          ${isOwn
+            ? message.pending
+              ? "bg-zinc-300 text-zinc-600 opacity-70"
+              : "bg-zinc-100 text-black"
+            : "bg-zinc-700 text-zinc-100"
+          }
+          ${isOwn ? "rounded-tr-none" : "rounded-tl-none"}
+        `}
+      >
+        <p className="break-words whitespace-pre-wrap">{message.text}</p>
 
-      <div className="flex flex-col items-start max-w-[75%] sm:max-w-[60%]">
-        <div
-          className="
-            px-4 py-2.5 rounded-2xl rounded-bl-md
-            bg-zinc-800 text-zinc-100
-            text-sm leading-relaxed shadow-sm
-          "
-        >
-          {text}
-        </div>
-        <span className="text-[10px] text-zinc-500 mt-0.5 pl-1">{time}</span>
+        {/* Timestamp + read receipt (own messages only) */}
+        {isOwn && (
+          <div className="flex items-center justify-end gap-1 mt-1">
+            <span className="text-[10px] text-zinc-500 select-none">{relTime}</span>
+            {message.read
+              ? <CheckCheck size={12} className="text-zinc-500 flex-shrink-0" />
+              : <Check      size={12} className="text-zinc-500 flex-shrink-0" />
+            }
+          </div>
+        )}
       </div>
     </div>
   );

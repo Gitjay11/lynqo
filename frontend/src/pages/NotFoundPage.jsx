@@ -33,7 +33,7 @@ const NotFoundPage = () => {
 
       {/* 1. Giant decorative 404 */}
       <p className="
-        text-8xl md:text-9xl font-bold text-violet-900/30
+        text-8xl md:text-9xl font-bold text-zinc-900/20
         select-none leading-none
       ">
         404
@@ -69,11 +69,11 @@ const NotFoundPage = () => {
             w-full sm:w-auto
             inline-flex items-center justify-center
             min-h-[48px] px-6 py-3
-            bg-violet-600 hover:bg-violet-700 active:bg-violet-800
-            text-white font-semibold text-sm
+            bg-white hover:bg-zinc-100 active:bg-zinc-200
+            text-black font-semibold text-sm
             rounded-full
             transition-all duration-200
-            focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 focus:ring-offset-zinc-950
+            focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-zinc-950
           "
         >
           {user ? "Go to Feed" : "Go to Feed"}
@@ -87,12 +87,12 @@ const NotFoundPage = () => {
             w-full sm:w-auto
             inline-flex items-center justify-center
             min-h-[48px] px-6 py-3
-            border border-violet-600
-            text-violet-400 font-semibold text-sm
+            border border-zinc-700
+            text-zinc-300 font-semibold text-sm
             rounded-full
-            hover:bg-violet-600/10 active:bg-violet-600/20
+            hover:bg-zinc-800 active:bg-zinc-700
             transition-all duration-200
-            focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 focus:ring-offset-zinc-950
+            focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 focus:ring-offset-zinc-950
           "
         >
           Go Home
@@ -100,7 +100,7 @@ const NotFoundPage = () => {
       </div>
 
       {/* 5. Lynqo wordmark */}
-      <p className="text-violet-400 font-bold mt-16 text-sm tracking-wide">
+      <p className="text-zinc-600 font-bold mt-16 text-sm tracking-wide">
         Lynqo
       </p>
 

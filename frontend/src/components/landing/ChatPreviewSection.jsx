@@ -3,7 +3,7 @@
  *
  * Background: bg-zinc-900
  * Mock chat card: bg-zinc-800
- * Sent bubble: bg-violet-600 text-white
+ * Sent bubble:     bg-zinc-100 text-black  (white/near-white)
  * Received bubble: bg-zinc-700 text-zinc-100
  */
 
@@ -57,9 +57,9 @@ const ChatPreviewSection = () => {
             <div className="flex items-center gap-3 pb-3 border-b border-zinc-700">
               {/* Avatar — initials "RS" */}
               <div className="
-                w-8 h-8 rounded-full bg-violet-600/30
+                w-8 h-8 rounded-full bg-zinc-700
                 flex items-center justify-center
-                text-xs font-bold text-violet-300
+                text-xs font-bold text-zinc-200
                 flex-shrink-0
               ">
                 RS
@@ -88,10 +88,10 @@ const ChatPreviewSection = () => {
                 </p>
               </div>
 
-              {/* Sent bubble */}
+              {/* Sent bubble — white/near-white */}
               <div className="flex justify-end">
                 <p className="
-                  bg-violet-600 text-white text-sm
+                  bg-zinc-100 text-black text-sm
                   px-4 py-2 rounded-2xl rounded-tr-none
                   max-w-[80%]
                 ">
@@ -130,17 +130,17 @@ const ChatPreviewSection = () => {
                 Type a message...
               </div>
 
-              {/* Send button */}
+              {/* Send button — white */}
               <button
                 aria-label="Send message"
                 className="
-                  w-8 h-8 rounded-full bg-violet-600
+                  w-8 h-8 rounded-full bg-white
                   flex items-center justify-center
                   flex-shrink-0 min-h-0
-                  hover:bg-violet-700 transition-colors
+                  hover:bg-zinc-100 transition-colors
                 "
               >
-                <Send size={14} className="text-white" strokeWidth={2.5} />
+                <Send size={14} className="text-black" strokeWidth={2.5} />
               </button>
             </div>
 
@@ -155,8 +155,8 @@ const ChatPreviewSection = () => {
           {/* Label pill */}
           <span className="
             inline-block
-            bg-violet-600/10 text-violet-400 text-xs
-            border border-violet-700/30
+            bg-zinc-800 text-zinc-400 text-xs
+            border border-zinc-700
             px-3 py-1.5 rounded-full
           ">
             ⚡ Real-time Chat
@@ -187,11 +187,11 @@ const ChatPreviewSection = () => {
             className="
               inline-flex items-center justify-center
               min-h-[48px] px-6 py-3 mt-8
-              bg-violet-600 hover:bg-violet-700 active:bg-violet-800
-              text-white font-semibold text-base
+              bg-white hover:bg-zinc-100 active:bg-zinc-200
+              text-black font-semibold text-base
               rounded-full
               transition-all duration-200
-              focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 focus:ring-offset-zinc-950
+              focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-zinc-950
             "
           >
             Start Chatting →

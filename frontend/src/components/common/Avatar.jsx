@@ -11,7 +11,7 @@
  *   xl   → 80px  (profile page)
  *   2xl  → 128px (profile hero)
  *
- * Fallback palette: 8 violet/zinc tones — deterministic from name.
+ * Fallback palette: 8 zinc tones — deterministic from name.
  */
 
 import { useMemo } from "react";
@@ -26,16 +26,16 @@ const SIZE_MAP = {
   "2xl": { wrapper: "w-32 h-32", text: "text-4xl"  },
 };
 
-// ── Dark-mode-aware fallback palette (violet + zinc tones) ────────────────────
+// ── Black & white fallback palette ────────────────────────────────────────────
 const FALLBACK_COLORS = [
-  "bg-violet-700 text-violet-100",
-  "bg-violet-600 text-white",
-  "bg-purple-700 text-purple-100",
-  "bg-violet-700 text-violet-100",
   "bg-zinc-700 text-zinc-100",
-  "bg-fuchsia-700 text-fuchsia-100",
-  "bg-violet-800 text-violet-200",
-  "bg-purple-600 text-white",
+  "bg-zinc-600 text-white",
+  "bg-zinc-800 text-zinc-200",
+  "bg-zinc-700 text-zinc-100",
+  "bg-zinc-500 text-white",
+  "bg-zinc-600 text-zinc-100",
+  "bg-zinc-800 text-zinc-300",
+  "bg-zinc-700 text-white",
 ];
 
 // ── Deterministic color from name string ──────────────────────────────────────

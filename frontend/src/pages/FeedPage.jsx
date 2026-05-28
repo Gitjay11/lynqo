@@ -156,8 +156,8 @@ const FeedPage = () => {
         {!loading && !error && posts.length === 0 && (
           <div className="flex flex-col items-center gap-3 py-16 px-4 text-center">
             {/* Icon composition */}
-            <div className="w-16 h-16 rounded-full bg-brand-50 flex items-center justify-center mb-1">
-              <Newspaper size={28} className="text-brand-400" />
+            <div className="w-16 h-16 rounded-full bg-zinc-800 flex items-center justify-center mb-1">
+              <Newspaper size={28} className="text-zinc-400" />
             </div>
             <p className="text-base font-semibold text-zinc-100">
               No posts yet
@@ -194,7 +194,7 @@ const FeedPage = () => {
                 >
                   {loadingMore
                     ? <>
-                        <span className="w-4 h-4 border-2 border-brand-300 border-t-brand-600 rounded-full animate-spin" />
+                        <span className="w-4 h-4 border-2 border-zinc-600 border-t-white rounded-full animate-spin" />
                         Loading…
                       </>
                     : "Load more posts"

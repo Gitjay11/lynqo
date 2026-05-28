@@ -52,18 +52,18 @@ const Navbar = () => {
         to="/feed"
         className="
           flex items-center gap-2 min-h-[44px]
-          text-violet-400 font-bold text-xl tracking-tight
+          text-white font-bold text-xl tracking-tight
           select-none flex-shrink-0
         "
         aria-label="Lynqo Home"
       >
-        {/* Gradient logo mark */}
+        {/* Logo mark — solid white square */}
         <span
           className="
             w-8 h-8 rounded-xl
-            bg-gradient-to-br from-violet-600 to-violet-400
+            bg-white
             flex items-center justify-center
-            text-white text-sm font-black
+            text-black text-sm font-black
           "
         >
           L
@@ -87,7 +87,7 @@ const Navbar = () => {
               flex items-center gap-2 min-h-[44px] px-1
               rounded-xl hover:bg-zinc-800
               transition-colors duration-150 focus:outline-none
-              focus:ring-2 focus:ring-violet-500 focus:ring-offset-1 focus:ring-offset-zinc-950
+              focus:ring-2 focus:ring-zinc-400 focus:ring-offset-1 focus:ring-offset-zinc-950
             "
           >
             <Avatar src={user.profilePicture} name={user.name} size="sm" />

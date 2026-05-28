@@ -31,8 +31,8 @@ import ChatWindow                 from "../components/chat/ChatWindow.jsx";
 // ── Desktop right-panel empty state ──────────────────────────────────────────
 const NoConversationSelected = () => (
   <div className="flex flex-col items-center justify-center h-full text-center px-8 bg-zinc-950">
-    <div className="w-20 h-20 rounded-full bg-brand-50 flex items-center justify-center mb-5">
-      <MessageCircle size={36} className="text-brand-400" />
+    <div className="w-20 h-20 rounded-full bg-zinc-800 flex items-center justify-center mb-5">
+      <MessageCircle size={36} className="text-zinc-400" />
     </div>
     <h2 className="text-zinc-100 font-semibold text-base mb-2">Select a conversation</h2>
     <p className="text-zinc-400 text-sm max-w-[200px]">

@@ -340,8 +340,8 @@ const ProfilePage = () => {
                     aria-label="Confirm avatar upload"
                     className="
                       flex items-center gap-1.5 px-3 py-1.5
-                      bg-brand-500 hover:bg-brand-600
-                      text-white text-xs font-semibold
+                      bg-white hover:bg-zinc-100
+                      text-black text-xs font-semibold
                       rounded-lg min-h-[36px]
                       disabled:opacity-50 disabled:cursor-not-allowed
                       transition-colors duration-150
@@ -398,7 +398,7 @@ const ProfilePage = () => {
                   {/* Branch */}
                   {profile.branch && (
                     <div className="flex items-center gap-1.5 text-sm text-zinc-400">
-                      <BookOpen size={15} className="text-brand-500 flex-shrink-0" />
+                      <BookOpen size={15} className="text-zinc-400 flex-shrink-0" />
                       <span>{profile.branch}</span>
                     </div>
                   )}
@@ -406,7 +406,7 @@ const ProfilePage = () => {
                   {/* Semester */}
                   {profile.semester && (
                     <div className="flex items-center gap-1.5 text-sm text-zinc-400">
-                      <GraduationCap size={15} className="text-brand-500 flex-shrink-0" />
+                      <GraduationCap size={15} className="text-zinc-400 flex-shrink-0" />
                       <span>Semester {profile.semester}</span>
                     </div>
                   )}

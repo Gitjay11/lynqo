@@ -11,16 +11,16 @@ import { MessageSquare, MessageCircle, Users } from "lucide-react";
 const CARDS = [
   {
     icon: MessageSquare,
-    iconColor: "text-violet-400",
-    iconBg: "bg-violet-600/10",
+    iconColor: "text-zinc-300",
+    iconBg: "bg-zinc-800",
     title: "Campus Feed",
     description:
       "Post updates, ask questions, share memes, and stay connected with your entire college in a real-time feed.",
   },
   {
     icon: MessageCircle,
-    iconColor: "text-violet-300",
-    iconBg: "bg-violet-500/10",
+    iconColor: "text-zinc-300",
+    iconBg: "bg-zinc-800",
     title: "Direct Messaging",
     description:
       "Chat one-on-one with any student. Real-time messages, online status, and typing indicators.",
@@ -40,7 +40,7 @@ const FeatureCard = ({ icon: Icon, iconColor, iconBg, title, description }) => (
   <div
     className="
       bg-zinc-900 rounded-2xl border border-zinc-800
-      shadow-sm hover:shadow-violet-900/20 hover:border-zinc-700
+      shadow-sm hover:border-zinc-700
       transition-all duration-200
       p-6
     "

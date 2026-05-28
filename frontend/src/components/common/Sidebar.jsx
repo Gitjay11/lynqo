@@ -2,7 +2,7 @@
  * Sidebar.jsx — Desktop Left Navigation (Dark Theme)
  *
  * bg-zinc-900 border-r border-zinc-800
- * Active: bg-violet-600/10 text-violet-400
+ * Active: bg-zinc-800 text-white
  * Inactive: text-zinc-400 hover:bg-zinc-800
  */
 
@@ -36,7 +36,7 @@ const Sidebar = () => {
     min-h-[44px]
     transition-all duration-150
     ${isActive
-      ? "bg-violet-600/10 text-violet-400 font-semibold"
+      ? "bg-zinc-800 text-white font-semibold"
       : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
     }
   `;
@@ -67,13 +67,13 @@ const Sidebar = () => {
                 <Icon
                   size={20}
                   strokeWidth={isActive ? 2.5 : 2}
-                  className={isActive ? "text-violet-400" : "text-zinc-500"}
+                  className={isActive ? "text-white" : "text-zinc-500"}
                 />
                 <span>{label}</span>
 
                 {/* Active indicator dot */}
                 {isActive && (
-                  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-violet-500" />
+                  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white" />
                 )}
               </>
             )}
@@ -92,11 +92,11 @@ const Sidebar = () => {
                 <User
                   size={20}
                   strokeWidth={isActive ? 2.5 : 2}
-                  className={isActive ? "text-violet-400" : "text-zinc-500"}
+                  className={isActive ? "text-white" : "text-zinc-500"}
                 />
                 <span>Profile</span>
                 {isActive && (
-                  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-violet-500" />
+                  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white" />
                 )}
               </>
             )}
@@ -115,7 +115,7 @@ const Sidebar = () => {
               rounded-xl hover:bg-zinc-800
               transition-colors duration-150
               min-h-[44px] text-left
-              focus:outline-none focus:ring-2 focus:ring-violet-500
+              focus:outline-none focus:ring-2 focus:ring-zinc-400
             "
           >
             <Avatar src={user.avatar} name={user.name} size="sm" />

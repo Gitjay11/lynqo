@@ -34,12 +34,13 @@ const TrendingWidget = () => {
     }
   }, []);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchData(); }, [fetchData]);
 
   // ── Loading state ─────────────────────────────────────────────────────────
   if (loading) return (
     <div className="card p-5 flex items-center justify-center min-h-[120px]">
-      <Loader2 size={20} className="animate-spin text-violet-500" />
+      <Loader2 size={20} className="animate-spin text-zinc-400" />
     </div>
   );
 
@@ -49,7 +50,7 @@ const TrendingWidget = () => {
       <p className="text-sm text-zinc-500 text-center">{error}</p>
       <button
         onClick={fetchData}
-        className="text-xs text-violet-400 hover:text-violet-300 flex items-center gap-1.5 min-h-0"
+        className="text-xs text-zinc-400 hover:text-zinc-200 flex items-center gap-1.5 min-h-0"
       >
         <RefreshCw size={12} /> Retry
       </button>
@@ -65,7 +66,7 @@ const TrendingWidget = () => {
         <div className="card p-0 overflow-hidden">
           {/* Header */}
           <div className="flex items-center gap-2 px-4 pt-4 pb-3 border-b border-zinc-800">
-            <TrendingUp size={15} className="text-violet-400" />
+            <TrendingUp size={15} className="text-zinc-400" />
             <h2 className="text-sm font-semibold text-zinc-100">Trending</h2>
           </div>
 
@@ -82,7 +83,7 @@ const TrendingWidget = () => {
                     border-b border-zinc-800/50 last:border-b-0
                   "
                 >
-                  <span className="text-sm font-medium text-violet-400">
+                  <span className="text-sm font-medium text-zinc-300">
                     #{tag.name}
                   </span>
                   <span className="text-xs text-zinc-600">{tag.count} posts</span>

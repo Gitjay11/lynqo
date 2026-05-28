@@ -18,6 +18,7 @@ import { createContext, useEffect, useState, useCallback } from "react";
 import { io } from "socket.io-client";
 import { useAuth } from "../hooks/useAuth.js";
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const SocketContext = createContext({ socket: null, onlineUsers: new Set() });
 
 export const SocketProvider = ({ children }) => {
@@ -50,6 +51,7 @@ export const SocketProvider = ({ children }) => {
       // User logged out — disconnect and clear presence state
       if (socket) {
         socket.disconnect();
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSocket(null);
       }
       setOnlineUsers(new Set());
@@ -79,6 +81,7 @@ export const SocketProvider = ({ children }) => {
       newSocket.off("user_offline");
       newSocket.disconnect();
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]); // re-run when auth state changes (login / logout)
 
   // ── Context value — stable shape consumed by useSocket() ─────────────────

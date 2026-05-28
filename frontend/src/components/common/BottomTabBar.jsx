@@ -2,11 +2,11 @@
  * BottomTabBar.jsx — Mobile Primary Navigation (Dark Theme)
  *
  * bg-zinc-900 border-t border-zinc-800
- * Active tab: text-violet-400
- * Inactive:   text-zinc-500
+ * Active tab:  text-white border-t-2 border-white
+ * Inactive:    text-zinc-500
  */
 
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { Home, Ghost, MessageCircle, User } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth.js";
 
@@ -27,10 +27,10 @@ const BottomTabBar = () => {
     flex-1 h-full
     text-[10px] font-semibold tracking-wide
     transition-colors duration-150 select-none
-    focus:outline-none focus:ring-2 focus:ring-inset focus:ring-violet-500
+    focus:outline-none focus:ring-2 focus:ring-inset focus:ring-zinc-400
     ${isActive
-      ? "text-violet-400"           // active: violet
-      : "text-zinc-500 hover:text-zinc-300" // inactive
+      ? "text-white border-t-2 border-white -mt-px"
+      : "text-zinc-500 hover:text-zinc-300"
     }
   `;
 
@@ -60,7 +60,7 @@ const BottomTabBar = () => {
               <Icon
                 size={22}
                 strokeWidth={isActive ? 2.5 : 2}
-                className={isActive ? "text-violet-400" : "text-zinc-500"}
+                className={isActive ? "text-white" : "text-zinc-500"}
               />
               <span>{label}</span>
             </>
@@ -79,7 +79,7 @@ const BottomTabBar = () => {
             <User
               size={22}
               strokeWidth={isActive ? 2.5 : 2}
-              className={isActive ? "text-violet-400" : "text-zinc-500"}
+              className={isActive ? "text-white" : "text-zinc-500"}
             />
             <span>Profile</span>
           </>

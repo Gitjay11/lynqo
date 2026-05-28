@@ -2,7 +2,7 @@
  * anonController.js — Anonymous Post Controllers
  *
  * Handles all anonymous board operations:
- *  - createAnonPost    → POST   /api/anon                (protected)
+ *  - createAnonPost    → POST   /api/anon                (protected, multipart/form-data)
  *  - getAnonPosts      → GET    /api/anon                (protected + pagination)
  *  - toggleAnonLike    → PUT    /api/anon/:id/like       (protected)
  *  - toggleAnonDislike → PUT    /api/anon/:id/dislike    (protected)
@@ -28,6 +28,7 @@
  */
 
 import AnonPost from "../models/AnonPost.js";
+import { v2 as cloudinary } from "cloudinary";
 
 // Number of unique reports required to auto-hide a post
 const REPORT_THRESHOLD = 5;
@@ -55,12 +56,19 @@ export const createAnonPost = async (req, res, next) => {
       return next(new Error("Post content cannot exceed 500 characters"));
     }
 
+    // ── Resolve optional image URL ─────────────────────────────────────────
+    // req.file is populated by the uploadPostImage middleware when an image
+    // is attached. req.file.path holds the Cloudinary secure_url after the
+    // toCloudinary step runs. If no file was sent, req.file is undefined.
+    const imageUrl = req.file?.path ?? null;
+
     // ── Create the post — realAuthor stored, NEVER returned ───────────────
     // We create with realAuthor so it persists to the DB, then immediately
     // re-fetch with .select('-realAuthor') so the response is clean.
     const post = await AnonPost.create({
       realAuthor: req.user._id, // stored silently for moderation
       content: content.trim(),
+      image: imageUrl,          // null when no image was attached
     });
 
     // ── Re-fetch without realAuthor for the response ──────────────────────
@@ -98,14 +106,26 @@ export const getAnonPosts = async (req, res, next) => {
 
     const skip = (page - 1) * limit;
 
-    // ── Query — visible posts only, newest first, paginated ──────────────
-    // Layer 2 defence: .select('-realAuthor') on every query.
-    const [posts, totalCount] = await Promise.all([
-      AnonPost.find({ isHidden: false })
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .select("-realAuthor"), // ← NEVER populate or expose realAuthor
+    // ── Single-pass aggregation — computes isOwner without N+1 queries ───
+    // $addFields computes isOwner by comparing realAuthor to the logged-in
+    // user's _id server-side. realAuthor is projected OUT before the response
+    // is sent so it never reaches the client.
+    const [results, totalCount] = await Promise.all([
+      AnonPost.aggregate([
+        { $match: { isHidden: false } },
+        { $sort:  { createdAt: -1 } },
+        { $skip:  skip },
+        { $limit: limit },
+        {
+          $addFields: {
+            isOwner: { $eq: ["$realAuthor", req.user._id] },
+          },
+        },
+        {
+          // Explicitly remove realAuthor from the output — never reaches client
+          $project: { realAuthor: 0 },
+        },
+      ]),
       AnonPost.countDocuments({ isHidden: false }),
     ]);
 
@@ -113,10 +133,55 @@ export const getAnonPosts = async (req, res, next) => {
 
     return res.status(200).json({
       success: true,
-      posts,
+      posts: results,
       totalPages,
       currentPage: page,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ──────────────────────────────────────────────────────────────────────────────
+// @desc    Delete an anonymous post (owner only)
+// @route   DELETE /api/anon/:id
+// @access  Protected
+//
+// realAuthor is fetched with +select to verify ownership, then discarded.
+// The post is hard-deleted; Cloudinary image is also removed if present.
+// ──────────────────────────────────────────────────────────────────────────────
+export const deleteAnonPost = async (req, res, next) => {
+  try {
+    // Must fetch with +realAuthor to verify ownership (not returned to client)
+    const post = await AnonPost.findById(req.params.id).select("+realAuthor");
+
+    if (!post) {
+      res.status(404);
+      return next(new Error("Anonymous post not found"));
+    }
+
+    // Only the original author can delete their own post
+    if (!post.realAuthor?.equals(req.user._id)) {
+      res.status(403);
+      return next(new Error("Not authorised to delete this post"));
+    }
+
+    // Remove Cloudinary image if one was attached
+    if (post.image) {
+      try {
+        // Extract public_id from the Cloudinary URL
+        const parts    = post.image.split("/");
+        const fileName = parts[parts.length - 1].split(".")[0];
+        const folder   = parts[parts.length - 2];
+        await cloudinary.uploader.destroy(`${folder}/${fileName}`);
+      } catch {
+        // Non-fatal — continue with DB delete even if Cloudinary cleanup fails
+      }
+    }
+
+    await post.deleteOne();
+
+    return res.status(200).json({ success: true, message: "Post deleted" });
   } catch (error) {
     next(error);
   }

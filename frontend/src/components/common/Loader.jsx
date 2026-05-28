@@ -1,7 +1,7 @@
 /**
  * Loader.jsx — Full-screen loading spinner (Dark Theme)
  *
- * bg-zinc-950, violet-600 spinner.
+ * bg-zinc-950, white spinner.
  */
 
 const Loader = () => (
@@ -18,7 +18,7 @@ const Loader = () => (
     <span
       className="
         w-10 h-10 rounded-full
-        border-4 border-zinc-800 border-t-violet-500
+        border-4 border-zinc-800 border-t-white
         animate-spin
       "
       aria-hidden="true"

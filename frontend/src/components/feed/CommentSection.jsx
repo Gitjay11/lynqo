@@ -149,7 +149,7 @@ const CommentSection = ({ postId, initialComments = [], currentUser }) => {
             flex-1 px-3 py-2
             bg-zinc-800 border border-zinc-700 rounded-full
             text-sm text-zinc-100 placeholder-zinc-600
-            focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent
+          focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent
             transition duration-200 min-h-0 h-9
           "
         />
@@ -162,10 +162,10 @@ const CommentSection = ({ postId, initialComments = [], currentUser }) => {
           className="
             flex items-center justify-center
             w-9 h-9 rounded-full
-            bg-violet-600 hover:bg-violet-700 active:bg-violet-800
+            bg-white hover:bg-zinc-100 active:bg-zinc-200
             disabled:opacity-40 disabled:cursor-not-allowed
-            text-white transition-all duration-150 min-h-0 flex-shrink-0
-            focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-1 focus:ring-offset-zinc-900
+            text-black transition-all duration-150 min-h-0 flex-shrink-0
+            focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-1 focus:ring-offset-zinc-900
           "
         >
           {loading

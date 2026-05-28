@@ -45,9 +45,9 @@ const LandingTopBar = () => (
         className="
           flex items-center gap-2
           min-h-[44px]
-          text-violet-400 font-bold text-xl tracking-tight
+          text-white font-bold text-xl tracking-tight
           select-none flex-shrink-0
-          focus:outline-none focus:ring-2 focus:ring-violet-500 rounded-lg
+          focus:outline-none focus:ring-2 focus:ring-zinc-400 rounded-lg
         "
         aria-label="Lynqo home"
       >
@@ -55,9 +55,9 @@ const LandingTopBar = () => (
         <span
           className="
             w-8 h-8 rounded-xl
-            bg-gradient-to-br from-violet-600 to-violet-400
+            bg-white
             flex items-center justify-center
-            text-white text-sm font-black
+            text-black text-sm font-black
           "
         >
           L
@@ -78,9 +78,9 @@ const LandingTopBar = () => (
             px-3 py-1.5
             rounded-full
             border border-zinc-700
-            hover:border-violet-500 hover:text-violet-400 hover:bg-zinc-800
+            hover:border-zinc-500 hover:text-zinc-100 hover:bg-zinc-800
             transition-all duration-200
-            focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-1 focus:ring-offset-zinc-950
+            focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-1 focus:ring-offset-zinc-950
           "
         >
           Log In
@@ -93,13 +93,13 @@ const LandingTopBar = () => (
           className="
             inline-flex items-center justify-center
             min-h-[44px]
-            text-sm font-semibold text-white
+            text-sm font-semibold text-black
             px-4 py-1.5
             rounded-full
-            bg-violet-600 hover:bg-violet-700 active:bg-violet-800
-            shadow-sm shadow-violet-900/50
+            bg-white hover:bg-zinc-100 active:bg-zinc-200
+            shadow-sm shadow-black/50
             transition-all duration-200
-            focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-1 focus:ring-offset-zinc-950
+            focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-1 focus:ring-offset-zinc-950
           "
         >
           Get Started

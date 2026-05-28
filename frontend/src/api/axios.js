@@ -4,7 +4,7 @@
  * All API calls go through this instance, which:
  *  1. Sets the base URL from the VITE_API_BASE_URL env variable
  *  2. Attaches the JWT token to every outgoing request automatically
- *  3. Handles 401 Unauthorized responses globally (token expiry → redirect to login)
+ *  3. Handles 401 Unauthorized responses globally (token expiry → redirect to /)
  */
 
 import axios from "axios";
@@ -34,13 +34,26 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Clear stale auth data and redirect to login
-      localStorage.removeItem("lynqo_token");
-      localStorage.removeItem("lynqo_user");
-      // Redirect without react-router to force a clean reload
-      window.location.href = "/login";
+    const status = error.response?.status;
+    const url    = error.config?.url ?? "";
+
+    if (status === 401) {
+      // Do NOT redirect on the /auth/me session-check itself — AuthContext
+      // handles that 401 silently by setting user = null. Redirecting here
+      // would cause a loop: /me 401 → redirect to / → mount → /me 401 → ...
+      const isSessionCheck = url.includes("/auth/me");
+
+      // Also skip if already on the landing page to avoid redundant redirects
+      const isAlreadyOnLanding = window.location.pathname === "/";
+
+      if (!isSessionCheck && !isAlreadyOnLanding) {
+        // Expired token on a real API call — wipe auth data and go to landing
+        localStorage.removeItem("lynqo_token");
+        localStorage.removeItem("lynqo_user");
+        window.location.href = "/";
+      }
     }
+
     return Promise.reject(error);
   }
 );

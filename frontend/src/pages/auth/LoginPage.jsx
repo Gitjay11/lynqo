@@ -17,7 +17,7 @@
  *  - Submit button disabled + spinner while request is in flight.
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -39,8 +39,15 @@ const INITIAL_ERRORS = {
 
 // ─────────────────────────────────────────────────────────────────────────────
 const LoginPage = () => {
-  const navigate  = useNavigate();
-  const { login } = useAuth();
+  const navigate          = useNavigate();
+  const { user, login }   = useAuth();
+
+  // Navigate to /feed once login() has updated user state
+  // Using useEffect ensures navigation fires AFTER React re-renders
+  // with the new user, so ProtectedRoute sees user !== null
+  useEffect(() => {
+    if (user) navigate("/feed", { replace: true });
+  }, [user, navigate]);
 
   // ── Form state ───────────────────────────────────────────────────────────────
   const [form, setForm]         = useState(INITIAL_FORM);
@@ -99,10 +106,9 @@ const LoginPage = () => {
         password: form.password,
       });
 
-      // Persist auth state globally and redirect to feed
+      // Persist auth state globally — useEffect above will navigate to /feed
       login(data.user, data.token);
       toast.success("Welcome back! 👋");
-      navigate("/feed");
     } catch (err) {
       // Extract the server's error message (or fall back gracefully)
       const message =
@@ -133,8 +139,8 @@ const LoginPage = () => {
         {/* ── Branding ──────────────────────────────────────────────────────── */}
         <div className="text-center mb-8">
           {/* Logo icon */}
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-violet-600 mb-3">
-            <span className="text-white text-xl font-bold tracking-tight">L</span>
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white mb-3">
+            <span className="text-black text-xl font-bold tracking-tight">L</span>
           </div>
           <h1 className="text-2xl font-bold text-zinc-50">Welcome back</h1>
           <p className="mt-1 text-sm text-zinc-400">Log in to your Lynqo account</p>
@@ -164,7 +170,7 @@ const LoginPage = () => {
               className={`input-field h-12 ${
                 errors.email
                   ? "border-red-400 focus:ring-red-400"
-                  : "focus:ring-violet-500"
+                  : "focus:ring-white"
               }`}
             />
             {errors.email && (
@@ -199,7 +205,7 @@ const LoginPage = () => {
                 className={`input-field h-12 pr-12 ${
                   errors.password
                     ? "border-red-400 focus:ring-red-400"
-                    : "focus:ring-violet-500"
+                    : "focus:ring-white"
                 }`}
               />
               {/* Eye toggle — 44px touch zone, anchored to the right of the input */}
@@ -209,7 +215,7 @@ const LoginPage = () => {
                 aria-label={showPass ? "Hide password" : "Show password"}
                 className="absolute right-0 top-0 h-12 w-12 flex items-center justify-center
                            text-zinc-500 hover:text-zinc-300 transition-colors
-                           focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500
+                           focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400
                            rounded-r-lg min-h-[44px]"
               >
                 {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -248,7 +254,7 @@ const LoginPage = () => {
           <Link
             to="/signup"
             id="login-signup-link"
-            className="font-semibold text-violet-400 hover:text-violet-300 underline-offset-2
+            className="font-semibold text-zinc-300 hover:text-white underline-offset-2
                        hover:underline transition-colors min-h-[44px] inline-flex items-center"
           >
             Sign up

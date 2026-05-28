@@ -31,7 +31,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, MessageCircle, X, Loader2, Users } from "lucide-react";
+import { Search, MessageCircle, X, Loader2 } from "lucide-react";
 import toast              from "react-hot-toast";
 import { useAuth }        from "../../hooks/useAuth.js";
 import { useSocket }      from "../../hooks/useSocket.js";
@@ -86,6 +86,7 @@ const ChatList = ({ onSelectConv }) => {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchConversations();
   }, [fetchConversations]);
 
@@ -122,6 +123,7 @@ const ChatList = ({ onSelectConv }) => {
     clearTimeout(searchTimer.current);
 
     if (!searchQuery.trim()) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSearchResults([]);
       setSearching(false);
       return;
@@ -214,7 +216,7 @@ const ChatList = ({ onSelectConv }) => {
               w-full h-11 pl-9 pr-9
               bg-zinc-800 border border-zinc-700 rounded-xl
               text-sm text-zinc-50 placeholder-zinc-500
-              focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent
+              focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:border-transparent
               transition duration-200
             "
             autoComplete="off"
@@ -245,7 +247,7 @@ const ChatList = ({ onSelectConv }) => {
           <>
             {searching ? (
               <div className="flex items-center justify-center py-10">
-                <Loader2 size={20} className="animate-spin text-brand-500" />
+                <Loader2 size={20} className="animate-spin text-zinc-400" />
               </div>
             ) : searchResults.length === 0 ? (
               /* ── No search results empty state ──────────────────────────── */
@@ -293,7 +295,7 @@ const ChatList = ({ onSelectConv }) => {
                         )}
                       </div>
                       {startingConv === u.id && (
-                        <Loader2 size={14} className="animate-spin text-brand-500 flex-shrink-0" />
+                        <Loader2 size={14} className="animate-spin text-zinc-400 flex-shrink-0" />
                       )}
                     </button>
                   </li>
@@ -312,8 +314,8 @@ const ChatList = ({ onSelectConv }) => {
             ) : conversations.length === 0 ? (
               /* ── No conversations empty state ───────────────────────────── */
               <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-                <div className="w-16 h-16 rounded-full bg-brand-600/10 flex items-center justify-center mb-4">
-                  <MessageCircle size={28} className="text-brand-400" />
+                <div className="w-16 h-16 rounded-full bg-zinc-800 flex items-center justify-center mb-4">
+                  <MessageCircle size={28} className="text-zinc-400" />
                 </div>
                 <p className="text-zinc-100 font-semibold mb-1">No chats yet</p>
                 <p className="text-zinc-400 text-sm">

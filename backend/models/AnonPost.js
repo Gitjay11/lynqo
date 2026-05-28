@@ -19,6 +19,7 @@
  * Fields:
  *  - realAuthor  → ObjectId ref User | select: false | NEVER sent to client
  *  - content     → String, max 500 chars (required)
+ *  - image       → String, Cloudinary URL (optional)
  *  - likes       → [ObjectId ref User]
  *  - dislikes    → [ObjectId ref User]
  *  - reports     → [ObjectId ref User] — used for auto-moderation
@@ -48,6 +49,14 @@ const anonPostSchema = new mongoose.Schema(
       required: [true, "Post content is required"],
       trim: true,
       maxlength: [500, "Post content cannot exceed 500 characters"],
+    },
+
+    // ── Optional image attachment (Cloudinary URL) ─────────────────────────
+    // Stored as a plain string. If no image is uploaded, defaults to null.
+    // Follows the same pattern as the regular Post model.
+    image: {
+      type: String,
+      default: null,
     },
 
     // ── Reactions ──────────────────────────────────────────────────────────

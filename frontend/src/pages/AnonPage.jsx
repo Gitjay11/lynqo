@@ -38,8 +38,8 @@ const AnonInfoWidget = () => (
     <div className="card p-0 overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-2 px-4 pt-4 pb-3 border-b border-zinc-800">
-        <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-violet-600/10">
-          <Ghost size={14} className="text-violet-500" />
+        <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-zinc-800">
+          <Ghost size={14} className="text-zinc-400" />
         </span>
         <h2 className="text-sm font-semibold text-zinc-100">About Anon Board</h2>
       </div>
@@ -49,8 +49,8 @@ const AnonInfoWidget = () => (
         {[
           {
             icon: EyeOff,
-            color: "text-violet-500",
-            bg: "bg-violet-600/10",
+            color: "text-zinc-400",
+            bg: "bg-zinc-800",
             title: "Your identity is hidden",
             desc: "Nobody, not even admins, can see who posted what on this board.",
           },
@@ -63,8 +63,8 @@ const AnonInfoWidget = () => (
           },
           {
             icon: RefreshCw,
-            color: "text-brand-500",
-            bg: "bg-brand-600/10",
+            color: "text-zinc-400",
+            bg: "bg-zinc-800",
             title: "Newest first",
             desc: "The feed shows the most recent posts at the top.",
           },
@@ -142,6 +142,11 @@ const AnonPage = () => {
     setPosts((prev) => prev.filter((p) => p._id !== postId));
   }, []);
 
+  // ── Remove a post from list when the owner deletes it ─────────────────
+  const handlePostDeleted = useCallback((postId) => {
+    setPosts((prev) => prev.filter((p) => p._id !== postId));
+  }, []);
+
   // ──────────────────────────────────────────────────────────────────────────
   return (
     /*
@@ -161,7 +166,7 @@ const AnonPage = () => {
 
         {/* ── Page header (mobile only — lg: visible in sidebar widget) ─────── */}
         <div className="flex items-center gap-2 px-4 pt-4 pb-2 lg:hidden">
-          <Ghost size={16} className="text-violet-500 flex-shrink-0" />
+          <Ghost size={16} className="text-zinc-400 flex-shrink-0" />
           <div>
             <h1 className="text-base font-semibold text-zinc-50 leading-tight">
               Anon Board
@@ -207,8 +212,8 @@ const AnonPage = () => {
         {!loading && !error && posts.length === 0 && (
           <div className="flex flex-col items-center gap-3 py-16 px-4 text-center">
             {/* Ghost icon with violet tint — on-brand for the anon board */}
-            <div className="w-16 h-16 rounded-full bg-violet-600/10 flex items-center justify-center mb-1">
-              <Ghost size={28} className="text-violet-400" />
+            <div className="w-16 h-16 rounded-full bg-zinc-800 flex items-center justify-center mb-1">
+              <Ghost size={28} className="text-zinc-400" />
             </div>
             <p className="text-base font-semibold text-zinc-100">
               No confessions yet
@@ -229,6 +234,7 @@ const AnonPage = () => {
                     post={post}
                     currentUser={user}
                     onHidden={handlePostHidden}
+                    onDelete={post.isOwner ? handlePostDeleted : undefined}
                   />
                 </li>
               ))}
@@ -245,7 +251,7 @@ const AnonPage = () => {
                 >
                   {loadingMore
                     ? <>
-                        <span className="w-4 h-4 border-2 border-brand-300 border-t-brand-600 rounded-full animate-spin" />
+                        <span className="w-4 h-4 border-2 border-zinc-600 border-t-white rounded-full animate-spin" />
                         Loading…
                       </>
                     : "Load more posts"

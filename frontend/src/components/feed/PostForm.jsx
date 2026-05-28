@@ -178,9 +178,9 @@ const PostForm = ({ currentUser, onPost }) => {
                 aria-label="Attach image"
                 className="
                   p-2 rounded-xl min-h-0
-                  text-zinc-500 hover:bg-zinc-800 hover:text-violet-400
+                  text-zinc-500 hover:bg-zinc-800 hover:text-white
                   transition-colors duration-150
-                  focus:outline-none focus:ring-2 focus:ring-violet-500
+                  focus:outline-none focus:ring-2 focus:ring-zinc-400
                 "
               >
                 <Image size={18} />
@@ -198,7 +198,7 @@ const PostForm = ({ currentUser, onPost }) => {
               flex items-center gap-1.5 px-3 py-1.5 rounded-xl
               text-xs font-medium transition-all duration-150 min-h-0
               ${isAnon
-                ? "bg-violet-600/10 text-violet-400 border border-violet-700/30"
+                ? "bg-white/10 text-white border border-zinc-600"
                 : "text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300 border border-transparent"
               }
             `}

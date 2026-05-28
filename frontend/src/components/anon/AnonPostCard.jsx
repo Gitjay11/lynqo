@@ -8,7 +8,8 @@
  * Displays:
  *  - Ghost/mask icon + "Anonymous" label + relative timestamp
  *  - Post content text
- *  - Action row: Like (optimistic), Dislike (optimistic), Report (confirmation)
+ *  - Post image (optional, if backend provides it)
+ *  - Action row: Like (optimistic), Dislike (optimistic), Share, Report (confirmation)
  *
  * Optimistic reaction pattern (both like and dislike):
  *  1. Toggle local state + count immediately on click.
@@ -16,6 +17,10 @@
  *  3. Fire PUT /api/anon/:id/like  or  PUT /api/anon/:id/dislike.
  *  4. On success → sync counts with server response.
  *  5. On failure → roll back all state + show toast.
+ *
+ * Share pattern:
+ *  - Click "Share" → Web Share API if available (mobile).
+ *  - Falls back to clipboard copy on desktop + toast.
  *
  * Report pattern:
  *  - Click "Report" → show an inline confirmation prompt.
@@ -35,7 +40,7 @@
  */
 
 import { useState, useCallback } from "react";
-import { Ghost, ThumbsUp, ThumbsDown, Flag, AlertTriangle } from "lucide-react";
+import { Ghost, ThumbsUp, ThumbsDown, Flag, Share2, AlertTriangle, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { formatDistanceToNow } from "date-fns";
 import api from "../../api/axios.js";
@@ -57,16 +62,16 @@ const ReportConfirm = ({ onConfirm, onCancel, loading }) => (
     aria-label="Report confirmation"
     className="
       mx-4 mb-3 p-3
-      bg-amber-50 border border-amber-200 rounded-xl
+      bg-amber-500/10 border border-amber-500/20 rounded-xl
       flex items-start gap-3
     "
   >
     <AlertTriangle size={16} className="text-amber-500 flex-shrink-0 mt-0.5" />
     <div className="flex-1 min-w-0">
-      <p className="text-xs font-semibold text-amber-800 leading-tight">
+      <p className="text-xs font-semibold text-amber-400 leading-tight">
         Report this post?
       </p>
-      <p className="text-[11px] text-amber-700 mt-0.5 leading-snug">
+      <p className="text-[11px] text-amber-300 mt-0.5 leading-snug">
         If 5 or more users report it, the post will be hidden automatically.
       </p>
       <div className="flex gap-2 mt-2">
@@ -94,8 +99,8 @@ const ReportConfirm = ({ onConfirm, onCancel, loading }) => (
           disabled={loading}
           className="
             px-3 py-1.5 min-h-0 text-xs font-medium
-            text-amber-700 hover:text-amber-900
-            hover:bg-amber-100 rounded-lg
+            text-amber-300 hover:text-amber-200
+            hover:bg-amber-500/20 rounded-lg
             transition-colors duration-150
             disabled:opacity-50
             focus:outline-none focus:ring-2 focus:ring-amber-400
@@ -109,8 +114,11 @@ const ReportConfirm = ({ onConfirm, onCancel, loading }) => (
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
-const AnonPostCard = ({ post, currentUser, onHidden }) => {
+const AnonPostCard = ({ post, currentUser, onHidden, onDelete }) => {
   const userId = currentUser?._id;
+
+  // ── Delete state ──────────────────────────────────────────────
+  const [deleting, setDeleting] = useState(false);
 
   // ── Like state — optimistic ───────────────────────────────────────────────
   const [likeCount,      setLikeCount]      = useState(post.likes?.length ?? 0);
@@ -205,6 +213,50 @@ const AnonPostCard = ({ post, currentUser, onHidden }) => {
     }
   }, [isDisliked, dislikeCount, isLiked, likeCount, dislikingInFlight, post._id]);
 
+  // ── Share ──────────────────────────────────────────────────────────────────
+  // Uses the Web Share API on supported devices (mobile).
+  // Falls back to clipboard copy on desktop browsers that don't support it.
+  const handleShare = useCallback(async () => {
+    const postUrl   = `${window.location.origin}/anon/${post._id}`;
+    const shareText = post.content?.slice(0, 100) + (post.content?.length > 100 ? "…" : "");
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Check out this anonymous post on Lynqo",
+          text: shareText,
+          url: postUrl,
+        });
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          toast.error("Could not share post");
+        }
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(postUrl);
+        toast.success("Link copied to clipboard");
+      } catch {
+        toast.error("Could not copy link");
+      }
+    }
+  }, [post._id, post.content]);
+
+  // ── Delete ────────────────────────────────────────────────────────
+  const handleDelete = async () => {
+    if (deleting) return;
+    setDeleting(true);
+    try {
+      await api.delete(`/anon/${post._id}`);
+      toast.success("Post deleted");
+      onDelete?.(post._id);
+    } catch (err) {
+      toast.error(err.response?.data?.message ?? "Failed to delete post");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   // ── Report ─────────────────────────────────────────────────────────────────
   const handleReport = async () => {
     if (reporting || reported) return;
@@ -240,7 +292,7 @@ const AnonPostCard = ({ post, currentUser, onHidden }) => {
         <div className="
           flex-shrink-0 flex items-center justify-center
           w-8 h-8 rounded-full
-          bg-violet-600/15 text-violet-400
+          bg-zinc-800 text-zinc-400
         ">
           <Ghost size={16} />
         </div>
@@ -259,14 +311,28 @@ const AnonPostCard = ({ post, currentUser, onHidden }) => {
         <span className="
           flex-shrink-0
           inline-flex items-center gap-1
-          text-[10px] font-semibold text-violet-600
-          bg-violet-600/10 border border-violet-600/20
+          text-[10px] font-semibold text-zinc-400
+          bg-zinc-700/50 border border-zinc-700
           rounded-full px-2 py-0.5
         ">
-          <Ghost size={9} />
+          <Ghost size={9} className="text-zinc-400" />
           Anon
         </span>
       </header>
+
+      {/* ── Post image (optional) ─────────────────────────────────────────── */}
+      {post.image && (
+        <div className="px-4 pb-2">
+          <div className="w-full aspect-video overflow-hidden rounded-xl border border-zinc-800">
+            <img
+              src={post.image}
+              alt="Post attachment"
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
+          </div>
+        </div>
+      )}
 
       {/* ── Post content ──────────────────────────────────────────────────── */}
       <div className="px-4 pb-3">
@@ -289,10 +355,10 @@ const AnonPostCard = ({ post, currentUser, onHidden }) => {
             min-h-[44px] px-3 rounded-xl
             text-sm font-medium
             transition-all duration-150 active:scale-95
-            focus:outline-none focus:ring-2 focus:ring-brand-400 focus:ring-offset-1
+            focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-1
             disabled:cursor-not-allowed disabled:opacity-60
             ${isLiked
-              ? "text-brand-600 bg-brand-50"
+              ? "text-white bg-white/10"
               : "text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
             }
           `}
@@ -326,10 +392,10 @@ const AnonPostCard = ({ post, currentUser, onHidden }) => {
             min-h-[44px] px-3 rounded-xl
             text-sm font-medium
             transition-all duration-150 active:scale-95
-            focus:outline-none focus:ring-2 focus:ring-rose-400 focus:ring-offset-1
+            focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1
             disabled:cursor-not-allowed disabled:opacity-60
             ${isDisliked
-              ? "text-rose-600 bg-rose-50"
+              ? "text-red-500 bg-red-500/10"
               : "text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
             }
           `}
@@ -352,8 +418,48 @@ const AnonPostCard = ({ post, currentUser, onHidden }) => {
           )}
         </button>
 
-        {/* Spacer */}
+        {/* Spacer — pushes share + report to the right */}
         <div className="flex-1" />
+
+        {/* ── Delete — only rendered when onDelete is provided (post owner) ── */}
+        {onDelete && (
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            aria-label="Delete post"
+            className="
+              flex items-center gap-1.5
+              min-h-[44px] px-3 rounded-xl
+              text-sm font-medium
+              text-zinc-600 hover:text-red-500 hover:bg-red-500/10
+              transition-all duration-150 active:scale-95
+              focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1
+              disabled:opacity-50 disabled:cursor-not-allowed
+            "
+          >
+            {deleting
+              ? <span className="w-4 h-4 border-2 border-zinc-600 border-t-red-500 rounded-full animate-spin" />
+              : <Trash2 size={16} strokeWidth={2} className="flex-shrink-0" />
+            }
+          </button>
+        )}
+
+        {/* ── Share — Web Share API on mobile, clipboard on desktop ─────── */}
+        <button
+          onClick={handleShare}
+          aria-label="Share this anonymous post"
+          className="
+            flex items-center gap-1.5
+            min-h-[44px] px-3 rounded-xl
+            text-sm font-medium
+            text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300
+            transition-all duration-150 active:scale-95
+            focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-1
+          "
+        >
+          <Share2 size={16} strokeWidth={2} className="flex-shrink-0" />
+          <span className="hidden sm:inline text-xs">Share</span>
+        </button>
 
         {/* ── Report button ─────────────────────────────────────────────── */}
         <button
@@ -369,7 +475,7 @@ const AnonPostCard = ({ post, currentUser, onHidden }) => {
             focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-1
             disabled:opacity-50 disabled:cursor-not-allowed
             ${showConfirm
-              ? "text-amber-600 bg-amber-50"
+              ? "text-amber-500 bg-amber-500/10"
               : "text-zinc-500 hover:bg-zinc-800 hover:text-amber-400"
             }
             ${reported ? "text-zinc-600" : ""}

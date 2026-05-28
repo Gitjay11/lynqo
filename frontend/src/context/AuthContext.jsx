@@ -6,7 +6,7 @@
  *  - token         : the stored JWT (or null)
  *  - loading       : true while the /me check is in-flight on first load
  *  - login()       : persist user + token → state + localStorage
- *  - logout()      : clear state + localStorage → redirect to /login
+ *  - logout()      : clear state + localStorage → redirect to /
  *  - updateUser()  : merge fresh user data into state + localStorage
  *                    (used after profile edits / avatar uploads so the
  *                     navbar avatar reflects changes without a re-login)
@@ -26,6 +26,7 @@ import { createContext, useState, useEffect, useCallback } from "react";
 import api from "../api/axios.js";
 
 // ── Context creation ──────────────────────────────────────────────────────────
+// eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext(null);
 
 // ── Provider ──────────────────────────────────────────────────────────────────
@@ -53,7 +54,7 @@ export const AuthProvider = ({ children }) => {
         // Server returned the live user object — restore session
         setUser(data.user);
         setToken(storedToken);
-      } catch (err) {
+      } catch {
         // 401 or network error: token is bad → wipe everything
         // The axios response interceptor also clears localStorage on 401,
         // but we do it here explicitly for any non-401 failure edge cases.
@@ -91,8 +92,8 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setToken(null);
 
-    // Hard redirect — ensures socket, axios headers, and all state are clean
-    window.location.href = "/login";
+    // Hard redirect to landing page — ensures socket, axios headers, and all state are clean
+    window.location.href = "/";
   }, []);
 
   // ── updateUser() — merge fresh data after profile edit or avatar upload ─────

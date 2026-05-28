@@ -1,7 +1,7 @@
 /**
  * HeroSection.jsx — Full-Viewport Landing Hero (Dark Theme)
  *
- * Background: from-violet-900 via-zinc-950 to-zinc-950 gradient
+ * Background: solid bg-black (no gradient)
  * Height:     min-h-screen
  * Layout:     flex col, centered vertically + horizontally, text-center
  */
@@ -17,45 +17,19 @@ const HeroSection = () => {
       className="
         relative overflow-hidden
         min-h-screen
-        bg-gradient-to-br from-violet-900 via-zinc-950 to-zinc-950
+        bg-black
         flex flex-col items-center justify-center
         text-center
         px-4
         pt-14 lg:pt-16
       "
     >
-      {/* ── Decorative floating circles ──────────────────────────────────── */}
-
-      {/* Top-left — large */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -top-16 -left-16 w-48 h-48 rounded-full bg-violet-800/20"
-      />
-      {/* Top-right — small */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute top-10 right-8 w-16 h-16 rounded-full bg-violet-600/15"
-      />
-      {/* Mid-right — medium */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute top-1/2 -right-12 w-32 h-32 rounded-full bg-violet-800/10"
-      />
-      {/* Bottom-right — large */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -bottom-20 -right-20 w-48 h-48 rounded-full bg-violet-700/15"
-      />
-      {/* Bottom-left — small */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute bottom-16 left-6 w-8 h-8 rounded-full bg-violet-500/20"
-      />
-      {/* Center-left — tiny accent */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute top-1/3 -left-8 w-16 h-16 rounded-full bg-violet-600/10"
-      />
+      {/* ── Subtle decorative circles (zinc tones only) ───────────────────── */}
+      <div aria-hidden="true" className="pointer-events-none absolute -top-16 -left-16 w-48 h-48 rounded-full bg-zinc-900/60" />
+      <div aria-hidden="true" className="pointer-events-none absolute top-10 right-8 w-16 h-16 rounded-full bg-zinc-800/40" />
+      <div aria-hidden="true" className="pointer-events-none absolute top-1/2 -right-12 w-32 h-32 rounded-full bg-zinc-900/30" />
+      <div aria-hidden="true" className="pointer-events-none absolute -bottom-20 -right-20 w-48 h-48 rounded-full bg-zinc-900/40" />
+      <div aria-hidden="true" className="pointer-events-none absolute bottom-16 left-6 w-8 h-8 rounded-full bg-zinc-800/50" />
 
       {/* ── Main content ───────────────────────────────────────────────────── */}
       <div className="relative z-10 flex flex-col items-center max-w-2xl mx-auto w-full">
@@ -63,8 +37,8 @@ const HeroSection = () => {
         {/* 1. College pill tag */}
         <div className="
           inline-flex items-center gap-2
-          bg-violet-800/30 text-violet-300 text-xs
-          border border-violet-700/40
+          bg-zinc-900 text-zinc-300 text-xs
+          border border-zinc-800
           px-4 py-1.5 rounded-full
           mb-8 select-none
         ">
@@ -77,11 +51,11 @@ const HeroSection = () => {
         {/* 2. H1 headline */}
         <h1 className="
           text-4xl md:text-5xl lg:text-6xl
-          font-bold text-zinc-50 leading-tight
+          font-bold text-white leading-tight
           mb-4
         ">
           Everything happening on campus —{" "}
-          <span className="whitespace-nowrap text-violet-300">right here.</span>
+          <span className="whitespace-nowrap text-zinc-300">right here.</span>
         </h1>
 
         {/* 3. Subheadline */}
@@ -99,7 +73,7 @@ const HeroSection = () => {
           gap-3 items-center
           w-full sm:w-auto
         ">
-          {/* Primary — violet solid */}
+          {/* Primary — white solid */}
           <Link
             to="/signup"
             id="hero-cta-signup"
@@ -107,18 +81,18 @@ const HeroSection = () => {
               w-full sm:w-auto
               inline-flex items-center justify-center
               min-h-[48px] px-8 py-3
-              bg-violet-600 hover:bg-violet-700 active:bg-violet-800
-              text-white font-semibold text-base
+              bg-white hover:bg-zinc-100 active:bg-zinc-200
+              text-black font-semibold text-base
               rounded-full
-              shadow-lg shadow-violet-900/50
+              shadow-lg shadow-black/40
               transition-all duration-200
-              focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 focus:ring-offset-zinc-950
+              focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black
             "
           >
             Get Started →
           </Link>
 
-          {/* Secondary — transparent, zinc-600 border */}
+          {/* Secondary — transparent, zinc-700 border */}
           <Link
             to="/login"
             id="hero-cta-login"
@@ -127,12 +101,12 @@ const HeroSection = () => {
               inline-flex items-center justify-center
               min-h-[48px] px-8 py-3
               bg-transparent
-              border border-zinc-600
+              border border-zinc-700
               text-zinc-300 font-semibold text-base
               rounded-full
-              hover:bg-zinc-800 hover:border-zinc-500 active:bg-zinc-700
+              hover:bg-zinc-900 hover:border-zinc-500 active:bg-zinc-800
               transition-all duration-200
-              focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 focus:ring-offset-zinc-950
+              focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 focus:ring-offset-black
             "
           >
             Login

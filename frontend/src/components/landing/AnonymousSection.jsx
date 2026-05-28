@@ -59,8 +59,8 @@ const AnonymousSection = () => {
           {/* Label pill */}
           <span className="
             inline-block
-            bg-violet-600/10 text-violet-400 text-xs
-            border border-violet-700/30
+            bg-zinc-800 text-zinc-400 text-xs
+            border border-zinc-700
             px-3 py-1.5 rounded-full
           ">
             👻 Anonymous Posting
@@ -91,11 +91,11 @@ const AnonymousSection = () => {
             className="
               inline-flex items-center justify-center
               min-h-[48px] px-6 py-3 mt-8
-              bg-violet-600 hover:bg-violet-700 active:bg-violet-800
-              text-white font-semibold text-base
+              bg-white hover:bg-zinc-100 active:bg-zinc-200
+              text-black font-semibold text-base
               rounded-full
               transition-all duration-200
-              focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 focus:ring-offset-zinc-950
+              focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-zinc-950
             "
           >
             Start Confessing →
