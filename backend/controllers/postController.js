@@ -19,8 +19,9 @@
  *  - Pagination limit is capped at 20 to prevent oversized payloads.
  */
 
-import Post from "../models/Post.js";
-import cloudinary from "../config/cloudinary.js";
+import Post               from "../models/Post.js";
+import cloudinary         from "../config/cloudinary.js";
+import { createNotification } from "../utils/createNotification.js";
 
 // ── Helper — extract Cloudinary public_id from a hosted URL ───────────────
 // Cloudinary URLs follow this structure:
@@ -223,6 +224,18 @@ export const toggleLike = async (req, res, next) => {
 
     await post.save();
 
+    // ── Notification: fire only when newly liking (not unliking) ─────────
+    // Guard: no self-notification (post author liked their own post)
+    if (!alreadyLiked) {
+      await createNotification({
+        recipient:  post.author,
+        sender:     userId,
+        senderName: req.user.name,
+        type:       "like_post",
+        postId:     post._id,
+      });
+    }
+
     return res.status(200).json({
       success: true,
       likes: post.likes,
@@ -262,6 +275,17 @@ export const toggleDislike = async (req, res, next) => {
     }
 
     await post.save();
+
+    // ── Notification: fire only when newly disliking (not removing dislike) ─
+    if (!alreadyDisliked) {
+      await createNotification({
+        recipient:  post.author,
+        sender:     userId,
+        senderName: req.user.name,
+        type:       "dislike_post",
+        postId:     post._id,
+      });
+    }
 
     return res.status(200).json({
       success: true,
@@ -311,6 +335,16 @@ export const addComment = async (req, res, next) => {
 
     // ── Populate and return the full updated comments array ───────────────
     await post.populate("comments.user", "name profilePicture");
+
+    // ── Notification: alert post author about the new comment ─────────────
+    // createNotification internally guards against self-notifications.
+    await createNotification({
+      recipient:  post.author,
+      sender:     req.user._id,
+      senderName: req.user.name,
+      type:       "comment_post",
+      postId:     post._id,
+    });
 
     return res.status(201).json({
       success: true,

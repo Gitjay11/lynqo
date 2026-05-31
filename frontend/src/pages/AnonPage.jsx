@@ -11,28 +11,36 @@
  *  - No TrendingWidget in the right sidebar (not relevant for anon board)
  *  - Right sidebar shows an "About the Anon Board" info widget instead
  *
- * Responsive layout (identical to FeedPage):
- *  Mobile  (default): single column, full width, pb-16 bottom clearance
- *  md (768px+):       max-w-xl centered container
- *  lg (1024px+):      two-column CSS grid [1fr / 288px] — right sidebar visible
+ * Search mode:
+ *  - SearchBar (inline, always visible above the composer) triggers
+ *    GET /api/search?q=term&type=anon on debounced input (400ms, ≥2 chars)
+ *  - Results replace the current board view
+ *  - Clearing the search restores the full anon board
+ *  - Composer is hidden in search mode
  *
  * Security note:
  *  This component NEVER receives or stores any real author data.
  *  The backend enforces this at the query level (realAuthor: select:false).
  *  This component enforces it at the UI level by using AnonPostCard which
  *  has no concept of author identity.
+ *
+ * Responsive layout (identical to FeedPage):
+ *  Mobile  (default): single column, full width, pb-16 bottom clearance
+ *  md (768px+):       max-w-xl centered container
+ *  lg (1024px+):      two-column CSS grid [1fr / 288px] — right sidebar visible
  */
 
-import { useState, useEffect, useCallback } from "react";
-import { RefreshCw, Ghost, ShieldCheck, EyeOff } from "lucide-react";
-import toast from "react-hot-toast";
-import api from "../api/axios.js";
-import { useAuth } from "../hooks/useAuth.js";
-import AnonPostForm from "../components/anon/AnonPostForm.jsx";
-import AnonPostCard from "../components/anon/AnonPostCard.jsx";
-import PostCardSkeleton from "../components/common/PostCardSkeleton.jsx";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { RefreshCw, Ghost, ShieldCheck, EyeOff, Search } from "lucide-react";
+import toast                                               from "react-hot-toast";
+import api                                                 from "../api/axios.js";
+import { useAuth }                                         from "../hooks/useAuth.js";
+import AnonPostForm                                        from "../components/anon/AnonPostForm.jsx";
+import AnonPostCard                                        from "../components/anon/AnonPostCard.jsx";
+import PostCardSkeleton                                    from "../components/common/PostCardSkeleton.jsx";
+import SearchBar                                           from "../components/search/SearchBar.jsx";
 
-// ── Right sidebar info widget (lg+ only) ────────────────────────────────────
+// ── Right sidebar info widget (lg+ only) ─────────────────────────────────────
 const AnonInfoWidget = () => (
   <aside className="hidden lg:block sticky top-20 space-y-4" aria-label="About the Anon Board">
     <div className="card p-0 overflow-hidden">
@@ -50,23 +58,23 @@ const AnonInfoWidget = () => (
           {
             icon: EyeOff,
             color: "text-zinc-400",
-            bg: "bg-zinc-800",
+            bg:    "bg-zinc-800",
             title: "Your identity is hidden",
-            desc: "Nobody, not even admins, can see who posted what on this board.",
+            desc:  "Nobody, not even admins, can see who posted what on this board.",
           },
           {
             icon: ShieldCheck,
             color: "text-emerald-500",
-            bg: "bg-emerald-600/10",
+            bg:    "bg-emerald-600/10",
             title: "Auto-moderation",
-            desc: "Posts reported by 5+ users are automatically hidden to keep things safe.",
+            desc:  "Posts reported by 5+ users are automatically hidden to keep things safe.",
           },
           {
             icon: RefreshCw,
             color: "text-zinc-400",
-            bg: "bg-zinc-800",
+            bg:    "bg-zinc-800",
             title: "Newest first",
-            desc: "The feed shows the most recent posts at the top.",
+            desc:  "The feed shows the most recent posts at the top.",
           },
         ].map(({ icon: Icon, color, bg, title, desc }) => (
           <li key={title} className="flex items-start gap-3">
@@ -88,6 +96,7 @@ const AnonInfoWidget = () => (
 const AnonPage = () => {
   const { user } = useAuth();
 
+  // ── Normal board state ─────────────────────────────────────────────────────
   const [posts,       setPosts]       = useState([]);
   const [page,        setPage]        = useState(1);
   const [totalPages,  setTotalPages]  = useState(1);
@@ -95,13 +104,21 @@ const AnonPage = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error,       setError]       = useState(null);
 
-  // ── Fetch a page of anon posts ───────────────────────────────────────────
+  // ── Search state ───────────────────────────────────────────────────────────
+  const [searchQuery,   setSearchQuery]   = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError,   setSearchError]   = useState(null);
+  const isSearchMode = searchQuery.length >= 2;
+
+  // ── Prevent stale search responses ────────────────────────────────────────
+  const searchAbortRef = useRef(null);
+
+  // ── Fetch a page of anon posts ─────────────────────────────────────────────
   const fetchPosts = useCallback(async (pageNum = 1, append = false) => {
     try {
       const { data } = await api.get(`/anon?page=${pageNum}&limit=10`);
-      setPosts((prev) =>
-        append ? [...prev, ...data.posts] : data.posts
-      );
+      setPosts((prev) => append ? [...prev, ...data.posts] : data.posts);
       setTotalPages(data.totalPages);
       setPage(pageNum);
       setError(null);
@@ -112,7 +129,7 @@ const AnonPage = () => {
     }
   }, []);
 
-  // ── Initial load ─────────────────────────────────────────────────────────
+  // ── Initial load ───────────────────────────────────────────────────────────
   useEffect(() => {
     let mounted = true;
     const load = async () => {
@@ -124,7 +141,7 @@ const AnonPage = () => {
     return () => { mounted = false; };
   }, [fetchPosts]);
 
-  // ── Pagination ───────────────────────────────────────────────────────────
+  // ── Pagination ─────────────────────────────────────────────────────────────
   const handleLoadMore = async () => {
     if (loadingMore || page >= totalPages) return;
     setLoadingMore(true);
@@ -132,27 +149,57 @@ const AnonPage = () => {
     setLoadingMore(false);
   };
 
-  // ── Prepend newly created anon post ─────────────────────────────────────
+  // ── Prepend newly created anon post ───────────────────────────────────────
   const handleNewPost = useCallback((newPost) => {
     if (newPost) setPosts((prev) => [newPost, ...prev]);
   }, []);
 
-  // ── Remove a post from list when it gets hidden (auto-moderation) ────────
+  // ── Remove hidden / deleted posts from the list ───────────────────────────
   const handlePostHidden = useCallback((postId) => {
     setPosts((prev) => prev.filter((p) => p._id !== postId));
+    setSearchResults((prev) => prev.filter((p) => p._id !== postId));
   }, []);
 
-  // ── Remove a post from list when the owner deletes it ─────────────────
   const handlePostDeleted = useCallback((postId) => {
     setPosts((prev) => prev.filter((p) => p._id !== postId));
+    setSearchResults((prev) => prev.filter((p) => p._id !== postId));
+  }, []);
+
+  // ── Search handler (called by SearchBar with debounced query) ──────────────
+  const handleSearch = useCallback(async (query) => {
+    if (!query || query.trim().length < 2) {
+      setSearchQuery("");
+      setSearchResults([]);
+      setSearchError(null);
+      return;
+    }
+
+    const trimmed = query.trim();
+    setSearchQuery(trimmed);
+    setSearchLoading(true);
+    setSearchError(null);
+
+    if (searchAbortRef.current) searchAbortRef.current.abort();
+    const controller = new AbortController();
+    searchAbortRef.current = controller;
+
+    try {
+      const { data } = await api.get(
+        `/search?q=${encodeURIComponent(trimmed)}&type=anon`,
+        { signal: controller.signal }
+      );
+      setSearchResults(data.results?.anonPosts ?? []);
+    } catch (err) {
+      if (err.name === "CanceledError" || err.code === "ERR_CANCELED") return;
+      setSearchError("Search failed. Try again.");
+      setSearchResults([]);
+    } finally {
+      setSearchLoading(false);
+    }
   }, []);
 
   // ──────────────────────────────────────────────────────────────────────────
   return (
-    /*
-     * Outer wrapper — same responsive grid as FeedPage.
-     * Mobile: single column. md: centered. lg: two-column.
-     */
     <div className="
       w-full min-h-screen
       md:max-w-2xl md:mx-auto md:px-4 md:py-4
@@ -164,7 +211,7 @@ const AnonPage = () => {
       {/* ── Main anon feed column ──────────────────────────────────────────── */}
       <div className="min-w-0 space-y-0 md:space-y-3">
 
-        {/* ── Page header (mobile only — lg: visible in sidebar widget) ─────── */}
+        {/* ── Page header (mobile only) ──────────────────────────────────── */}
         <div className="flex items-center gap-2 px-4 pt-4 pb-2 lg:hidden">
           <Ghost size={16} className="text-zinc-400 flex-shrink-0" />
           <div>
@@ -177,97 +224,183 @@ const AnonPage = () => {
           </div>
         </div>
 
-        {/* ── Composer ─────────────────────────────────────────────────────── */}
-        <AnonPostForm currentUser={user} onPost={handleNewPost} />
+        {/* ── Inline confession search bar — always visible at top ──────── */}
+        <div className="px-4 pb-2 md:px-0 md:pb-0">
+          <SearchBar
+            onSearch={handleSearch}
+            placeholder="Search confessions…"
+            loading={searchLoading}
+          />
+        </div>
 
-        {/* ── Visual separator (mobile only) ──────────────────────────────── */}
-        <div className="md:hidden h-2 bg-zinc-900" aria-hidden="true" />
+        {/* ── Mobile separator ──────────────────────────────────────────── */}
+        <div className="md:hidden h-px bg-zinc-800" aria-hidden="true" />
 
-        {/* ── Feed states ──────────────────────────────────────────────────── */}
-
-        {/* ── Loading skeleton — 3 shimmer cards while data fetches ────────── */}
-        {loading && (
+        {/* ════════════════════════════════════════════════════════════════
+            SEARCH MODE — show results instead of normal board
+        ════════════════════════════════════════════════════════════════ */}
+        {isSearchMode && (
           <div className="space-y-0 md:space-y-3">
-            <PostCardSkeleton />
-            <PostCardSkeleton />
-            <PostCardSkeleton />
+
+            {/* Search loading */}
+            {searchLoading && (
+              <div className="space-y-0 md:space-y-3">
+                <PostCardSkeleton />
+                <PostCardSkeleton />
+                <PostCardSkeleton />
+              </div>
+            )}
+
+            {/* Search error */}
+            {!searchLoading && searchError && (
+              <div className="flex flex-col items-center gap-2 py-10 px-4 text-center">
+                <p className="text-sm text-zinc-500">{searchError}</p>
+              </div>
+            )}
+
+            {/* Search empty state */}
+            {!searchLoading && !searchError && searchResults.length === 0 && (
+              <div className="flex flex-col items-center gap-3 py-16 px-4 text-center">
+                <div className="w-14 h-14 rounded-full bg-zinc-800 flex items-center justify-center">
+                  <Search size={22} className="text-zinc-500" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-zinc-200">
+                    No confessions found for "{searchQuery}"
+                  </p>
+                  <p className="text-xs text-zinc-500 mt-1">
+                    Try a different keyword
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Search results — rendered as AnonPostCards (no author, ever) */}
+            {!searchLoading && searchResults.length > 0 && (
+              <>
+                {/* Result count */}
+                <div className="px-4 py-2 md:px-0">
+                  <p className="text-xs text-zinc-500">
+                    {searchResults.length} result{searchResults.length !== 1 ? "s" : ""} for "
+                    <span className="text-zinc-300">{searchQuery}</span>"
+                  </p>
+                </div>
+
+                <ul className="space-y-0 md:space-y-3" aria-label="Search results">
+                  {searchResults.map((post) => (
+                    <li key={post._id}>
+                      {/*
+                       * SECURITY: AnonPostCard never exposes author identity.
+                       * realAuthor is excluded at the DB level (select:false)
+                       * AND by .select('-realAuthor') in searchController.
+                       */}
+                      <AnonPostCard
+                        post={post}
+                        currentUser={user}
+                        onHidden={handlePostHidden}
+                        onDelete={post.isOwner ? handlePostDeleted : undefined}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
           </div>
         )}
 
-        {/* Error with retry */}
-        {!loading && error && (
-          <div className="flex flex-col items-center gap-3 py-12 px-4">
-            <p className="text-sm text-zinc-500 text-center">{error}</p>
-            <button
-              onClick={() => fetchPosts(1, false)}
-              className="btn-secondary flex items-center gap-2 text-sm"
-            >
-              <RefreshCw size={15} />
-              Try again
-            </button>
-          </div>
-        )}
-
-        {/* ── Empty state ───────────────────────────────────────────────────── */}
-        {!loading && !error && posts.length === 0 && (
-          <div className="flex flex-col items-center gap-3 py-16 px-4 text-center">
-            {/* Ghost icon with violet tint — on-brand for the anon board */}
-            <div className="w-16 h-16 rounded-full bg-zinc-800 flex items-center justify-center mb-1">
-              <Ghost size={28} className="text-zinc-400" />
-            </div>
-            <p className="text-base font-semibold text-zinc-100">
-              No confessions yet
-            </p>
-            <p className="text-sm text-zinc-400 max-w-[240px] leading-relaxed">
-              You go first.
-            </p>
-          </div>
-        )}
-
-        {/* ── Post list ────────────────────────────────────────────────────── */}
-        {!loading && posts.length > 0 && (
+        {/* ════════════════════════════════════════════════════════════════
+            NORMAL MODE — full board (hidden when search is active)
+        ════════════════════════════════════════════════════════════════ */}
+        {!isSearchMode && (
           <>
-            <ul className="space-y-0 md:space-y-3" aria-label="Anonymous community board">
-              {posts.map((post) => (
-                <li key={post._id}>
-                  <AnonPostCard
-                    post={post}
-                    currentUser={user}
-                    onHidden={handlePostHidden}
-                    onDelete={post.isOwner ? handlePostDeleted : undefined}
-                  />
-                </li>
-              ))}
-            </ul>
+            {/* ── Composer ──────────────────────────────────────────────── */}
+            <AnonPostForm currentUser={user} onPost={handleNewPost} />
 
-            {/* ── Load more ─────────────────────────────────────────────── */}
-            <div className="flex justify-center py-6 px-4">
-              {page < totalPages ? (
+            {/* ── Visual separator (mobile only) ────────────────────────── */}
+            <div className="md:hidden h-2 bg-zinc-900" aria-hidden="true" />
+
+            {/* ── Loading skeleton ──────────────────────────────────────── */}
+            {loading && (
+              <div className="space-y-0 md:space-y-3">
+                <PostCardSkeleton />
+                <PostCardSkeleton />
+                <PostCardSkeleton />
+              </div>
+            )}
+
+            {/* Error with retry */}
+            {!loading && error && (
+              <div className="flex flex-col items-center gap-3 py-12 px-4">
+                <p className="text-sm text-zinc-500 text-center">{error}</p>
                 <button
-                  id="anon-load-more-btn"
-                  onClick={handleLoadMore}
-                  disabled={loadingMore}
-                  className="btn-secondary flex items-center gap-2 text-sm w-full md:w-auto"
+                  onClick={() => fetchPosts(1, false)}
+                  className="btn-secondary flex items-center gap-2 text-sm"
                 >
-                  {loadingMore
-                    ? <>
-                        <span className="w-4 h-4 border-2 border-zinc-600 border-t-white rounded-full animate-spin" />
-                        Loading…
-                      </>
-                    : "Load more posts"
-                  }
+                  <RefreshCw size={15} />
+                  Try again
                 </button>
-              ) : (
-                <p className="text-xs text-zinc-500">
-                  You've reached the end of the Anon board 👻
+              </div>
+            )}
+
+            {/* ── Empty state ───────────────────────────────────────────── */}
+            {!loading && !error && posts.length === 0 && (
+              <div className="flex flex-col items-center gap-3 py-16 px-4 text-center">
+                <div className="w-16 h-16 rounded-full bg-zinc-800 flex items-center justify-center mb-1">
+                  <Ghost size={28} className="text-zinc-400" />
+                </div>
+                <p className="text-base font-semibold text-zinc-100">No confessions yet</p>
+                <p className="text-sm text-zinc-400 max-w-[240px] leading-relaxed">
+                  You go first.
                 </p>
-              )}
-            </div>
+              </div>
+            )}
+
+            {/* ── Post list ─────────────────────────────────────────────── */}
+            {!loading && posts.length > 0 && (
+              <>
+                <ul className="space-y-0 md:space-y-3" aria-label="Anonymous community board">
+                  {posts.map((post) => (
+                    <li key={post._id}>
+                      <AnonPostCard
+                        post={post}
+                        currentUser={user}
+                        onHidden={handlePostHidden}
+                        onDelete={post.isOwner ? handlePostDeleted : undefined}
+                      />
+                    </li>
+                  ))}
+                </ul>
+
+                {/* ── Load more ─────────────────────────────────────────── */}
+                <div className="flex justify-center py-6 px-4">
+                  {page < totalPages ? (
+                    <button
+                      id="anon-load-more-btn"
+                      onClick={handleLoadMore}
+                      disabled={loadingMore}
+                      className="btn-secondary flex items-center gap-2 text-sm w-full md:w-auto"
+                    >
+                      {loadingMore
+                        ? <>
+                            <span className="w-4 h-4 border-2 border-zinc-600 border-t-white rounded-full animate-spin" />
+                            Loading…
+                          </>
+                        : "Load more posts"
+                      }
+                    </button>
+                  ) : (
+                    <p className="text-xs text-zinc-500">
+                      You've reached the end of the Anon board 👻
+                    </p>
+                  )}
+                </div>
+              </>
+            )}
           </>
         )}
       </div>
 
-      {/* ── Right sidebar — lg+ only ─────────────────────────────────────── */}
+      {/* ── Right sidebar — lg+ only ────────────────────────────────────── */}
       <AnonInfoWidget />
 
     </div>

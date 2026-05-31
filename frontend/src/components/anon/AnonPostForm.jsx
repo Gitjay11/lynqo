@@ -121,9 +121,6 @@ const AnonPostForm = ({ currentUser, onPost }) => {
             <EyeOff size={11} />
             Posting as Anonymous
           </span>
-          <p className="text-[11px] text-zinc-500 leading-tight">
-            Your identity is always hidden
-          </p>
         </div>
 
         {/* ── Top row: avatar + textarea ──────────────────────────────────── */}

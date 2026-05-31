@@ -34,8 +34,9 @@
  *  disconnect     → remove from onlineUsers, broadcast user_offline
  */
 
-import Message from "../models/Message.js";
-import Conversation from "../models/Conversation.js";
+import Message      from "../models/Message.js";
+import Conversation  from "../models/Conversation.js";
+import { createNotification } from "../utils/createNotification.js";
 
 // ── In-memory online-user registry ───────────────────────────────────────────
 // Format: { userId (string) → socketId (string) }
@@ -170,6 +171,28 @@ export const initSocket = (io) => {
           message: populatedMessage,
         });
 
+        // ── 5. Notify the OTHER participant via the notification system ────
+        // Fetch conversation participants to identify the recipient.
+        // We already updated the conversation above, so we can re-use the doc.
+        const conversation = await Conversation.findById(conversationId).select("participants");
+        if (conversation) {
+          // The other participant is whoever is NOT the sender
+          const recipientId = conversation.participants.find(
+            (p) => p.toString() !== socket.userId
+          );
+
+          if (recipientId) {
+            // senderName is already available from the populated message
+            await createNotification({
+              recipient:      recipientId,
+              sender:         socket.userId,
+              senderName:     populatedMessage.sender.name,
+              type:           "new_message",
+              conversationId: conversationId,
+            });
+          }
+        }
+
         console.log(
           `💬 Message in room ${conversationId} from user ${socket.userId}`
         );
@@ -213,6 +236,50 @@ export const initSocket = (io) => {
       socket.to(conversationId).emit("stop_typing", {
         senderId: socket.userId,
       });
+    });
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // EVENT: mark_notification_read
+    //
+    // A socket-path alternative to PUT /api/notifications/:id/read.
+    // Useful for instant read-status sync when both sender and recipient are
+    // online simultaneously (e.g., user opens the notification panel while
+    // connected — no round-trip HTTP request needed).
+    //
+    // Client payload: { notificationId: string }
+    //
+    // Behaviour:
+    //  - Validates that the socket has an authenticated userId
+    //  - Finds the notification by ID, verifies it belongs to this user
+    //  - Sets read: true in DB
+    //  - No emit back — the frontend already applies an optimistic update
+    //    in NotificationContext.markAsRead() before emitting this event
+    //
+    // Error handling: silent — a DB failure here should not crash the socket
+    // ──────────────────────────────────────────────────────────────────────────
+    socket.on("mark_notification_read", async ({ notificationId }) => {
+      // Basic guard: must be authenticated and have a notification ID
+      if (!socket.userId || !notificationId) return;
+
+      try {
+        // Import lazily to avoid circular dependency at module load time.
+        // (Notification model → no deps on socket, so this is safe.)
+        const { default: Notification } = await import("../models/Notification.js");
+
+        // Only update if this notification actually belongs to this user.
+        // The $and query acts as an ownership check + unread filter in one op.
+        await Notification.updateOne(
+          {
+            _id:       notificationId,
+            recipient: socket.userId,  // ownership check — cannot mark others' notifications
+            read:      false,          // no-op if already read (avoids unnecessary write)
+          },
+          { $set: { read: true } }
+        );
+      } catch (err) {
+        // Swallow silently — the frontend already updated optimistically
+        console.error("[mark_notification_read] DB error:", err.message);
+      }
     });
 
     // ──────────────────────────────────────────────────────────────────────────

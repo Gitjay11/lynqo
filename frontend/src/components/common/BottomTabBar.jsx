@@ -12,9 +12,9 @@ import { useAuth } from "../../hooks/useAuth.js";
 
 // ── Tab definitions ───────────────────────────────────────────────────────────
 const STATIC_TABS = [
-  { to: "/feed", label: "Feed",  icon: Home          },
-  { to: "/anon", label: "Anon",  icon: Ghost         },
-  { to: "/chat", label: "Chat",  icon: MessageCircle },
+  { to: "/feed",   label: "Feed",  icon: Home          },
+  { to: "/anon",   label: "Anon",  icon: Ghost         },
+  { to: "/chat",   label: "Chat",  icon: MessageCircle },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -46,7 +46,7 @@ const BottomTabBar = () => {
         safe-area-inset-bottom
       "
     >
-      {/* ── Feed, Anon, Chat ───────────────────────────────────────────────── */}
+      {/* ── Feed, Anon, Search, Chat ───────────────────────────────────────── */}
       {STATIC_TABS.map(({ to, label, icon: Icon }) => (
         <NavLink
           key={to}

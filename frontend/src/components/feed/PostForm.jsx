@@ -1,11 +1,11 @@
 /**
  * PostForm.jsx — Post Composer (Dark Theme)
  *
- * bg-zinc-900 card, bg-zinc-800 textarea area, violet submit button
+ * bg-zinc-900 card, bg-zinc-800 textarea area
  */
 
 import { useState, useRef } from "react";
-import { Image, X, Loader2, EyeOff } from "lucide-react";
+import { Image, X, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "../../api/axios.js";
 import Avatar from "../common/Avatar.jsx";
@@ -15,11 +15,10 @@ const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MB
 
 // ─────────────────────────────────────────────────────────────────────────────
 const PostForm = ({ currentUser, onPost }) => {
-  const [content,    setContent]    = useState("");
-  const [imageFile,  setImageFile]  = useState(null);
+  const [content,      setContent]      = useState("");
+  const [imageFile,    setImageFile]    = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
-  const [loading,    setLoading]    = useState(false);
-  const [isAnon,     setIsAnon]     = useState(false);
+  const [loading,      setLoading]      = useState(false);
   const fileInputRef = useRef(null);
 
   const remaining = MAX_CHARS - content.length;
@@ -56,27 +55,15 @@ const PostForm = ({ currentUser, onPost }) => {
 
     setLoading(true);
     try {
-      let newPost;
+      const fd = new FormData();
+      fd.append("content", content.trim());
+      if (imageFile) fd.append("image", imageFile);
 
-      if (isAnon) {
-        // Anonymous post — JSON, no image
-        const { data } = await api.post("/anon", { content: content.trim() });
-        toast.success("Posted anonymously!");
-        newPost = data.post;
-        onPost?.(newPost, "anon");
-      } else {
-        // Regular post — multipart/form-data if image present
-        const fd = new FormData();
-        fd.append("content", content.trim());
-        if (imageFile) fd.append("image", imageFile);
-
-        const { data } = await api.post("/posts", fd, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-        toast.success("Posted!");
-        newPost = data.post;
-        onPost?.(newPost, "feed");
-      }
+      const { data } = await api.post("/posts", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      toast.success("Posted!");
+      onPost?.(data.post, "feed");
 
       setContent("");
       removeImage();
@@ -98,10 +85,10 @@ const PostForm = ({ currentUser, onPost }) => {
         {/* ── Top row: avatar + textarea ──────────────────────────────────── */}
         <div className="flex items-start gap-3">
           <Avatar
-            src={isAnon ? null : currentUser?.profilePicture}
-            name={isAnon ? "?" : (currentUser?.name ?? "")}
+            src={currentUser?.profilePicture}
+            name={currentUser?.name ?? ""}
             size="sm"
-            className={`flex-shrink-0 mt-0.5 ${isAnon ? "opacity-30" : ""}`}
+            className="flex-shrink-0 mt-0.5"
           />
 
           <div className="flex-1 min-w-0">
@@ -109,7 +96,7 @@ const PostForm = ({ currentUser, onPost }) => {
               id="post-content-textarea"
               value={content}
               onChange={(e) => setContent(e.target.value.slice(0, MAX_CHARS))}
-              placeholder={isAnon ? "Share something anonymously…" : "What's on your mind?"}
+              placeholder="What's on your mind?"
               rows={3}
               className="
                 w-full px-0 py-1
@@ -161,50 +148,27 @@ const PostForm = ({ currentUser, onPost }) => {
         {/* ── Bottom toolbar ────────────────────────────────────────────────── */}
         <div className="flex items-center gap-2 mt-3">
 
-          {/* Image attach — hidden when anon */}
-          {!isAnon && (
-            <>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleImageSelect}
-                aria-hidden="true"
-              />
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                aria-label="Attach image"
-                className="
-                  p-2 rounded-xl min-h-0
-                  text-zinc-500 hover:bg-zinc-800 hover:text-white
-                  transition-colors duration-150
-                  focus:outline-none focus:ring-2 focus:ring-zinc-400
-                "
-              >
-                <Image size={18} />
-              </button>
-            </>
-          )}
-
-          {/* Anonymous toggle */}
+          {/* Image attach */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleImageSelect}
+            aria-hidden="true"
+          />
           <button
             type="button"
-            onClick={() => setIsAnon((v) => !v)}
-            aria-label={isAnon ? "Switch to public post" : "Switch to anonymous post"}
-            aria-pressed={isAnon}
-            className={`
-              flex items-center gap-1.5 px-3 py-1.5 rounded-xl
-              text-xs font-medium transition-all duration-150 min-h-0
-              ${isAnon
-                ? "bg-white/10 text-white border border-zinc-600"
-                : "text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300 border border-transparent"
-              }
-            `}
+            onClick={() => fileInputRef.current?.click()}
+            aria-label="Attach image"
+            className="
+              p-2 rounded-xl min-h-0
+              text-zinc-500 hover:bg-zinc-800 hover:text-white
+              transition-colors duration-150
+              focus:outline-none focus:ring-2 focus:ring-zinc-400
+            "
           >
-            <EyeOff size={13} />
-            {isAnon ? "Anon" : "Go Anon"}
+            <Image size={18} />
           </button>
 
           {/* Spacer */}
@@ -222,7 +186,7 @@ const PostForm = ({ currentUser, onPost }) => {
                   <Loader2 size={14} className="animate-spin" />
                   Posting…
                 </span>
-              : (isAnon ? "Post Anonymously" : "Post")
+              : "Post"
             }
           </button>
         </div>

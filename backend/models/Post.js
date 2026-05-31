@@ -109,6 +109,11 @@ const postSchema = new mongoose.Schema(
 // Sort by newest first is the dominant query pattern for the feed.
 postSchema.index({ createdAt: -1 });
 
+// Full-text search index on content.
+// MongoDB Atlas creates this on first query, but declaring it explicitly
+// ensures it is always present and consistently defined across environments.
+postSchema.index({ content: 'text' });
+
 // ── Create and export the model ────────────────────────────────────────────
 const Post = mongoose.model("Post", postSchema);
 export default Post;

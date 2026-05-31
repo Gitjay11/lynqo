@@ -19,9 +19,9 @@ import Avatar from "./Avatar.jsx";
 
 // ── Nav link definitions ──────────────────────────────────────────────────────
 const NAV_LINKS = [
-  { to: "/feed", label: "Feed",      icon: Home          },
-  { to: "/anon", label: "Anonymous", icon: Ghost         },
-  { to: "/chat", label: "Chat",      icon: MessageCircle },
+  { to: "/feed",   label: "Feed",      icon: Home          },
+  { to: "/anon",   label: "Anonymous", icon: Ghost         },
+  { to: "/chat",   label: "Chat",      icon: MessageCircle },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────

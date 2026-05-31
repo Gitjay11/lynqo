@@ -99,6 +99,11 @@ const anonPostSchema = new mongoose.Schema(
 // A compound index on (isHidden, createdAt) covers this pattern efficiently.
 anonPostSchema.index({ isHidden: 1, createdAt: -1 });
 
+// Full-text search index on content for the global search feature.
+// Only visible posts (isHidden: false) are returned by searchAnonPosts,
+// so this index is filtered in the controller — not at the index level.
+anonPostSchema.index({ content: 'text' });
+
 // ── Create and export the model ───────────────────────────────────────────
 const AnonPost = mongoose.model("AnonPost", anonPostSchema);
 export default AnonPost;

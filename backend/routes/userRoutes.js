@@ -4,15 +4,22 @@
  * All routes are mounted at /api/users in server.js.
  *
  * Route map:
- *  GET  /api/users/search          → protect, searchUsers
- *  GET  /api/users/:id             → protect, getUserProfile
- *  PUT  /api/users/update          → protect, updateProfile
- *  PUT  /api/users/upload-avatar   → protect, upload.single("avatar"), uploadAvatar
+ *  GET  /api/users/search              → protect, searchUsers
+ *  GET  /api/users/:id                 → protect, getUserProfile
+ *  PUT  /api/users/update              → protect, updateProfile
+ *  PUT  /api/users/upload-avatar       → protect, upload.single("avatar"), uploadAvatar
+ *  PUT  /api/users/:id/follow          → protect, followUser
+ *  PUT  /api/users/:id/unfollow        → protect, unfollowUser
+ *  GET  /api/users/:id/followers       → protect, getFollowers
+ *  GET  /api/users/:id/following       → protect, getFollowing
  *
  * ⚠️  ORDER MATTERS: The /search route MUST be declared before /:id.
  *     Express matches routes top-to-bottom. If /:id is declared first,
  *     a request to GET /api/users/search will match /:id with id="search",
  *     causing a Mongoose CastError instead of running the search handler.
+ *
+ *     The sub-routes /:id/follow etc. do NOT conflict because Express matches
+ *     the most specific path first — /:id/follow is more specific than /:id.
  */
 
 import express from "express";
@@ -24,6 +31,10 @@ import {
   updateProfile,
   uploadAvatar,
   searchUsers,
+  followUser,
+  unfollowUser,
+  getFollowers,
+  getFollowing,
 } from "../controllers/userController.js";
 
 const router = express.Router();
@@ -49,5 +60,22 @@ router.put(
   uploadAvatarMiddleware.single("avatar"),
   uploadAvatar
 );
+
+// ── PUT /api/users/:id/follow ─────────────────────────────────────────────
+// Toggles follow relationship: adds req.user to target's followers array.
+// Fires a "follow" notification to the target user.
+router.put("/:id/follow",   protect, followUser);
+
+// ── PUT /api/users/:id/unfollow ───────────────────────────────────────────
+// Removes req.user from target's followers array (and target from following).
+router.put("/:id/unfollow", protect, unfollowUser);
+
+// ── GET /api/users/:id/followers ──────────────────────────────────────────
+// Returns the populated list of all users who follow :id.
+router.get("/:id/followers", protect, getFollowers);
+
+// ── GET /api/users/:id/following ──────────────────────────────────────────
+// Returns the populated list of all users that :id is following.
+router.get("/:id/following", protect, getFollowing);
 
 export default router;

@@ -18,6 +18,7 @@
  *  /chat         → ProtectedRoute → ChatPage
  *  /chat/:convId → ProtectedRoute → ChatPage
  *  /profile/:id  → ProtectedRoute → ProfilePage
+ *  /search        → ProtectedRoute → SearchPage
  *  *             → NotFoundPage
  */
 
@@ -25,8 +26,9 @@ import { Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
 // ── Context providers ─────────────────────────────────────────────────────────
-import { AuthProvider }   from "./context/AuthContext.jsx";
-import { SocketProvider } from "./context/SocketContext.jsx";
+import { AuthProvider }         from "./context/AuthContext.jsx";
+import { SocketProvider }       from "./context/SocketContext.jsx";
+import { NotificationProvider } from "./context/NotificationContext.jsx";
 
 // ── Route guards ──────────────────────────────────────────────────────────────
 import ProtectedRoute from "./components/common/ProtectedRoute.jsx";
@@ -57,6 +59,7 @@ const App = () => {
      */
     <AuthProvider>
       <SocketProvider>
+        <NotificationProvider>
 
         {/*
          * Toaster — positioned top-center so toasts never collide with the
@@ -138,6 +141,7 @@ const App = () => {
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
 
+        </NotificationProvider>
       </SocketProvider>
     </AuthProvider>
   );

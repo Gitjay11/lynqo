@@ -29,6 +29,7 @@
 
 import AnonPost from "../models/AnonPost.js";
 import { v2 as cloudinary } from "cloudinary";
+import { createNotification } from "../utils/createNotification.js";
 
 // Number of unique reports required to auto-hide a post
 const REPORT_THRESHOLD = 5;
@@ -226,6 +227,29 @@ export const toggleAnonLike = async (req, res, next) => {
     }
 
     await post.save();
+
+    // ── Notification: fire only when newly liking (not unliking) ─────────
+    // PRIVACY: We must get realAuthor to know who to notify, but we must
+    // NEVER expose it in the response. We use a separate internal query
+    // with .select('+realAuthor') solely to obtain the recipient ID.
+    // This value is used only for the notification and immediately discarded.
+    if (!alreadyLiked) {
+      try {
+        const postWithAuthor = await AnonPost.findById(post._id).select("+realAuthor");
+        if (postWithAuthor?.realAuthor) {
+          await createNotification({
+            recipient:  postWithAuthor.realAuthor,
+            sender:     userId,
+            senderName: req.user.name,
+            type:       "like_anon",
+            anonPostId: post._id,
+          });
+        }
+      } catch (notifErr) {
+        // Notification failure must not break the like response
+        console.error("[toggleAnonLike] Notification error:", notifErr.message);
+      }
+    }
 
     return res.status(200).json({
       success: true,

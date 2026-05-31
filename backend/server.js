@@ -24,12 +24,15 @@ import connectDB from "./config/db.js";
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 
 // ── Route imports (stubs — filled in per feature stage) ────────────────────
-import authRoutes from "./routes/authRoutes.js";
-import userRoutes from "./routes/userRoutes.js";
-import postRoutes from "./routes/postRoutes.js";
-import chatRoutes from "./routes/chatRoutes.js";
-import anonRoutes from "./routes/anonRoutes.js";
-import { initSocket } from "./socket/socketHandler.js";
+import authRoutes         from "./routes/authRoutes.js";
+import userRoutes         from "./routes/userRoutes.js";
+import postRoutes         from "./routes/postRoutes.js";
+import chatRoutes         from "./routes/chatRoutes.js";
+import anonRoutes         from "./routes/anonRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
+import searchRoutes       from "./routes/searchRoutes.js";
+import { initSocket }     from "./socket/socketHandler.js";
+import { setIO }          from "./socket/socketInstance.js";
 
 // ── Connect to MongoDB ─────────────────────────────────────────────────────
 connectDB();
@@ -97,11 +100,13 @@ app.get("/", (req, res) => {
 // so it is applied BEFORE the controllers, giving the tighter limit priority.
 app.use("/api", generalLimiter);
 
-app.use("/api/auth", authRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/posts", postRoutes);
-app.use("/api/chat", chatRoutes);
-app.use("/api/anon", anonRoutes);
+app.use("/api/auth",          authRoutes);
+app.use("/api/users",         userRoutes);
+app.use("/api/posts",         postRoutes);
+app.use("/api/chat",          chatRoutes);
+app.use("/api/anon",          anonRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/search",        searchRoutes);
 
 // ── Error Handling — must be mounted AFTER all routes ──────────────────────
 app.use(notFound);     // Catch any request that didn't match a route → 404
@@ -122,6 +127,12 @@ const io = new Server(httpServer, {
 // initSocket registers all connection / messaging / presence events.
 // Must be called AFTER the io instance is created.
 initSocket(io);
+
+// ── Socket singleton — store io for use in controllers/utilities ───────────
+// setIO must be called AFTER initSocket so the instance is fully configured.
+// Any controller can then call getIO() to emit real-time events without
+// needing io passed through the function call chain.
+setIO(io);
 
 // ── Start listening ─────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;

@@ -77,12 +77,116 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+
+    // ── Social graph ────────────────────────────────────────────────────────
+    // Arrays of ObjectId references to other User documents.
+    // Default to empty arrays so existing users need no migration.
+    // $addToSet is used on all writes to prevent duplicate entries.
+    followers: {
+      type:    [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+      default: [],
+    },
+
+    following: {
+      type:    [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+      default: [],
+    },
+
+    // ── Extended optional profile fields ─────────────────────────────────────
+    // All fields below are optional (no `required`). Existing documents will
+    // simply have these fields as undefined / default — no migration needed.
+
+    // Personal Information
+    phone: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    gender: {
+      type: String,
+      enum: ["Male", "Female", "Prefer not to say", ""],
+      default: "",
+    },
+
+    dateOfBirth: {
+      type: Date,
+      default: null,
+    },
+
+    // Academic Information
+    yearOfJoining: {
+      type: Number,
+      default: null,
+    },
+
+    rollNumber: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    // Campus Life
+    hostelOrDay: {
+      type: String,
+      enum: ["Hostel", "Day Scholar", ""],
+      default: "",
+    },
+
+    clubs: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    // Skills & Interests — stored as arrays of strings
+    skills: {
+      type:    [String],
+      default: [],
+    },
+
+    hobbies: {
+      type:    [String],
+      default: [],
+    },
+
+    // "Looking For" — validated against a fixed set of chips
+    lookingFor: {
+      type:    [String],
+      enum:    ["Study Partner", "Project Collab", "Hackathon Team", "Friends", "Networking"],
+      default: [],
+    },
+
+    // Social Links
+    github: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    linkedin: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    instagram: {
+      type: String,
+      trim: true,
+      default: "",
+    },
   },
   {
     // Adds createdAt and updatedAt fields automatically
     timestamps: true,
   }
 );
+
+// ── Text index for global search ────────────────────────────────────────────
+// Allows case-insensitive full-text search across name and branch in a single
+// query. searchUsers() in searchController uses a regex fallback so both
+// the text index (Atlas) and vanilla Mongo (local dev) work correctly.
+userSchema.index({ name: "text", branch: "text" });
 
 // ── Pre-save hook — hash password before persisting ────────────────────────
 // Only hashes the password when it has been modified (new user or password
