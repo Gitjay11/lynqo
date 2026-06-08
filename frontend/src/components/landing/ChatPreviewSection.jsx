@@ -1,38 +1,34 @@
 /**
- * ChatPreviewSection.jsx — Real-Time Chat Feature Showcase (Theme-Aware)
+ * ChatPreviewSection.jsx — Direct Messages Feature Showcase (Section 5)
  *
- * Background: bg-bg-surface border-t border-app-border
- * Mock chat card: bg-bg-elevated border-app-border
- * Sent bubble:     bg-accent text-white
- * Received bubble: bg-bg-primary text-text-primary
+ * Background:  var(--bg-primary) with border-t border-[var(--border)]
+ * Padding:     py-16 px-4
+ * Container:   max-w-5xl mx-auto
+ *
+ * Layout:
+ *   Mobile  → text first (order-first), chat below (order-last)
+ *   Desktop → chat LEFT (lg:order-first), text RIGHT (lg:order-last)
+ *
+ * Note: No CTA link in this section — feature pills only (per spec).
  */
 
-import { Link } from "react-router-dom";
-import { Send } from "lucide-react";
+import { Send, MessageCircle } from "lucide-react";
 
-// ── Typing indicator — three staggered bouncing dots ─────────────────────────
-const TypingIndicator = () => (
-  <div className="flex gap-1 items-center px-4 py-2">
-    {[0, 1, 2].map((i) => (
-      <span
-        key={i}
-        className="w-2 h-2 rounded-full inline-block"
-        style={{
-          backgroundColor: "var(--text-muted)",
-          animation: "typing-bounce 1.2s ease-in-out infinite",
-          animationDelay: `${i * 0.2}s`,
-        }}
-      />
-    ))}
-  </div>
-);
+// ── Fake chat messages ────────────────────────────────────────────────────────
+// 4 messages alternating received / sent
+const MESSAGES = [
+  { type: "received", text: "Hey! Did you submit the project report?" },
+  { type: "sent",     text: "Not yet, still working on it 😅" },
+  { type: "received", text: "Let's finish it together tonight!" },
+  { type: "sent",     text: "Yes! Library at 7pm? 📚" },
+];
 
 // ── Feature pill ──────────────────────────────────────────────────────────────
 const FeaturePill = ({ emoji, text }) => (
   <span
-    className="rounded-full px-4 py-2 text-sm flex items-center gap-2"
+    className="rounded-full px-3 py-1.5 text-xs flex items-center gap-1.5"
     style={{
-      backgroundColor: "var(--bg-primary)",
+      backgroundColor: "var(--bg-elevated)",
       border: "1px solid var(--border)",
       color: "var(--text-secondary)",
     }}
@@ -43,202 +39,158 @@ const FeaturePill = ({ emoji, text }) => (
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
-const ChatPreviewSection = () => {
-  return (
-    <section
-      id="chat"
-      className="py-20 px-4"
-      style={{
-        backgroundColor: "var(--bg-surface)",
-        borderTop: "1px solid var(--border)",
-      }}
-    >
-      <div className="max-w-6xl mx-auto lg:grid lg:grid-cols-2 lg:gap-16 lg:items-center">
+const ChatPreviewSection = () => (
+  <section
+    id="chat"
+    className="py-16 px-4"
+    style={{
+      backgroundColor: "var(--bg-primary)",
+      borderTop: "1px solid var(--border)",
+    }}
+  >
+    <div className="max-w-5xl mx-auto lg:grid lg:grid-cols-2 lg:gap-16 lg:items-center">
 
-        {/* ── LEFT: Mock chat UI ─────────────────────────────────────────────
-            On mobile this renders AFTER the text (order-last),
-            on lg it becomes the left column (lg:order-first).         ──── */}
-        <div className="mt-10 lg:mt-0 lg:order-first order-last">
-          <div
-            className="rounded-2xl shadow-xl p-4 max-w-sm mx-auto"
-            style={{
-              backgroundColor: "var(--bg-elevated)",
-              border: "1px solid var(--border)",
-            }}
-          >
+      {/* ── Text comes FIRST in DOM so it renders first on mobile naturally.
+          On desktop (lg:grid), lg:order-2 pushes it to the right column. ── */}
+      {/* RIGHT: Text content — rendered first in DOM (top on mobile) ───────── */}
+      <div className="lg:order-2">
 
-            {/* Top bar */}
-            <div
-              className="flex items-center gap-3 pb-3"
-              style={{ borderBottom: "1px solid var(--border)" }}
-            >
-              {/* Avatar — initials "RS" */}
-              <div
-                className="
-                  w-8 h-8 rounded-full
-                  flex items-center justify-center
-                  text-xs font-bold
-                  flex-shrink-0
-                "
-                style={{ backgroundColor: "var(--bg-surface)", color: "var(--text-secondary)" }}
-              >
-                RS
-              </div>
-
-              {/* Name */}
-              <span className="font-semibold text-sm flex-1" style={{ color: "var(--text-primary)" }}>
-                Rahul Sharma
-              </span>
-
-              {/* Online dot — stays emerald (semantic, not themed) */}
-              <span className="w-2 h-2 rounded-full bg-emerald-500 ml-auto flex-shrink-0" />
-            </div>
-
-            {/* Messages area */}
-            <div className="py-4 space-y-3">
-
-              {/* Received bubble */}
-              <div className="flex">
-                <p
-                  className="text-sm px-4 py-2 rounded-2xl rounded-tl-none max-w-[80%]"
-                  style={{ backgroundColor: "var(--bg-primary)", color: "var(--text-primary)" }}
-                >
-                  Hey! Did you get the assignment for DSA?
-                </p>
-              </div>
-
-              {/* Sent bubble — accent */}
-              <div className="flex justify-end">
-                <p
-                  className="text-sm px-4 py-2 rounded-2xl rounded-tr-none max-w-[80%]"
-                  style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}
-                >
-                  Yeah, I'll share the notes with you
-                </p>
-              </div>
-
-              {/* Received bubble */}
-              <div className="flex">
-                <p
-                  className="text-sm px-4 py-2 rounded-2xl rounded-tl-none max-w-[80%]"
-                  style={{ backgroundColor: "var(--bg-primary)", color: "var(--text-primary)" }}
-                >
-                  That would be great, thanks! 🙏
-                </p>
-              </div>
-
-              {/* Typing indicator */}
-              <div className="flex">
-                <div
-                  className="rounded-2xl rounded-tl-none"
-                  style={{ backgroundColor: "var(--bg-primary)" }}
-                >
-                  <TypingIndicator />
-                </div>
-              </div>
-
-            </div>
-
-            {/* Input bar */}
-            <div
-              className="flex gap-2 pt-3 items-center"
-              style={{ borderTop: "1px solid var(--border)" }}
-            >
-              {/* Fake text input */}
-              <div
-                className="
-                  flex-1 rounded-full
-                  px-4 py-2 text-sm
-                  select-none
-                "
-                style={{
-                  backgroundColor: "var(--bg-primary)",
-                  border: "1px solid var(--border)",
-                  color: "var(--text-muted)",
-                }}
-              >
-                Type a message...
-              </div>
-
-              {/* Send button — accent */}
-              <button
-                aria-label="Send message"
-                className="
-                  w-8 h-8 rounded-full
-                  flex items-center justify-center
-                  flex-shrink-0 min-h-0
-                  transition-colors
-                "
-                style={{ backgroundColor: "var(--accent)" }}
-                onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--accent-hover)"}
-                onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--accent)"}
-              >
-                <Send size={14} className="text-white" strokeWidth={2.5} />
-              </button>
-            </div>
-
-          </div>
+        {/* Badge */}
+        <div
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold"
+          style={{
+            backgroundColor: "var(--accent-light)",
+            border: "0.5px solid var(--accent-border)",
+            color: "#9a3412",
+          }}
+        >
+          <MessageCircle size={13} />
+          Direct Messages
         </div>
 
-        {/* ── RIGHT: Text content ──────────────────────────────────────────────
-            On mobile renders FIRST (order-first),
-            on lg sits to the right of the chat card (lg:order-last).  ──── */}
-        <div className="order-first lg:order-last">
+        {/* Headline */}
+        <h2
+          className="text-3xl md:text-4xl font-black mt-3 mb-2"
+          style={{ color: "var(--text-primary)", letterSpacing: "-0.03em" }}
+        >
+          Talk to anyone on campus. Instantly.
+        </h2>
 
-          {/* Label pill */}
-          <span
-            className="inline-block text-xs px-3 py-1.5 rounded-full"
-            style={{
-              backgroundColor: "var(--bg-primary)",
-              border: "1px solid var(--border)",
-              color: "var(--text-secondary)",
-            }}
-          >
-            ⚡ Real-time Chat
-          </span>
+        {/* Subtitle */}
+        <p
+          className="text-sm leading-relaxed mt-2"
+          style={{ color: "var(--text-secondary)" }}
+        >
+          No number needed. Find any student and start chatting. See when they
+          are online and typing.
+        </p>
 
-          {/* Headline */}
-          <h2 className="text-3xl md:text-4xl font-bold mt-4" style={{ color: "var(--text-primary)" }}>
-            Talk to anyone on campus. Instantly.
-          </h2>
-
-          {/* Description */}
-          <p className="mt-4 leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-            No phone numbers needed. Find any student by name and start chatting.
-            See when they are online and when they are typing.
-          </p>
-
-          {/* Feature pills */}
-          <div className="mt-6 flex flex-wrap gap-3">
-            <FeaturePill emoji="🟢" text="Online status" />
-            <FeaturePill emoji="✍️" text="Typing indicators" />
-            <FeaturePill emoji="💬" text="Instant delivery" />
-          </div>
-
-          {/* CTA */}
-          <Link
-            to="/signup"
-            id="chat-cta-signup"
-            className="
-              inline-flex items-center justify-center
-              min-h-[48px] px-6 py-3 mt-8
-              text-white font-semibold text-base
-              rounded-full
-              transition-all duration-200
-              focus:outline-none focus:ring-2 focus:ring-offset-2
-            "
-            style={{ backgroundColor: "var(--accent)" }}
-            onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--accent-hover)"}
-            onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--accent)"}
-          >
-            Start Chatting →
-          </Link>
-
+        {/* Feature pills */}
+        <div className="flex flex-wrap gap-2 mt-4">
+          <FeaturePill emoji="🟢" text="Online status" />
+          <FeaturePill emoji="✍️" text="Typing indicators" />
+          <FeaturePill emoji="💬" text="Instant delivery" />
         </div>
 
       </div>
-    </section>
-  );
-};
+
+      {/* ── LEFT: Mock chat UI — second in DOM (below text on mobile) ──────────
+          On desktop (lg:grid), lg:order-1 places it in the left column. ── */}
+      <div className="mt-10 lg:mt-0 lg:order-1">
+        <div
+          className="rounded-2xl p-4 max-w-sm mx-auto shadow-sm"
+          style={{
+            backgroundColor: "var(--bg-surface)",
+            border: "1px solid var(--border)",
+          }}
+        >
+          {/* Top bar — avatar, name, online indicator */}
+          <div
+            className="flex items-center gap-3 pb-3"
+            style={{ borderBottom: "1px solid var(--border)" }}
+          >
+            {/* Avatar — RS in accent */}
+            <div
+              className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+              style={{ backgroundColor: "#e8643a" }}
+            >
+              RS
+            </div>
+            {/* Name */}
+            <span
+              className="text-sm font-semibold flex-1"
+              style={{ color: "var(--text-primary)" }}
+            >
+              Ritika Sharma
+            </span>
+            {/* Online dot + label */}
+            <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
+            <span className="text-xs text-green-500 ml-1">Online</span>
+          </div>
+
+          {/* Messages area — 4 alternating bubbles */}
+          <div className="py-3 space-y-2">
+            {MESSAGES.map((msg, i) =>
+              msg.type === "received" ? (
+                /* Received bubble */
+                <div key={i} className="flex">
+                  <p
+                    className="text-xs px-3 py-2 rounded-2xl rounded-tl-sm"
+                    style={{
+                      maxWidth: "78%",
+                      backgroundColor: "var(--bg-elevated)",
+                      color: "var(--text-primary)",
+                    }}
+                  >
+                    {msg.text}
+                  </p>
+                </div>
+              ) : (
+                /* Sent bubble */
+                <div key={i} className="flex justify-end">
+                  <p
+                    className="text-xs px-3 py-2 rounded-2xl rounded-tr-sm font-medium text-white"
+                    style={{
+                      maxWidth: "78%",
+                      backgroundColor: "#e8643a",
+                    }}
+                  >
+                    {msg.text}
+                  </p>
+                </div>
+              )
+            )}
+          </div>
+
+          {/* Input bar */}
+          <div
+            className="flex gap-2 pt-3 items-center"
+            style={{ borderTop: "1px solid var(--border)" }}
+          >
+            {/* Fake input */}
+            <div
+              className="flex-1 rounded-full px-3 py-2 text-xs select-none"
+              style={{
+                backgroundColor: "var(--bg-elevated)",
+                color: "var(--text-muted)",
+              }}
+            >
+              Type a message...
+            </div>
+            {/* Send button */}
+            <button
+              aria-label="Send message"
+              className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 min-h-0"
+              style={{ backgroundColor: "#e8643a" }}
+            >
+              <Send size={14} className="text-white" strokeWidth={2.5} />
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+);
 
 export default ChatPreviewSection;

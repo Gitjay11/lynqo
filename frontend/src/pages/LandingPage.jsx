@@ -1,16 +1,20 @@
 /**
  * LandingPage.jsx — Public Landing Page (Theme-Aware)
  *
- * The landing page is fully theme-aware — it adapts to both light ("Warm Cream")
- * and dark ("Warm Black") modes via CSS variables.
+ * Sections rendered in order:
+ *   1. <LandingTopBar />      — fixed nav: wordmark + Login + Join Free
+ *   2. <HeroSection />        — badge, headline, CTA, avatar row, mockup
+ *   3. <FeaturesSection />    — 4-card feature grid
+ *   4. <AnonymousSection />   — always-dark anon confessions section
+ *   5. <ChatPreviewSection /> — DM feature showcase
+ *   6. <StatsBar />           — 4 quick-stat boxes (inline)
+ *   7. <FinalCTASection />    — always-dark CTA card (inline)
+ *   8. <LandingFooter />      — always-dark footer
  *
- * Structure:
- *   <LandingTopBar />      ← themed top bar
- *   <HeroSection />        ← bg-bg-primary hero
- *   <FeaturesSection />    ← bg-bg-surface bg
- *   <AnonymousSection />   ← bg-bg-primary bg
- *   <ChatPreviewSection /> ← bg-bg-surface bg
- *   <LandingFooter />      ← themed footer
+ * Rules:
+ *   - No routing, auth logic, or backend changes.
+ *   - All colors via CSS variables; accent (#e8643a) hardcoded per spec.
+ *   - StatsBar and FinalCTASection are inline — no separate files needed.
  */
 
 import { Link } from "react-router-dom";
@@ -22,118 +26,205 @@ import ChatPreviewSection from "../components/landing/ChatPreviewSection.jsx";
 import LandingFooter      from "../components/landing/LandingFooter.jsx";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// LandingTopBar — Fixed app-bar for the landing page
+// Section 1 — LandingTopBar
+// Fixed at top; 56 px mobile, 64 px desktop.
+// Wordmark: font-weight 900, letter-spacing -0.03em, "o" in accent.
+// Right: Login (ghost) + Join Free (solid accent).
 // ─────────────────────────────────────────────────────────────────────────────
 const LandingTopBar = () => (
   <header
     className="
-      fixed top-0 left-0 right-0 z-40
+      fixed top-0 left-0 right-0 z-50
       h-14 lg:h-16
-      backdrop-blur-sm
+      backdrop-blur-md
     "
     style={{
-      backgroundColor: "var(--bg-surface)",
-      borderBottom: "1px solid var(--border)",
+      backgroundColor: "var(--bg-elevated)",
+      borderBottom: "0.5px solid var(--border)",
     }}
   >
-    <div
-      className="
-        max-w-6xl mx-auto px-4
-        h-full
-        flex items-center justify-between
-      "
-    >
-      {/* ── Wordmark ───────────────────────────────────────────────────────── */}
+    <div className="max-w-5xl mx-auto px-4 h-full flex items-center justify-between">
+
+      {/* ── Wordmark ─────────────────────────────────────────────────────── */}
       <Link
         to="/"
         id="landing-topbar-logo"
-        className="
-          flex items-center gap-2
-          min-h-[44px]
-          font-bold text-xl tracking-tight
-          select-none flex-shrink-0
-          focus:outline-none focus:ring-2 focus:ring-offset-1 rounded-lg
-        "
-        style={{ color: "var(--text-primary)" }}
+        className="select-none focus:outline-none"
+        style={{
+          fontWeight: 900,
+          letterSpacing: "-0.03em",
+          fontSize: "1.25rem",
+          color: "var(--text-primary)",
+          textDecoration: "none",
+        }}
         aria-label="Lynqo home"
       >
-        {/* Logo mark */}
-        <span
-          className="
-            w-8 h-8 rounded-xl
-            flex items-center justify-center
-            text-white text-sm font-black
-          "
-          style={{ backgroundColor: "var(--accent)" }}
-        >
-          L
-        </span>
-        <span>Lynqo</span>
+        Lynq<span style={{ color: "#e8643a" }}>o</span>
       </Link>
 
-      {/* ── Right: nav buttons ─────────────────────────────────────────────── */}
+      {/* ── Right: auth buttons ───────────────────────────────────────────── */}
       <div className="flex items-center gap-2">
-        {/* Log In — outline */}
+
+        {/* Login — ghost button */}
         <Link
           to="/login"
           id="landing-topbar-login"
           className="
             inline-flex items-center justify-center
-            min-h-[44px]
-            text-sm font-medium
-            px-3 py-1.5
-            rounded-full
-            transition-all duration-200
-            focus:outline-none focus:ring-2 focus:ring-offset-1
+            text-sm font-semibold
+            px-4 py-2 rounded-lg
+            transition-all duration-150
+            focus:outline-none
           "
-          style={{ color: "var(--text-secondary)", border: "1px solid var(--border)" }}
-          onMouseEnter={e => { e.currentTarget.style.color = "var(--text-primary)"; e.currentTarget.style.borderColor = "var(--text-muted)"; e.currentTarget.style.backgroundColor = "var(--bg-elevated)"; }}
-          onMouseLeave={e => { e.currentTarget.style.color = "var(--text-secondary)"; e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.backgroundColor = "transparent"; }}
+          style={{
+            border: "0.5px solid var(--border)",
+            color: "var(--text-secondary)",
+            backgroundColor: "transparent",
+          }}
         >
-          Log In
+          Login
         </Link>
 
-        {/* Get Started — accent solid */}
+        {/* Join Free — solid accent */}
         <Link
           to="/signup"
-          id="landing-topbar-signup"
+          id="landing-topbar-join"
           className="
             inline-flex items-center justify-center
-            min-h-[44px]
-            text-sm font-semibold text-white
-            px-4 py-1.5
-            rounded-full
-            shadow-sm
-            transition-all duration-200
-            focus:outline-none focus:ring-2 focus:ring-offset-1
+            text-sm font-bold text-white
+            px-4 py-2 rounded-lg
+            transition-all duration-150
+            focus:outline-none
           "
-          style={{ backgroundColor: "var(--accent)" }}
-          onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--accent-hover)"}
-          onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--accent)"}
+          style={{ backgroundColor: "#e8643a" }}
+          onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#d4572f")}
+          onMouseLeave={e => (e.currentTarget.style.backgroundColor = "#e8643a")}
         >
-          Get Started
+          Join Free
         </Link>
+
       </div>
     </div>
   </header>
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
-const LandingPage = () => {
-  return (
-    <div className="min-h-screen" style={{ backgroundColor: "var(--bg-primary)" }}>
-      <LandingTopBar />
+// Section 6 — StatsBar
+// bg-surface with border-y; 2-col mobile → 4-col md.
+// Number in text-primary, unit/symbol in accent #e8643a.
+// ─────────────────────────────────────────────────────────────────────────────
+const STATS = [
+  { number: "500", unit: "+", label: "Students joined" },
+  { number: "2k",  unit: "+", label: "Posts created"   },
+  { number: "100", unit: "%", label: "Free forever"    },
+  { number: "1",   unit: "",  label: "College (more coming)" },
+];
 
-      <main id="landing-main">
-        <HeroSection />
-        <FeaturesSection />
-        <AnonymousSection />
-        <ChatPreviewSection />
-      </main>
-
-      <LandingFooter />
+const StatsBar = () => (
+  <section
+    id="stats"
+    className="py-10 px-4"
+    style={{
+      backgroundColor: "var(--bg-surface)",
+      borderTop:    "1px solid var(--border)",
+      borderBottom: "1px solid var(--border)",
+    }}
+  >
+    <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+      {STATS.map(({ number, unit, label }) => (
+        <div key={label}>
+          <p
+            className="text-3xl font-black"
+            style={{ color: "var(--text-primary)", letterSpacing: "-0.03em" }}
+          >
+            {number}
+            <span style={{ color: "#e8643a" }}>{unit}</span>
+          </p>
+          <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
+            {label}
+          </p>
+        </div>
+      ))}
     </div>
-  );
-};
+  </section>
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Section 7 — FinalCTASection
+// Outer bg: var(--bg-primary). Inner card bg: var(--text-primary) — always dark.
+// ─────────────────────────────────────────────────────────────────────────────
+const FinalCTASection = () => (
+  <section
+    id="final-cta"
+    className="py-16 px-4"
+    style={{ backgroundColor: "var(--bg-primary)" }}
+  >
+    <div className="max-w-5xl mx-auto">
+      {/* Always-dark inner card */}
+      <div
+        className="rounded-3xl p-10 text-center"
+        style={{ backgroundColor: "var(--text-primary)" }}
+      >
+        <h2
+          className="text-3xl md:text-4xl font-black mb-3"
+          style={{ color: "#f5f0e8", letterSpacing: "-0.03em" }}
+        >
+          Ready to join your campus?
+        </h2>
+        <p
+          className="text-sm mb-8 leading-relaxed"
+          style={{ color: "rgba(245,240,232,0.5)" }}
+        >
+          The private space our campus was missing. Sign up in 30 seconds.
+        </p>
+        <Link
+          to="/signup"
+          id="final-cta-signup"
+          className="
+            inline-flex items-center justify-center
+            text-sm font-bold text-white
+            px-8 py-3.5 rounded-xl
+            transition-all duration-150 active:scale-95
+            focus:outline-none
+          "
+          style={{ backgroundColor: "#e8643a" }}
+          onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#d4572f")}
+          onMouseLeave={e => (e.currentTarget.style.backgroundColor = "#e8643a")}
+        >
+          Join Lynqo — it's free
+        </Link>
+      </div>
+    </div>
+  </section>
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LandingPage — root wrapper
+// font-family: Inter; -webkit-font-smoothing: antialiased; scroll-behavior: smooth
+// ─────────────────────────────────────────────────────────────────────────────
+const LandingPage = () => (
+  <div
+    className="min-h-screen"
+    style={{
+      backgroundColor: "var(--bg-primary)",
+      fontFamily: "'Inter', sans-serif",
+      WebkitFontSmoothing: "antialiased",
+      scrollBehavior: "smooth",
+    }}
+  >
+    <LandingTopBar />
+
+    <main id="landing-main">
+      <HeroSection />
+      <FeaturesSection />
+      <AnonymousSection />
+      <ChatPreviewSection />
+      <StatsBar />
+      <FinalCTASection />
+    </main>
+
+    <LandingFooter />
+  </div>
+);
 
 export default LandingPage;

@@ -1,9 +1,8 @@
 /**
- * SearchBar.jsx — Inline Post Search Input (Reusable)
+ * SearchBar.jsx — Inline Post Search Input (Redesigned)
  *
  * Used on FeedPage (searches feed posts) and AnonPage (searches confessions).
- * This component is purely presentational + debounced — it emits callbacks
- * and never fetches data itself. The parent page owns the results state.
+ * Purely presentational + debounced — emits callbacks, never fetches data.
  *
  * Props:
  *   onSearch(query: string) — called with debounced query (≥2 chars) or ""
@@ -15,7 +14,7 @@
  *   - Minimum 2 characters before triggering onSearch (shorter clears results)
  *   - Clear (X) button: clears input AND calls onSearch("") to restore feed
  *   - Enter key: fires onSearch immediately (no debounce wait)
- *   - Always visible — not expandable/collapsible (unlike the Navbar user search)
+ *   - Always visible — not expandable/collapsible (unlike Navbar user search)
  *
  * Mobile-first:
  *   - Full width, min-h-[44px] touch target
@@ -36,10 +35,11 @@ const useDebounce = (value, delay) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-const SearchBar = ({ onSearch, placeholder = "Search posts…", loading = false }) => {
-  const [query, setQuery] = useState("");
-  const inputRef = useRef(null);
-  const debouncedQuery = useDebounce(query, 400);
+const SearchBar = ({ onSearch, placeholder = "Search posts...", loading = false }) => {
+  const [query, setQuery]   = useState("");
+  const [focused, setFocused] = useState(false);
+  const inputRef             = useRef(null);
+  const debouncedQuery       = useDebounce(query, 400);
 
   // ── Fire onSearch when debounced value settles ────────────────────────────
   useEffect(() => {
@@ -70,71 +70,86 @@ const SearchBar = ({ onSearch, placeholder = "Search posts…", loading = false 
     inputRef.current?.focus();
   };
 
+  const isActive = query.trim().length >= 2;
+
   // ─────────────────────────────────────────────────────────────────────────
   return (
-    <div className="relative w-full">
-
-      {/* ── Leading icon — spinner when loading, search icon otherwise ─────── */}
+    <div className="w-full">
+      {/* ── Search card container ─────────────────────────────────────────── */}
       <div
-        className="
-          absolute left-3.5 top-1/2 -translate-y-1/2
-          pointer-events-none
-        "
-        style={{ color: "var(--text-muted)" }}
-        aria-hidden="true"
+        className="flex items-center gap-3 w-full px-4 py-2.5 rounded-2xl transition-colors duration-150"
+        style={{
+          backgroundColor: "var(--bg-surface)",
+          border: focused
+            ? "1px solid var(--accent)"
+            : "1px solid var(--border)",
+        }}
       >
-        {loading
-          ? <Loader2 size={16} className="animate-spin" />
-          : <Search size={16} />
-        }
+        {/* Leading icon — spinner when loading, search icon otherwise */}
+        <div
+          className="flex-shrink-0 pointer-events-none"
+          style={{ color: "var(--text-muted)" }}
+          aria-hidden="true"
+        >
+          {loading
+            ? <Loader2 size={18} className="animate-spin" />
+            : <Search size={18} />
+          }
+        </div>
+
+        {/* ── Text input ────────────────────────────────────────────────── */}
+        <input
+          ref={inputRef}
+          id="inline-post-search"
+          type="text"
+          role="searchbox"
+          aria-label={placeholder}
+          autoComplete="off"
+          spellCheck={false}
+          placeholder={placeholder}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          style={{ color: "var(--text-primary)" }}
+          className="
+            flex-1 bg-transparent
+            text-sm
+            placeholder:text-[color:var(--text-muted)]
+            outline-none
+          "
+        />
+
+        {/* ── Clear (X) button — only visible when there is text ────────── */}
+        {query && (
+          <button
+            onClick={handleClear}
+            aria-label="Clear search"
+            className="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full transition-colors duration-100 focus:outline-none min-h-0"
+            style={{ color: "var(--text-muted)" }}
+            onMouseEnter={e => e.currentTarget.style.color = "var(--text-primary)"}
+            onMouseLeave={e => e.currentTarget.style.color = "var(--text-muted)"}
+          >
+            <X size={14} />
+          </button>
+        )}
       </div>
 
-      {/* ── Text input ──────────────────────────────────────────────────────── */}
-      <input
-        ref={inputRef}
-        id="inline-post-search"
-        type="text"
-        role="searchbox"
-        aria-label={placeholder}
-        autoComplete="off"
-        spellCheck={false}
-        placeholder={placeholder}
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        onKeyDown={handleKeyDown}
-        style={{
-          backgroundColor: "var(--bg-elevated)",
-          border:          "1px solid var(--border)",
-          color:           "var(--text-primary)",
-        }}
-        className="
-          w-full min-h-[44px]
-          pl-10 pr-10
-          rounded-xl
-          text-sm
-          transition-colors duration-150
-          focus:outline-none focus:ring-2
-        "
-      />
-
-      {/* ── Clear (X) button — only visible when there is text ──────────────── */}
-      {query && (
-        <button
-          onClick={handleClear}
-          aria-label="Clear search"
-          style={{ color: "var(--text-muted)" }}
-          className="
-            absolute right-3 top-1/2 -translate-y-1/2
-            w-6 h-6 flex items-center justify-center
-            rounded-full
-            transition-colors duration-100
-            focus:outline-none min-h-0
-          "
-          onMouseEnter={e => { e.currentTarget.style.backgroundColor = "var(--bg-elevated)"; e.currentTarget.style.color = "var(--text-secondary)"; }}
-          onMouseLeave={e => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "var(--text-muted)"; }}
-        >
-          <X size={13} />
-        </button>
+      {/* ── "Showing results for" hint — visible when search is active ──── */}
+      {isActive && !loading && (
+        <p className="text-xs mt-1.5 pl-1" style={{ color: "var(--text-muted)" }}>
+          Showing results for &ldquo;{query.trim()}&rdquo; —{" "}
+          <button
+            onClick={handleClear}
+            className="font-semibold transition-colors duration-100 min-h-0"
+            style={{ color: "var(--accent)" }}
+            onMouseEnter={e => e.currentTarget.style.opacity = "0.8"}
+            onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+          >
+            clear
+          </button>
+        </p>
       )}
     </div>
   );

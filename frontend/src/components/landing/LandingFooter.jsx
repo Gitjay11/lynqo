@@ -1,64 +1,74 @@
 /**
- * LandingFooter.jsx — Landing Page Footer (Theme-Aware)
+ * LandingFooter.jsx — Landing Page Footer (Section 8)
  *
- * Background: bg-bg-surface border-t border-app-border
+ * Background: var(--text-primary) — always-dark, regardless of theme.
+ * All text hardcoded as rgba(245,240,232,…) since this section is
+ * intentionally dark in both light and dark app modes.
+ *
+ * Content:
+ *   • Lynqo wordmark (font-black, "o" in accent #e8643a)
+ *   • Tagline: "Made for you. Built with love."
+ *   • Three links: Privacy Policy, Terms of Service, Contact
+ *   • Copyright: © 2026 Lynqo. Made for college students.
  */
 
 const LandingFooter = () => {
   const LINKS = [
-    { label: "Privacy Policy" },
+    { label: "Privacy Policy"   },
     { label: "Terms of Service" },
-    { label: "Contact" },
+    { label: "Contact"          },
   ];
 
   return (
     <footer
       id="footer"
-      className="py-12 px-4"
+      className="py-10 px-4 text-center"
       style={{
-        backgroundColor: "var(--bg-surface)",
-        borderTop: "1px solid var(--border)",
+        backgroundColor: "var(--text-primary)",
+        borderTop: "1px solid rgba(255,255,255,0.06)",
       }}
     >
-      <div className="max-w-6xl mx-auto text-center">
+      <div className="max-w-5xl mx-auto">
 
-        {/* ── Row 1: Brand ───────────────────────────────────────────────────── */}
-        <p className="font-bold text-2xl" style={{ color: "var(--text-primary)" }}>
-          Lynqo
-        </p>
-        <p className="text-sm mt-2" style={{ color: "var(--text-muted)" }}>
-          Made for you. Built with ❤️.
+        {/* ── Wordmark ─────────────────────────────────────────────────────── */}
+        <p
+          className="text-xl font-black"
+          style={{ color: "#f5f0e8", letterSpacing: "-0.03em" }}
+        >
+          Lynq<span style={{ color: "#e8643a" }}>o</span>
         </p>
 
-        {/* ── Row 2: Links ───────────────────────────────────────────────────── */}
-        <div className="mt-8 flex flex-wrap justify-center gap-6">
+        {/* ── Tagline ──────────────────────────────────────────────────────── */}
+        <p
+          className="text-xs mt-1 mb-6"
+          style={{ color: "rgba(245,240,232,0.3)" }}
+        >
+          Made for you. Built with love.
+        </p>
+
+        {/* ── Nav links ────────────────────────────────────────────────────── */}
+        <div className="flex justify-center gap-6 mb-6">
           {LINKS.map(({ label }) => (
             <button
               key={label}
-              className="
-                text-sm
-                transition-colors duration-150
-                cursor-pointer
-                min-h-0
-              "
-              style={{ color: "var(--text-muted)" }}
-              onMouseEnter={e => e.currentTarget.style.color = "var(--text-secondary)"}
-              onMouseLeave={e => e.currentTarget.style.color = "var(--text-muted)"}
+              className="text-xs transition-colors duration-150 cursor-pointer min-h-0"
+              style={{ color: "rgba(245,240,232,0.3)" }}
+              onMouseEnter={e =>
+                (e.currentTarget.style.color = "rgba(245,240,232,0.6)")
+              }
+              onMouseLeave={e =>
+                (e.currentTarget.style.color = "rgba(245,240,232,0.3)")
+              }
             >
               {label}
             </button>
           ))}
         </div>
 
-        {/* ── Row 3: Bottom bar ──────────────────────────────────────────────── */}
-        <div
-          className="mt-8 pt-8"
-          style={{ borderTop: "1px solid var(--border)" }}
-        >
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-            © 2025 Lynqo. Made for you. Built with ❤️.
-          </p>
-        </div>
+        {/* ── Copyright ────────────────────────────────────────────────────── */}
+        <p className="text-xs" style={{ color: "rgba(245,240,232,0.2)" }}>
+          © 2026 Lynqo. Made for college students.
+        </p>
 
       </div>
     </footer>

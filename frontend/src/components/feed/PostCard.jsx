@@ -1,15 +1,27 @@
 /**
- * PostCard.jsx — Community Feed Post Card (Themed)
+ * PostCard.jsx — Community Feed Post Card (Redesigned)
  *
- * bg-bg-surface border-app-border
- * Active reactions: teal (like) / red (dislike)
- * Inactive: text-muted hover:text-secondary
+ * Visual spec:
+ *  - bg-surface card with rounded-2xl border
+ *  - hover: accent border + subtle -translate-y-0.5 lift
+ *  - Heart (filled/outline) for likes, ThumbsDown for dislikes
+ *  - Tag badge displayed below author row when post.tag is set
+ *  - Post content line-clamped to 4 lines with "Show more" inline expand
+ *  - Post image: aspect-video object-cover, never distorts
+ *  - Action row: Like · Dislike · Comment · [spacer] · Share
+ *  - Active Like state: accent color + accent-light bg
+ *  - Active Dislike state: text-secondary + bg-elevated
+ *  - If liked: dislike button is opacity-40 cursor-not-allowed
+ *  - Comment section toggles with smooth grid-row animation
+ *  - Owner sees Delete (trash), non-owner sees Report (flag)
+ *
+ * All API calls, socket logic, and data-fetching are unchanged.
  */
 
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ThumbsUp, ThumbsDown, Share2, MessageSquare,
+  Heart, ThumbsDown, Share2, MessageCircle,
   Trash2, Flag,
 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -18,6 +30,15 @@ import api from "../../api/axios.js";
 import Avatar from "../common/Avatar.jsx";
 import CommentSection from "./CommentSection.jsx";
 
+// ── Tag metadata (emoji + label) ──────────────────────────────────────────────
+const TAG_META = {
+  Announcements: "📢 Announcements",
+  Memes:         "😂 Memes",
+  Academics:     "📚 Academics",
+  Placements:    "💼 Placements",
+  Questions:     "❓ Questions",
+};
+
 // ── Relative time ─────────────────────────────────────────────────────────────
 const relTime = (d) => {
   try { return formatDistanceToNow(new Date(d), { addSuffix: true }); }
@@ -25,22 +46,35 @@ const relTime = (d) => {
 };
 
 // ── Action button ─────────────────────────────────────────────────────────────
-const ActionBtn = ({ onClick, disabled, ariaLabel, ariaPressed, style, className, children }) => (
+const ActionBtn = ({
+  onClick, disabled, ariaLabel, ariaPressed,
+  activeStyle, inactiveStyle, children, className = "",
+}) => (
   <button
     onClick={onClick}
     disabled={disabled}
     aria-label={ariaLabel}
     aria-pressed={ariaPressed}
-    style={style}
     className={`
       flex items-center gap-1.5
-      min-h-[44px] px-3 rounded-xl
-      text-sm font-medium
-      transition-colors duration-150 active:scale-95
-      disabled:cursor-not-allowed disabled:opacity-60
+      min-h-[44px] px-3 py-2 rounded-xl
+      text-xs font-semibold
+      transition-all duration-150
+      disabled:cursor-not-allowed
       focus:outline-none focus:ring-2 focus:ring-offset-1
-      ${className ?? ""}
+      ${className}
     `}
+    style={ariaPressed ? activeStyle : inactiveStyle}
+    onMouseEnter={e => {
+      if (!ariaPressed && !disabled) {
+        Object.assign(e.currentTarget.style, { backgroundColor: "var(--bg-elevated)" });
+      }
+    }}
+    onMouseLeave={e => {
+      if (!ariaPressed) {
+        Object.assign(e.currentTarget.style, { backgroundColor: ariaPressed ? activeStyle.backgroundColor : "transparent" });
+      }
+    }}
   >
     {children}
   </button>
@@ -68,7 +102,10 @@ const PostCard = ({ post, currentUser, onDelete }) => {
   // ── Comment toggle ────────────────────────────────────────────────────────
   const [showComments, setShowComments] = useState(false);
 
-  // ── Menu / report state ──────────────────────────────────────────────
+  // ── "Show more" for long posts ────────────────────────────────────────────
+  const [expanded, setExpanded] = useState(false);
+
+  // ── Delete / report state ─────────────────────────────────────────────────
   const [deleting,  setDeleting]  = useState(false);
   const [reporting, setReporting] = useState(false);
 
@@ -186,15 +223,29 @@ const PostCard = ({ post, currentUser, onDelete }) => {
     }
   };
 
+  // ── Content — whether to clamp or not ────────────────────────────────────
+  const contentText = post.content ?? "";
+  // Rough check: >200 chars or >4 newlines → likely a long post
+  const isLong      = contentText.length > 220 || (contentText.match(/\n/g) ?? []).length > 3;
+
   // ─────────────────────────────────────────────────────────────────────────
   return (
     <article
       aria-label="Post"
+      className="
+        w-full relative
+        rounded-2xl
+        transition-all duration-200
+        hover:-translate-y-0.5
+        md:shadow-sm
+        animate-fade-in
+      "
       style={{
         backgroundColor: "var(--bg-surface)",
-        borderBottom:    "1px solid var(--border)",
+        border:          "1px solid var(--border)",
       }}
-      className="w-full relative md:rounded-2xl md:shadow-sm"
+      onMouseEnter={e => e.currentTarget.style.borderColor = "var(--accent)"}
+      onMouseLeave={e => e.currentTarget.style.borderColor = "var(--border)"}
     >
       {/* ── Header row ───────────────────────────────────────────────────── */}
       <header className="flex items-center gap-3 px-4 pt-4 pb-2">
@@ -207,70 +258,113 @@ const PostCard = ({ post, currentUser, onDelete }) => {
           <Avatar src={post.author?.profilePicture} name={post.author?.name ?? ""} size="sm" />
         </button>
 
-        {/* Author + timestamp */}
+        {/* Author + meta */}
         <div className="flex-1 min-w-0">
           <button
             onClick={() => navigate(`/profile/${post.author?._id}`)}
-            className="text-sm font-semibold transition-colors leading-tight min-h-0"
+            className="text-sm font-bold transition-colors leading-none min-h-0"
             style={{ color: "var(--text-primary)" }}
           >
             {post.author?.name ?? "Unknown"}
           </button>
-          <p className="text-xs leading-tight mt-0.5" style={{ color: "var(--text-secondary)" }}>
-            {relTime(post.createdAt)}
-            {post.author?.branch && ` · ${post.author.branch}`}
+          <p className="text-xs leading-tight mt-1" style={{ color: "var(--text-secondary)" }}>
+            {post.author?.branch && `${post.author.branch}`}
+            {post.author?.branch && post.author?.semester && " · "}
+            {post.author?.semester && `Sem ${post.author.semester}`}
           </p>
         </div>
 
-        {/* ── Direct action buttons ─────────────────────────────────────────── */}
-        <div className="flex items-center gap-1 flex-shrink-0">
-          {isOwner ? (
-            <button
-              onClick={handleDelete}
-              disabled={deleting}
-              aria-label="Delete post"
-              className="
-                p-2 rounded-xl min-h-0
-                hover:bg-red-500/10
-                transition-colors duration-150
-                focus:outline-none focus:ring-2 focus:ring-red-400
-                disabled:opacity-50 disabled:cursor-not-allowed
-              "
-              style={{ color: "var(--text-muted)" }}
-              onMouseEnter={e => e.currentTarget.style.color = "#ef4444"}
-              onMouseLeave={e => e.currentTarget.style.color = "var(--text-muted)"}
-            >
-              {deleting
-                ? <span className="w-4 h-4 border-2 border-t-red-500 rounded-full animate-spin block" style={{ borderColor: "var(--border)", borderTopColor: "#ef4444" }} />
-                : <Trash2 size={16} />
-              }
-            </button>
-          ) : (
-            <button
-              onClick={handleReport}
-              disabled={reporting}
-              aria-label="Report post"
-              className="
-                p-2 rounded-xl min-h-0
-                hover:text-amber-500 hover:bg-amber-500/10
-                transition-colors duration-150
-                focus:outline-none focus:ring-2 focus:ring-amber-400
-                disabled:opacity-50 disabled:cursor-not-allowed
-              "
-              style={{ color: "var(--text-muted)" }}
-            >
-              <Flag size={16} />
-            </button>
-          )}
-        </div>
+        {/* Timestamp */}
+        <span className="text-xs flex-shrink-0" style={{ color: "var(--text-muted)" }}>
+          {relTime(post.createdAt)}
+        </span>
+
+        {/* Owner → delete; non-owner → report */}
+        {isOwner ? (
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            aria-label="Delete post"
+            className="
+              p-2 rounded-xl min-h-0
+              hover:bg-red-500/10
+              transition-colors duration-150
+              focus:outline-none focus:ring-2 focus:ring-red-400
+              disabled:opacity-50 disabled:cursor-not-allowed
+            "
+            style={{ color: "var(--text-muted)" }}
+            onMouseEnter={e => e.currentTarget.style.color = "#ef4444"}
+            onMouseLeave={e => e.currentTarget.style.color = "var(--text-muted)"}
+          >
+            {deleting
+              ? <span className="w-4 h-4 border-2 border-t-red-500 rounded-full animate-spin block" style={{ borderColor: "var(--border)", borderTopColor: "#ef4444" }} />
+              : <Trash2 size={15} />
+            }
+          </button>
+        ) : (
+          <button
+            onClick={handleReport}
+            disabled={reporting}
+            aria-label="Report post"
+            className="
+              p-2 rounded-xl min-h-0
+              hover:text-amber-500 hover:bg-amber-500/10
+              transition-colors duration-150
+              focus:outline-none focus:ring-2 focus:ring-amber-400
+              disabled:opacity-50 disabled:cursor-not-allowed
+            "
+            style={{ color: "var(--text-muted)" }}
+          >
+            <Flag size={15} />
+          </button>
+        )}
       </header>
 
-      {/* ── Post image (optional) ─────────────────────────────────────────── */}
-      {post.image && (
+      {/* ── Category tag badge ─────────────────────────────────────────────── */}
+      {post.tag && TAG_META[post.tag] && (
         <div className="px-4 pb-2">
+          <span
+            className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full"
+            style={{
+              backgroundColor: "var(--accent-light)",
+              border:          "1px solid var(--accent-border)",
+              color:           "#9a3412",
+            }}
+          >
+            {TAG_META[post.tag]}
+          </span>
+        </div>
+      )}
+
+      {/* ── Post content ──────────────────────────────────────────────────── */}
+      <div className="px-4 pb-3">
+        <p
+          className={`text-sm leading-relaxed whitespace-pre-wrap break-words ${
+            isLong && !expanded ? "line-clamp-4" : ""
+          }`}
+          style={{ color: "var(--text-primary)" }}
+        >
+          {contentText}
+        </p>
+        {/* Show more / Show less */}
+        {isLong && (
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            className="text-xs font-semibold mt-1 min-h-0 transition-opacity duration-150 hover:opacity-70"
+            style={{ color: "var(--accent)" }}
+          >
+            {expanded ? "Show less" : "Show more"}
+          </button>
+        )}
+      </div>
+
+      {/* ── Post image ────────────────────────────────────────────────────── */}
+      {post.image && (
+        <div className="px-4 pb-3">
           <div
-            className="w-full aspect-video overflow-hidden rounded-xl"
-            style={{ border: "1px solid var(--border)" }}
+            className="w-full overflow-hidden rounded-xl"
+            style={{ aspectRatio: "16/9", border: "1px solid var(--border)" }}
           >
             <img
               src={post.image}
@@ -282,45 +376,40 @@ const PostCard = ({ post, currentUser, onDelete }) => {
         </div>
       )}
 
-      {/* ── Post content ──────────────────────────────────────────────────── */}
-      <div className="px-4 pb-3">
-        <p className="text-sm leading-relaxed whitespace-pre-wrap break-words" style={{ color: "var(--text-primary)" }}>
-          {post.content}
-        </p>
-      </div>
-
       {/* ── Action row ────────────────────────────────────────────────────── */}
       <footer
         className="flex items-center gap-1 px-3 pb-2"
         style={{ borderTop: "1px solid var(--border)" }}
       >
-        {/* Like */}
+        {/* Like — Heart icon, filled when liked */}
         <ActionBtn
           onClick={handleLike}
           disabled={likingInFlight || dislikingInFlight}
           ariaLabel={isLiked ? "Unlike post" : "Like post"}
           ariaPressed={isLiked}
-          style={isLiked
-            ? { color: "var(--accent)", backgroundColor: "var(--accent-light)" }
-            : { color: "var(--text-muted)" }
-          }
+          activeStyle={{ color: "var(--accent)", backgroundColor: "var(--accent-light)" }}
+          inactiveStyle={{ color: "var(--text-muted)", backgroundColor: "transparent" }}
+          className="active:scale-110"
         >
-          <ThumbsUp size={18} strokeWidth={isLiked ? 2.5 : 2} className="flex-shrink-0" />
+          <Heart
+            size={16}
+            strokeWidth={isLiked ? 0 : 2}
+            fill={isLiked ? "var(--accent)" : "none"}
+            className="flex-shrink-0"
+          />
           {likeCount > 0 && <span className="tabular-nums">{likeCount}</span>}
         </ActionBtn>
 
-        {/* Dislike */}
+        {/* Dislike — disabled/faded when post is liked */}
         <ActionBtn
           onClick={handleDislike}
-          disabled={dislikingInFlight || likingInFlight}
+          disabled={dislikingInFlight || likingInFlight || isLiked}
           ariaLabel={isDisliked ? "Remove dislike" : "Dislike post"}
           ariaPressed={isDisliked}
-          style={isDisliked
-            ? { color: "#ef4444", backgroundColor: "rgba(239,68,68,0.1)" }
-            : { color: "var(--text-muted)" }
-          }
+          activeStyle={{ color: "var(--text-secondary)", backgroundColor: "var(--bg-elevated)" }}
+          inactiveStyle={{ color: "var(--text-muted)", backgroundColor: "transparent", opacity: isLiked ? 0.4 : 1 }}
         >
-          <ThumbsDown size={18} strokeWidth={isDisliked ? 2.5 : 2} className="flex-shrink-0" />
+          <ThumbsDown size={16} strokeWidth={isDisliked ? 2.5 : 2} className="flex-shrink-0" />
           {dislikeCount > 0 && <span className="tabular-nums">{dislikeCount}</span>}
         </ActionBtn>
 
@@ -329,41 +418,41 @@ const PostCard = ({ post, currentUser, onDelete }) => {
           onClick={() => setShowComments((v) => !v)}
           ariaLabel={showComments ? "Hide comments" : "Show comments"}
           ariaPressed={showComments}
-          style={showComments
-            ? { color: "var(--accent)", backgroundColor: "var(--accent-light)" }
-            : { color: "var(--text-muted)" }
-          }
+          activeStyle={{ color: "var(--accent)", backgroundColor: "var(--accent-light)" }}
+          inactiveStyle={{ color: "var(--text-muted)", backgroundColor: "transparent" }}
         >
-          <MessageSquare size={18} strokeWidth={showComments ? 2.5 : 2} className="flex-shrink-0" />
+          <MessageCircle size={16} strokeWidth={showComments ? 2.5 : 2} className="flex-shrink-0" />
           {(post.comments?.length ?? 0) > 0 && (
             <span className="tabular-nums">{post.comments.length}</span>
           )}
         </ActionBtn>
 
-        {/* Spacer pushes share to the right */}
+        {/* Spacer */}
         <div className="flex-1" />
 
         {/* Share */}
         <ActionBtn
           onClick={handleShare}
           ariaLabel="Share post"
-          style={{ color: "var(--text-muted)" }}
+          ariaPressed={false}
+          activeStyle={{ color: "var(--text-muted)", backgroundColor: "transparent" }}
+          inactiveStyle={{ color: "var(--text-muted)", backgroundColor: "transparent" }}
         >
-          <Share2 size={16} strokeWidth={2} className="flex-shrink-0" />
-          <span className="hidden sm:inline text-xs">Share</span>
+          <Share2 size={15} strokeWidth={2} className="flex-shrink-0" />
+          <span className="hidden sm:inline">Share</span>
         </ActionBtn>
       </footer>
 
-      {/* ── Comment section — animated ────────────────────────────────────── */}
+      {/* ── Comment section — animated grid expand ────────────────────────── */}
       <div
         style={{
-          display:             "grid",
-          gridTemplateRows:    showComments ? "1fr" : "0fr",
-          transition:          "grid-template-rows 220ms cubic-bezier(0.4, 0, 0.2, 1)",
+          display:          "grid",
+          gridTemplateRows: showComments ? "1fr" : "0fr",
+          transition:       "grid-template-rows 250ms cubic-bezier(0.4, 0, 0.2, 1)",
         }}
       >
         <div style={{ overflow: "hidden", minHeight: 0 }}>
-          <div style={{ opacity: showComments ? 1 : 0, transition: "opacity 150ms ease 50ms" }}>
+          <div style={{ opacity: showComments ? 1 : 0, transition: "opacity 150ms ease 60ms" }}>
             <CommentSection
               postId={post._id}
               initialComments={post.comments ?? []}

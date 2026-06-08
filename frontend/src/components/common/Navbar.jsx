@@ -320,14 +320,16 @@ const Navbar = () => {
   return (
     <header
       style={{
-        backgroundColor: "var(--bg-elevated)",
-        borderBottom:    "1px solid var(--border)",
-        backdropFilter:  "blur(8px)",
-        WebkitBackdropFilter: "blur(8px)",
+        backgroundColor:      "var(--bg-elevated)",
+        borderBottom:         "0.5px solid var(--border)",
+        backdropFilter:       "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+        opacity: 1,
       }}
       className="
         fixed top-0 left-0 right-0 z-40
-        h-14 flex items-center px-4
+        h-[52px] md:h-14 flex items-center px-4
+        bg-opacity-90
       "
     >
       {/* ── Logo ──────────────────────────────────────────────────────────── */}
@@ -335,10 +337,8 @@ const Navbar = () => {
         to="/feed"
         className="
           flex items-center gap-2 min-h-[44px]
-          font-bold text-xl tracking-tight
           select-none flex-shrink-0
         "
-        style={{ color: "var(--text-primary)" }}
         aria-label="Lynqo Home"
       >
         {/* Logo mark */}
@@ -352,7 +352,10 @@ const Navbar = () => {
         >
           L
         </span>
-        <span className="hidden sm:block">
+        <span
+          className="hidden sm:block text-xl font-black"
+          style={{ color: "var(--text-primary)", letterSpacing: "-0.03em" }}
+        >
           Lynq<span style={{ color: "var(--accent)" }}>o</span>
         </span>
       </Link>

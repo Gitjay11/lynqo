@@ -41,15 +41,18 @@ const BottomTabBar = () => {
     <nav
       aria-label="Bottom tab bar"
       style={{
-        backgroundColor: "var(--bg-elevated)",
-        borderTop:       "1px solid var(--border)",
+        backgroundColor:      "var(--bg-elevated)",
+        borderTop:            "0.5px solid var(--border)",
+        backdropFilter:       "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+        paddingBottom:        "env(safe-area-inset-bottom, 0px)",
       }}
       className="
         fixed bottom-0 left-0 right-0 z-40
         lg:hidden
         flex items-stretch
         h-14 w-full
-        safe-area-inset-bottom
+        bg-opacity-90
       "
     >
       {/* ── Feed, Anon, Chat ──────────────────────────────────────────────── */}

@@ -1,47 +1,103 @@
 /**
- * FeedPage.jsx — Community Feed Page
+ * FeedPage.jsx — Community Feed Page (Redesigned)
  *
- * Responsive layout strategy:
+ * Layout (top → bottom):
+ *   <Navbar />              (in AppLayout)
+ *   <main>
+ *     <SearchBar />
+ *     <FilterChips />
+ *     <PostForm />           (hidden in search mode)
+ *     "Recent posts" label
+ *     <PostCard /> × n
+ *     <LoadMoreButton />
+ *   </main>
+ *   <BottomTabBar />         (in AppLayout)
  *
- *  Mobile (default, < 768px):
- *    Single column, full-width. No horizontal margins.
- *    PostForm and PostCards are edge-to-edge.
- *    pb-16 already handled by AppLayout (bottom tab bar clearance).
+ * Responsive strategy:
+ *   Mobile  (<lg):  single column, full width, pb-20 for bottom tab bar
+ *   lg+:            two-column CSS grid [1fr / 288px] with sticky sidebar
  *
- *  md (768px – 1023px):
- *    Single column, centered at max-w-xl, horizontal padding px-4.
- *    PostForm and PostCards get card styling (rounded corners, shadow).
+ * Data strategy (unchanged):
+ *   GET /api/posts?page=1&limit=10  on mount
+ *   Load More → page N+1 appended
+ *   New posts from PostForm → prepended
+ *   Search → GET /api/search?q=term&type=posts  (via SearchBar callback)
  *
- *  lg (1024px+):
- *    Two-column CSS grid: [1fr / 288px]
- *    Left column: max-w-xl feed (PostForm + PostCards)
- *    Right column: 288px "Trending / Active Students" widget
- *    (Left sidebar is handled by AppLayout → Sidebar)
- *
- * Data strategy (normal mode):
- *  - GET /api/posts?page=1&limit=10 on mount
- *  - "Load more" button fetches page N+1 and appends to list
- *  - New posts from PostForm are prepended to the list (no refetch)
- *
- * Search mode:
- *  - SearchBar (inline, always visible above PostForm) triggers
- *    GET /api/search?q=term&type=posts on debounced input (400ms, ≥2 chars)
- *  - Results replace the current feed view
- *  - Clearing the search (X button or empty query) restores normal feed
- *  - Load More / pagination is hidden in search mode
- *  - PostForm is hidden in search mode (search results are read-only)
+ * Filter chips — client-side only, filters by post.tag === selectedTag
+ * No API changes, no socket logic changes, no auth changes.
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { RefreshCw, Newspaper, Search }              from "lucide-react";
-import toast                                          from "react-hot-toast";
-import api                                            from "../api/axios.js";
-import { useAuth }                                    from "../hooks/useAuth.js";
-import PostForm                                       from "../components/feed/PostForm.jsx";
-import PostCard                                       from "../components/feed/PostCard.jsx";
-import PostCardSkeleton                               from "../components/common/PostCardSkeleton.jsx";
-import TrendingWidget                                 from "../components/feed/TrendingWidget.jsx";
-import SearchBar                                      from "../components/search/SearchBar.jsx";
+import { RefreshCw, Newspaper, Search, Loader2 } from "lucide-react";
+import toast                                       from "react-hot-toast";
+import api                                         from "../api/axios.js";
+import { useAuth }                                 from "../hooks/useAuth.js";
+import PostForm                                    from "../components/feed/PostForm.jsx";
+import PostCard                                    from "../components/feed/PostCard.jsx";
+import PostCardSkeleton                            from "../components/common/PostCardSkeleton.jsx";
+import TrendingWidget                              from "../components/feed/TrendingWidget.jsx";
+import SearchBar                                   from "../components/search/SearchBar.jsx";
+
+// ── Filter chip definitions ───────────────────────────────────────────────────
+const FILTER_CHIPS = [
+  { label: "All",           value: null              },
+  { label: "📢 Announcements", value: "Announcements" },
+  { label: "😂 Memes",         value: "Memes"         },
+  { label: "📚 Academics",     value: "Academics"     },
+  { label: "💼 Placements",    value: "Placements"    },
+  { label: "❓ Questions",     value: "Questions"     },
+];
+
+// ── FilterChips — horizontally scrollable row ─────────────────────────────────
+const FilterChips = ({ selected, onSelect }) => (
+  <div
+    className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4"
+    style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+  >
+    {FILTER_CHIPS.map((chip) => {
+      const isActive = selected === chip.value;
+      return (
+        <button
+          key={chip.label}
+          type="button"
+          onClick={() => onSelect(isActive && chip.value !== null ? null : chip.value)}
+          className="
+            flex items-center gap-1.5 flex-shrink-0
+            px-4 py-1.5 rounded-full
+            text-xs font-bold
+            transition-all duration-150
+            active:scale-95
+            focus:outline-none
+            cursor-pointer
+          "
+          style={isActive ? {
+            backgroundColor: "var(--accent)",
+            border:          "1px solid var(--accent)",
+            color:           "#ffffff",
+          } : {
+            backgroundColor: "var(--bg-surface)",
+            border:          "1px solid var(--border)",
+            color:           "var(--text-secondary)",
+          }}
+          onMouseEnter={e => {
+            if (!isActive) {
+              e.currentTarget.style.borderColor = "var(--accent)";
+              e.currentTarget.style.color       = "var(--text-primary)";
+            }
+          }}
+          onMouseLeave={e => {
+            if (!isActive) {
+              e.currentTarget.style.borderColor = "var(--border)";
+              e.currentTarget.style.color       = "var(--text-secondary)";
+            }
+          }}
+        >
+          {chip.label}
+        </button>
+      );
+    })}
+  </div>
+);
 
 // ─────────────────────────────────────────────────────────────────────────────
 const FeedPage = () => {
@@ -56,13 +112,16 @@ const FeedPage = () => {
   const [error,       setError]       = useState(null);
 
   // ── Search state ───────────────────────────────────────────────────────────
-  const [searchQuery,   setSearchQuery]   = useState(""); // current active query
-  const [searchResults, setSearchResults] = useState([]); // post results from API
+  const [searchQuery,   setSearchQuery]   = useState("");
+  const [searchResults, setSearchResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError,   setSearchError]   = useState(null);
   const isSearchMode = searchQuery.length >= 2;
 
-  // ── Prevent stale search responses from overwriting newer ones ─────────────
+  // ── Client-side filter chip state ──────────────────────────────────────────
+  const [selectedTag, setSelectedTag] = useState(null); // string | null
+
+  // ── Abort controller for search ───────────────────────────────────────────
   const searchAbortRef = useRef(null);
 
   // ── Fetch normal feed ──────────────────────────────────────────────────────
@@ -110,13 +169,11 @@ const FeedPage = () => {
   // ── Handle post deletion ───────────────────────────────────────────────────
   const handleDeletePost = useCallback((postId) => {
     setPosts((prev) => prev.filter((p) => p._id !== postId));
-    // Also remove from search results if in search mode
     setSearchResults((prev) => prev.filter((p) => p._id !== postId));
   }, []);
 
-  // ── Search handler (called by SearchBar with debounced query) ──────────────
+  // ── Search handler ─────────────────────────────────────────────────────────
   const handleSearch = useCallback(async (query) => {
-    // Clear search mode
     if (!query || query.trim().length < 2) {
       setSearchQuery("");
       setSearchResults([]);
@@ -129,7 +186,6 @@ const FeedPage = () => {
     setSearchLoading(true);
     setSearchError(null);
 
-    // Cancel any in-flight search
     if (searchAbortRef.current) searchAbortRef.current.abort();
     const controller = new AbortController();
     searchAbortRef.current = controller;
@@ -149,212 +205,252 @@ const FeedPage = () => {
     }
   }, []);
 
-  // ── Highlight matched text in post content ─────────────────────────────────
-  const HighlightedText = ({ text = "", query = "" }) => {
-    if (!query || query.length < 2) return <>{text}</>;
-    const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const parts   = text.split(new RegExp(`(${escaped})`, "gi"));
-    return (
-      <>
-        {parts.map((p, i) =>
-          i % 2 === 1
-            ? <mark key={i} className="bg-white/20 text-white rounded px-0.5" style={{ fontStyle: "normal" }}>{p}</mark>
-            : p
-        )}
-      </>
-    );
-  };
+  // ── Client-side filtered posts (normal mode only) ──────────────────────────
+  const displayedPosts = selectedTag
+    ? posts.filter((p) => p.tag === selectedTag)
+    : posts;
 
-  // ──────────────────────────────────────────────────────────────────────────
+  // ── Filtered search results ────────────────────────────────────────────────
+  const displayedSearchResults = selectedTag
+    ? searchResults.filter((p) => p.tag === selectedTag)
+    : searchResults;
+
+  // ─────────────────────────────────────────────────────────────────────────
   return (
     <div className="
       w-full min-h-screen
-      md:max-w-2xl md:mx-auto md:px-4 md:py-4
-      lg:max-w-none lg:px-6 lg:py-6
       lg:grid lg:grid-cols-[1fr_288px] lg:gap-6
+      lg:max-w-5xl lg:mx-auto lg:px-6 lg:py-6
       lg:items-start
     ">
 
-      {/* ── Main feed column ─────────────────────────────────────────────── */}
-      <div className="min-w-0 space-y-0 md:space-y-3">
+      {/* ── Main feed column ───────────────────────────────────────────────── */}
+      <div className="min-w-0">
 
-        {/* ── Inline post search bar — always visible at top ──────────────── */}
-        <div className="px-4 pt-4 pb-2 md:px-0 md:pt-0 md:pb-0">
+        {/* ── Content wrapper — max-w-xl centered on sm+, full width on mobile ─ */}
+        <div className="
+          max-w-xl mx-auto
+          px-4 py-4
+          pb-20
+          flex flex-col gap-4
+          lg:max-w-none lg:px-0 lg:py-0
+        ">
+
+          {/* ── Search bar ─────────────────────────────────────────────── */}
           <SearchBar
             onSearch={handleSearch}
-            placeholder="Search posts…"
+            placeholder="Search posts..."
             loading={searchLoading}
           />
-        </div>
 
-        {/* ── Mobile separator ────────────────────────────────────────────── */}
-        <div className="md:hidden h-px" style={{ backgroundColor: "var(--border)" }} aria-hidden="true" />
+          {/* ── Filter chips ───────────────────────────────────────────── */}
+          <FilterChips selected={selectedTag} onSelect={setSelectedTag} />
 
-        {/* ══════════════════════════════════════════════════════════════════
-            SEARCH MODE — show results instead of normal feed
-        ══════════════════════════════════════════════════════════════════ */}
-        {isSearchMode && (
-          <div className="space-y-0 md:space-y-3">
+          {/* ── Post composer — hidden in search mode ───────────────────── */}
+          {!isSearchMode && (
+            <PostForm currentUser={user} onPost={handleNewPost} />
+          )}
 
-            {/* Search loading */}
-            {searchLoading && (
-              <div className="space-y-0 md:space-y-3">
-                <PostCardSkeleton />
-                <PostCardSkeleton />
-                <PostCardSkeleton />
-              </div>
-            )}
+          {/* ════════════════════════════════════════════════════════════
+              SEARCH MODE
+          ════════════════════════════════════════════════════════════ */}
+          {isSearchMode && (
+            <div className="flex flex-col gap-3">
 
-            {/* Search error */}
-            {!searchLoading && searchError && (
-              <div className="flex flex-col items-center gap-2 py-10 px-4 text-center">
-                <p className="text-sm" style={{ color: "var(--text-secondary)" }}>{searchError}</p>
-              </div>
-            )}
+              {/* Search loading */}
+              {searchLoading && (
+                <>
+                  <PostCardSkeleton />
+                  <PostCardSkeleton />
+                  <PostCardSkeleton />
+                </>
+              )}
 
-            {/* Search empty state */}
-            {!searchLoading && !searchError && searchResults.length === 0 && (
-              <div className="flex flex-col items-center gap-3 py-16 px-4 text-center">
-                <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "var(--bg-elevated)" }}>
-                  <Search size={22} style={{ color: "var(--text-muted)" }} />
+              {/* Search error */}
+              {!searchLoading && searchError && (
+                <div className="flex flex-col items-center gap-2 py-10 text-center">
+                  <p className="text-sm" style={{ color: "var(--text-secondary)" }}>{searchError}</p>
                 </div>
-                <div>
-                  <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-                    No posts found for &ldquo;{searchQuery}&rdquo;
-                  </p>
-                  <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
-                    Try a different keyword
-                  </p>
-                </div>
-              </div>
-            )}
+              )}
 
-            {/* Search results */}
-            {!searchLoading && searchResults.length > 0 && (
-              <>
-                {/* Result count banner */}
-                <div className="px-4 py-2 md:px-0">
-                  <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                    {searchResults.length} result{searchResults.length !== 1 ? "s" : ""} for &ldquo;
+              {/* Search empty state */}
+              {!searchLoading && !searchError && displayedSearchResults.length === 0 && (
+                <div className="flex flex-col items-center gap-3 py-16 text-center">
+                  <div
+                    className="w-14 h-14 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: "var(--bg-elevated)" }}
+                  >
+                    <Search size={22} style={{ color: "var(--text-muted)" }} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+                      No posts found for &ldquo;{searchQuery}&rdquo;
+                    </p>
+                    <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
+                      Try a different keyword
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Search results */}
+              {!searchLoading && displayedSearchResults.length > 0 && (
+                <>
+                  {/* Result count */}
+                  <p className="text-xs pl-1" style={{ color: "var(--text-secondary)" }}>
+                    {displayedSearchResults.length} result{displayedSearchResults.length !== 1 ? "s" : ""} for &ldquo;
                     <span style={{ color: "var(--text-primary)" }}>{searchQuery}</span>&rdquo;
                   </p>
+
+                  <ul className="flex flex-col gap-3" aria-label="Search results">
+                    {displayedSearchResults.map((post) => (
+                      <li key={post._id}>
+                        <PostCard
+                          post={post}
+                          currentUser={user}
+                          onDelete={handleDeletePost}
+                          searchQuery={searchQuery}
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* ════════════════════════════════════════════════════════════
+              NORMAL MODE
+          ════════════════════════════════════════════════════════════ */}
+          {!isSearchMode && (
+            <>
+              {/* Loading skeleton */}
+              {loading && (
+                <div className="flex flex-col gap-3">
+                  <PostCardSkeleton />
+                  <PostCardSkeleton />
+                  <PostCardSkeleton />
                 </div>
+              )}
 
-                <ul className="space-y-0 md:space-y-3" aria-label="Search results">
-                  {searchResults.map((post) => (
-                    <li key={post._id}>
-                      {/*
-                       * Reuse the full PostCard for consistent UX.
-                       * PostCard already handles likes, comments, delete, etc.
-                       * The `highlight` prop passes the query for content highlighting.
-                       */}
-                      <PostCard
-                        post={post}
-                        currentUser={user}
-                        onDelete={handleDeletePost}
-                        searchQuery={searchQuery}
-                      />
-                    </li>
-                  ))}
-                </ul>
-              </>
-            )}
-          </div>
-        )}
-
-        {/* ══════════════════════════════════════════════════════════════════
-            NORMAL MODE — full feed (hidden when search is active)
-        ══════════════════════════════════════════════════════════════════ */}
-        {!isSearchMode && (
-          <>
-            {/* ── Post composer ─────────────────────────────────────────── */}
-            <PostForm currentUser={user} onPost={handleNewPost} />
-
-            {/* ── Feed divider (mobile only) ────────────────────────────── */}
-            <div className="md:hidden h-2" style={{ backgroundColor: "var(--bg-elevated)" }} aria-hidden="true" />
-
-            {/* ── Loading skeleton ──────────────────────────────────────── */}
-            {loading && (
-              <div className="space-y-0 md:space-y-3">
-                <PostCardSkeleton />
-                <PostCardSkeleton />
-                <PostCardSkeleton />
-              </div>
-            )}
-
-            {/* Error with retry */}
-            {!loading && error && (
-              <div className="flex flex-col items-center gap-3 py-12 px-4">
-                <p className="text-sm text-center" style={{ color: "var(--text-secondary)" }}>{error}</p>
-                <button
-                  onClick={() => fetchPosts(1, false)}
-                  className="btn-secondary flex items-center gap-2 text-sm"
-                >
-                  <RefreshCw size={15} />
-                  Try again
-                </button>
-              </div>
-            )}
-
-            {/* ── Empty state ───────────────────────────────────────────── */}
-            {!loading && !error && posts.length === 0 && (
-              <div className="flex flex-col items-center gap-3 py-16 px-4 text-center">
-                <div className="w-16 h-16 rounded-full flex items-center justify-center mb-1" style={{ backgroundColor: "var(--bg-elevated)" }}>
-                  <Newspaper size={28} style={{ color: "var(--text-secondary)" }} />
+              {/* Error with retry */}
+              {!loading && error && (
+                <div className="flex flex-col items-center gap-3 py-12">
+                  <p className="text-sm text-center" style={{ color: "var(--text-secondary)" }}>{error}</p>
+                  <button
+                    onClick={() => fetchPosts(1, false)}
+                    className="flex items-center gap-2 text-sm px-4 py-2 rounded-xl transition-colors duration-150"
+                    style={{
+                      backgroundColor: "var(--bg-surface)",
+                      border:          "1px solid var(--border)",
+                      color:           "var(--text-secondary)",
+                    }}
+                  >
+                    <RefreshCw size={14} />
+                    Try again
+                  </button>
                 </div>
-                <p className="text-base font-semibold" style={{ color: "var(--text-primary)" }}>No posts yet</p>
-                <p className="text-sm max-w-[240px] leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                  Be the first to post something!
-                </p>
-              </div>
-            )}
+              )}
 
-            {/* ── Post list ─────────────────────────────────────────────── */}
-            {!loading && posts.length > 0 && (
-              <>
-                <ul className="space-y-0 md:space-y-3" aria-label="Community feed">
-                  {posts.map((post) => (
-                    <li key={post._id}>
-                      <PostCard
-                        post={post}
-                        currentUser={user}
-                        onDelete={handleDeletePost}
-                      />
-                    </li>
-                  ))}
-                </ul>
+              {/* Empty state */}
+              {!loading && !error && displayedPosts.length === 0 && (
+                <div className="flex flex-col items-center gap-3 py-16 text-center">
+                  <div
+                    className="w-16 h-16 rounded-full flex items-center justify-center mb-1"
+                    style={{ backgroundColor: "var(--bg-elevated)" }}
+                  >
+                    <Newspaper size={28} style={{ color: "var(--text-secondary)" }} />
+                  </div>
+                  <p className="text-base font-semibold" style={{ color: "var(--text-primary)" }}>
+                    {selectedTag ? `No ${selectedTag} posts yet` : "No posts yet"}
+                  </p>
+                  <p className="text-sm max-w-[240px] leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                    {selectedTag ? "Try a different filter or be the first to post!" : "Be the first to post something!"}
+                  </p>
+                </div>
+              )}
 
-                {/* ── Load more ─────────────────────────────────────────── */}
-                <div className="flex justify-center py-6 px-4">
+              {/* Post list */}
+              {!loading && displayedPosts.length > 0 && (
+                <>
+                  {/* ── "Recent posts" section label ─────────────────── */}
+                  <p
+                    className="text-xs font-bold uppercase tracking-widest pl-1 -mb-1"
+                    style={{ color: "var(--text-muted)" }}
+                  >
+                    Recent posts
+                  </p>
+
+                  <ul className="flex flex-col gap-3" aria-label="Community feed">
+                    {displayedPosts.map((post) => (
+                      <li key={post._id}>
+                        <PostCard
+                          post={post}
+                          currentUser={user}
+                          onDelete={handleDeletePost}
+                        />
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* ── Load More / End of feed ───────────────────────── */}
                   {page < totalPages ? (
                     <button
                       id="load-more-btn"
                       onClick={handleLoadMore}
                       disabled={loadingMore}
-                      className="btn-secondary flex items-center gap-2 text-sm w-full md:w-auto"
+                      className="
+                        w-full py-3 rounded-2xl
+                        text-sm font-semibold
+                        transition-all duration-150
+                        active:scale-95
+                        disabled:opacity-60 disabled:cursor-not-allowed disabled:scale-100
+                        focus:outline-none
+                        mt-2
+                      "
+                      style={{
+                        backgroundColor: "var(--bg-surface)",
+                        border:          "1px solid var(--border)",
+                        color:           "var(--text-secondary)",
+                      }}
+                      onMouseEnter={e => {
+                        if (!loadingMore) {
+                          e.currentTarget.style.backgroundColor = "var(--bg-elevated)";
+                          e.currentTarget.style.color           = "var(--text-primary)";
+                        }
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.backgroundColor = "var(--bg-surface)";
+                        e.currentTarget.style.color           = "var(--text-secondary)";
+                      }}
                     >
-                      {loadingMore
-                        ? <>
-                            <span className="w-4 h-4 border-2 rounded-full animate-spin" style={{ borderColor: "var(--border)", borderTopColor: "var(--accent)" }} />
-                            Loading…
-                          </>
-                        : "Load more posts"
-                      }
+                      {loadingMore ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <Loader2 size={15} className="animate-spin" />
+                          Loading…
+                        </span>
+                      ) : (
+                        "Load more posts"
+                      )}
                     </button>
                   ) : (
-                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                      You&apos;ve reached the end of the feed 🎉
+                    <p
+                      className="text-xs text-center py-4"
+                      style={{ color: "var(--text-muted)" }}
+                    >
+                      You have seen all posts
                     </p>
                   )}
-                </div>
-              </>
-            )}
-          </>
-        )}
+                </>
+              )}
+            </>
+          )}
+
+        </div>
       </div>
 
-      {/* ── Right sidebar widget (lg+ only) ──────────────────────────────── */}
-      <aside className="hidden lg:block sticky top-20 space-y-4">
+      {/* ── Right sidebar — lg+ only ──────────────────────────────────────── */}
+      <aside className="hidden lg:block sticky top-[72px] self-start space-y-4">
         <TrendingWidget />
       </aside>
 

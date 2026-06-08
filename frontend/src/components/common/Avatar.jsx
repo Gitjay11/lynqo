@@ -1,52 +1,30 @@
 /**
- * Avatar.jsx — User Avatar Component (Dark Theme)
+ * Avatar.jsx — User Avatar Component (Redesigned)
  *
- * Renders a user's profile picture, or a generated initials-based fallback.
+ * Renders a user's profile picture, or an accent-colored initials fallback.
  *
  * Sizes:
- *   xs   → 24px  (chat message bubbles)
- *   sm   → 32px  (nav, post headers)
+ *   xs   → 24px  (chat message bubbles, comment rows)
+ *   sm   → 32px  (nav, post headers, follow lists)
  *   md   → 40px  (chat list rows)
  *   lg   → 56px  (chat window empty state)
- *   xl   → 80px  (profile page)
- *   2xl  → 128px (profile hero)
+ *   xl   → 72px  (profile page header)
+ *   2xl  → 128px (profile hero / large display)
  *
- * Fallback palette: 8 zinc tones — deterministic from name.
+ * Initials fallback: always accent bg (#e8643a) + white text — consistent brand color.
+ * Hover ring: only rendered when `onClick` prop is provided.
  */
 
 import { useMemo } from "react";
 
 // ── Size map ──────────────────────────────────────────────────────────────────
 const SIZE_MAP = {
-  xs:  { wrapper: "w-6 h-6",   text: "text-[9px]"  },
-  sm:  { wrapper: "w-8 h-8",   text: "text-[11px]" },
-  md:  { wrapper: "w-10 h-10", text: "text-sm"     },
-  lg:  { wrapper: "w-14 h-14", text: "text-xl"     },
-  xl:  { wrapper: "w-20 h-20", text: "text-2xl"    },
-  "2xl": { wrapper: "w-32 h-32", text: "text-4xl"  },
-};
-
-// ── Themed fallback — uses accent-light bg + accent text ─────────────────────
-// A single deterministic mapping: all avatars use the accent palette with
-// slight saturation variation based on name hash for visual differentiation.
-const FALLBACK_COLORS = [
-  "bg-bg-elevated text-text-primary",
-  "bg-accent-light text-app-accent",
-  "bg-bg-elevated text-text-secondary",
-  "bg-accent-light text-app-accent",
-  "bg-bg-elevated text-text-primary",
-  "bg-accent-light text-app-accent",
-  "bg-bg-elevated text-text-secondary",
-  "bg-accent-light text-app-accent",
-];
-
-// ── Deterministic color from name string ──────────────────────────────────────
-const colorFromName = (name = "") => {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return FALLBACK_COLORS[Math.abs(hash) % FALLBACK_COLORS.length];
+  xs:    { wrapper: "w-6 h-6",       text: "text-[9px]"  },
+  sm:    { wrapper: "w-8 h-8",       text: "text-[11px]" },
+  md:    { wrapper: "w-10 h-10",     text: "text-sm"     },
+  lg:    { wrapper: "w-14 h-14",     text: "text-xl"     },
+  xl:    { wrapper: "w-[72px] h-[72px]", text: "text-2xl" },
+  "2xl": { wrapper: "w-32 h-32",     text: "text-4xl"    },
 };
 
 // ── Extract up to 2 initials ──────────────────────────────────────────────────
@@ -67,32 +45,43 @@ const Avatar = ({
 }) => {
   const { wrapper, text } = SIZE_MAP[size] ?? SIZE_MAP.md;
   const initials           = useMemo(() => getInitials(name), [name]);
-  const colorClass         = useMemo(() => colorFromName(name), [name]);
+
+  // Hover ring classes — only applied when onClick is provided
+  const interactiveClasses = onClick
+    ? "cursor-pointer hover:ring-2 hover:ring-[#e8643a] hover:ring-offset-2 transition-all duration-150"
+    : "";
 
   const base = `
     ${wrapper} rounded-full flex-shrink-0 select-none overflow-hidden
-    ${onClick ? "cursor-pointer" : ""}
+    ${interactiveClasses}
     ${className}
   `;
 
-  // ── Image avatar ─────────────────────────────────────────────────────────
+  // ── Image avatar — wrapped in a sized div so overflow-hidden clips correctly ──
   if (src) {
     return (
-      <img
-        src={src}
-        alt={name ? `${name}'s avatar` : "User avatar"}
-        className={`${base} object-cover`}
-        loading="lazy"
+      <div
+        className={`${base} overflow-hidden`}
+        aria-label={name ? `${name}'s avatar` : "User avatar"}
+        role={onClick ? "button" : undefined}
         onClick={onClick}
-        onError={(e) => { e.currentTarget.style.display = "none"; }}
-      />
+      >
+        <img
+          src={src}
+          alt={name ? `${name}'s avatar` : "User avatar"}
+          className="w-full h-full object-cover"
+          loading="lazy"
+          onError={(e) => { e.currentTarget.style.display = "none"; }}
+        />
+      </div>
     );
   }
 
-  // ── Initials fallback ─────────────────────────────────────────────────────
+  // ── Initials fallback — always accent bg + white text ─────────────────────
   return (
     <div
-      className={`${base} flex items-center justify-center ${colorClass}`}
+      className={`${base} flex items-center justify-center`}
+      style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}
       aria-label={name ? `${name}'s avatar` : "User avatar"}
       role={onClick ? "button" : undefined}
       onClick={onClick}

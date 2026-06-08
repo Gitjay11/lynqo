@@ -1,11 +1,21 @@
 /**
- * CommentSection.jsx — Collapsible Post Comments (Themed)
+ * CommentSection.jsx — Collapsible Post Comments (Redesigned)
  *
- * bg-bg-surface card, comment bubbles bg-bg-elevated, input bg-bg-elevated
+ * Visual spec:
+ *  - Flat comment list (no bubble) — avatar + name/time row + text
+ *  - Delete own comment button (trash icon, far right)
+ *  - Comment input: rounded-full bg-elevated, focus → accent border
+ *  - Send button (SendHorizonal icon) appears only when input has text
+ *  - Avatar 24px (xs) on input row
+ *  - Animated open/close via grid-template-rows
+ *
+ * All API calls unchanged:
+ *  - POST /api/posts/:id/comments  — add comment
+ *  - DELETE /api/posts/:id/comments/:commentId — delete comment (if backend supports)
  */
 
 import { useState, useCallback } from "react";
-import { Send, Loader2, MessageSquare } from "lucide-react";
+import { SendHorizonal, Loader2, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import toast from "react-hot-toast";
 import api from "../../api/axios.js";
@@ -18,47 +28,90 @@ const relTime = (d) => {
 };
 
 // ── Single comment row ────────────────────────────────────────────────────────
-const CommentRow = ({ comment }) => (
-  <div className="flex items-start gap-2.5">
-    <Avatar
-      src={comment.author?.profilePicture}
-      name={comment.author?.name ?? ""}
-      size="xs"
-      className="flex-shrink-0 mt-0.5"
-    />
-    <div className="flex-1 min-w-0">
-      {/* Bubble */}
-      <div
-        className="rounded-2xl rounded-tl-sm px-3 py-2 inline-block max-w-full"
-        style={{ backgroundColor: "var(--bg-elevated)" }}
-      >
-        <p className="text-xs font-semibold leading-tight" style={{ color: "var(--text-primary)" }}>
-          {comment.author?.name ?? "Unknown"}
-        </p>
-        <p className="text-sm mt-0.5 leading-snug break-words whitespace-pre-wrap" style={{ color: "var(--text-primary)" }}>
+const CommentRow = ({ comment, currentUser, onDelete }) => {
+  const [deleting, setDeleting] = useState(false);
+  const userId  = currentUser?._id ?? currentUser?.id;
+  const isOwner = String(comment.author?._id ?? comment.author) === String(userId);
+
+  const handleDelete = async () => {
+    if (deleting) return;
+    setDeleting(true);
+    try {
+      await api.delete(`/posts/${comment.postId}/comments/${comment._id}`);
+      onDelete?.(comment._id);
+    } catch (err) {
+      toast.error(err.response?.data?.message ?? "Failed to delete comment");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  return (
+    <div className="flex gap-3 mb-3 last:mb-0">
+      {/* Avatar — xs = 24px */}
+      <div className="flex-shrink-0 mt-0.5">
+        <Avatar
+          src={comment.author?.profilePicture}
+          name={comment.author?.name ?? ""}
+          size="xs"
+        />
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 min-w-0">
+        {/* Name + time row */}
+        <div className="flex items-baseline gap-2">
+          <span className="text-xs font-bold leading-none" style={{ color: "var(--text-primary)" }}>
+            {comment.author?.name ?? "Unknown"}
+          </span>
+          <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+            {relTime(comment.createdAt)}
+          </span>
+        </div>
+        {/* Comment text */}
+        <p className="text-xs leading-relaxed mt-0.5 break-words whitespace-pre-wrap" style={{ color: "var(--text-primary)" }}>
           {comment.text}
         </p>
       </div>
-      {/* Timestamp */}
-      <p className="text-[10px] mt-0.5 pl-1" style={{ color: "var(--text-muted)" }}>
-        {relTime(comment.createdAt)}
-      </p>
+
+      {/* Delete own comment */}
+      {isOwner && (
+        <button
+          onClick={handleDelete}
+          disabled={deleting}
+          aria-label="Delete comment"
+          className="
+            flex-shrink-0 self-start mt-0.5 ml-auto
+            p-1 rounded-lg min-h-0
+            transition-colors duration-150
+            focus:outline-none focus:ring-2 focus:ring-red-400
+            disabled:opacity-50 disabled:cursor-not-allowed
+          "
+          style={{ color: "var(--text-muted)" }}
+          onMouseEnter={e => e.currentTarget.style.color = "#ef4444"}
+          onMouseLeave={e => e.currentTarget.style.color = "var(--text-muted)"}
+        >
+          {deleting
+            ? <Loader2 size={12} className="animate-spin" />
+            : <Trash2 size={12} />
+          }
+        </button>
+      )}
     </div>
-  </div>
-);
+  );
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 const CommentSection = ({ postId, initialComments = [], currentUser }) => {
   const [comments, setComments] = useState(initialComments);
   const [text,     setText]     = useState("");
   const [loading,  setLoading]  = useState(false);
-  const [open,     setOpen]     = useState(false);
 
   const canSubmit = text.trim().length > 0 && !loading;
 
-  // ── Submit new comment ──────────────────────────────────────────────────
+  // ── Submit new comment ────────────────────────────────────────────────────
   const handleSubmit = useCallback(async (e) => {
-    e.preventDefault();
+    e?.preventDefault();
     if (!canSubmit) return;
 
     const trimmed = text.trim();
@@ -67,14 +120,13 @@ const CommentSection = ({ postId, initialComments = [], currentUser }) => {
     try {
       const { data } = await api.post(`/posts/${postId}/comments`, { text: trimmed });
       setComments((prev) => [...prev, data.comment]);
-      if (!open) setOpen(true);
     } catch (err) {
       toast.error(err.response?.data?.message ?? "Failed to post comment");
       setText(trimmed);
     } finally {
       setLoading(false);
     }
-  }, [text, canSubmit, postId, open]);
+  }, [text, canSubmit, postId]);
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -83,59 +135,42 @@ const CommentSection = ({ postId, initialComments = [], currentUser }) => {
     }
   };
 
+  // ── Delete a comment from local state ────────────────────────────────────
+  const handleDeleteComment = useCallback((commentId) => {
+    setComments((prev) => prev.filter((c) => c._id !== commentId));
+  }, []);
+
+  // ─────────────────────────────────────────────────────────────────────────
   return (
-    <div style={{ borderTop: "1px solid var(--border)" }}>
+    <div className="px-4 pt-3 pb-3" style={{ borderTop: "1px solid var(--border)" }}>
 
-      {/* ── Toggle comments button ─────────────────────────────────────────── */}
+      {/* ── Comment list ─────────────────────────────────────────────────── */}
       {comments.length > 0 && (
-        <button
-          onClick={() => setOpen((v) => !v)}
-          className="
-            flex items-center gap-1.5 px-4 py-2
-            text-xs
-            transition-colors duration-150 min-h-0
-          "
-          style={{ color: "var(--text-secondary)" }}
-        >
-          <MessageSquare size={13} />
-          {open
-            ? "Hide comments"
-            : `${comments.length} comment${comments.length !== 1 ? "s" : ""}`}
-        </button>
-      )}
-
-      {/* ── Comment list — animated expand/collapse ────────────────────────── */}
-      <div
-        style={{
-          display:          "grid",
-          gridTemplateRows: open ? "1fr" : "0fr",
-          transition:       "grid-template-rows 200ms cubic-bezier(0.4, 0, 0.2, 1)",
-        }}
-      >
-        <div style={{ overflow: "hidden", minHeight: 0 }}>
-          <div
-            style={{ opacity: open ? 1 : 0, transition: "opacity 150ms ease 50ms" }}
-            className="px-4 py-3 space-y-3"
-          >
-            {comments.map((c) => (
-              <CommentRow key={c._id} comment={c} />
-            ))}
-          </div>
+        <div className="mb-3">
+          {comments.map((c) => (
+            <CommentRow
+              key={c._id}
+              comment={{ ...c, postId }}
+              currentUser={currentUser}
+              onDelete={handleDeleteComment}
+            />
+          ))}
         </div>
-      </div>
+      )}
 
       {/* ── Comment input form ─────────────────────────────────────────────── */}
       <form
         onSubmit={handleSubmit}
-        className="flex items-center gap-2 px-4 py-2"
+        className="flex items-center gap-2"
       >
-        {/* Current user avatar */}
-        <Avatar
-          src={currentUser?.profilePicture}
-          name={currentUser?.name ?? ""}
-          size="xs"
-          className="flex-shrink-0"
-        />
+        {/* Current user avatar — xs = 24px */}
+        <div className="flex-shrink-0">
+          <Avatar
+            src={currentUser?.profilePicture}
+            name={currentUser?.name ?? ""}
+            size="xs"
+          />
+        </div>
 
         {/* Input */}
         <input
@@ -143,45 +178,48 @@ const CommentSection = ({ postId, initialComments = [], currentUser }) => {
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Write a comment…"
+          placeholder="Add a comment..."
           maxLength={500}
           aria-label="Write a comment"
+          className="
+            flex-1 px-4 py-2
+            rounded-full text-xs
+            transition-colors duration-200
+            focus:outline-none
+            min-h-0 h-8
+          "
           style={{
             backgroundColor: "var(--bg-elevated)",
-            border:          "1px solid var(--border)",
+            border:          text ? "1px solid var(--accent)" : "1px solid var(--border)",
             color:           "var(--text-primary)",
           }}
-          className="
-            flex-1 px-3 py-2
-            rounded-full
-            text-sm
-            focus:outline-none focus:ring-2
-            transition duration-200 min-h-0 h-9
-          "
+          onFocus={e  => e.currentTarget.style.borderColor = "var(--accent)"}
+          onBlur={e   => e.currentTarget.style.borderColor = text ? "var(--accent)" : "var(--border)"}
         />
 
-        {/* Send */}
-        <button
-          type="submit"
-          disabled={!canSubmit}
-          aria-label="Post comment"
-          style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}
-          className="
-            flex items-center justify-center
-            w-9 h-9 rounded-full
-            disabled:opacity-40 disabled:cursor-not-allowed
-            transition-all duration-150 min-h-0 flex-shrink-0
-            focus:outline-none focus:ring-2 focus:ring-offset-1
-            active:scale-95
-          "
-        >
-          {loading
-            ? <Loader2 size={14} className="animate-spin" />
-            : <Send size={14} strokeWidth={2.5} />
-          }
-        </button>
+        {/* Send — only visible when input has text */}
+        {(text.trim().length > 0) && (
+          <button
+            type="submit"
+            disabled={!canSubmit}
+            aria-label="Post comment"
+            className="
+              flex items-center justify-center
+              w-7 h-7 rounded-full flex-shrink-0
+              disabled:opacity-40 disabled:cursor-not-allowed
+              transition-all duration-150 min-h-0
+              focus:outline-none focus:ring-2 focus:ring-offset-1
+              active:scale-95
+            "
+            style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}
+          >
+            {loading
+              ? <Loader2 size={13} className="animate-spin" />
+              : <SendHorizonal size={13} strokeWidth={2.5} />
+            }
+          </button>
+        )}
       </form>
-
     </div>
   );
 };

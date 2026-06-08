@@ -1,112 +1,138 @@
 /**
- * FeaturesSection.jsx — What Lynqo Offers (Theme-Aware)
+ * FeaturesSection.jsx — Features Grid (Section 3)
  *
- * Background: bg-bg-surface
- * Cards: bg-bg-elevated border-app-border
+ * Background:  var(--bg-surface), border-y border-[var(--border)]
+ * Padding:     py-16 px-4
+ * Container:   max-w-5xl mx-auto
+ * Grid:        1 col (mobile) → 2 col (sm) → 4 col (lg)
+ *
+ * Cards hover: accent border + shadow-sm
  */
 
-import { MessageSquare, MessageCircle, Users } from "lucide-react";
+import { LayoutGrid, Ghost, MessageCircle, Users } from "lucide-react";
 
 // ── Card data ─────────────────────────────────────────────────────────────────
 const CARDS = [
   {
-    icon: MessageSquare,
+    icon: LayoutGrid,
     title: "Campus Feed",
     description:
-      "Post updates, ask questions, share memes, and stay connected with your entire college in a real-time feed.",
-    accentIcon: false,
+      "Posts, memes, announcements and updates from your entire college in one real-time feed.",
+  },
+  {
+    icon: Ghost,
+    title: "Anonymous",
+    description:
+      "Say what you really think. Confessions, opinions, campus secrets — all completely anonymous.",
   },
   {
     icon: MessageCircle,
-    title: "Direct Messaging",
+    title: "Direct Chat",
     description:
-      "Chat one-on-one with any student. Real-time messages, online status, and typing indicators.",
-    accentIcon: false,
+      "Real-time one-on-one messaging with any student. No phone number needed.",
   },
   {
     icon: Users,
     title: "Student Profiles",
     description:
-      "Find students by branch and semester. Build your campus identity and network before placements.",
-    accentIcon: true,
+      "Find students by branch and semester. Skills, hobbies, and looking for tags.",
   },
 ];
 
 // ── Single feature card ───────────────────────────────────────────────────────
-const FeatureCard = ({ icon: Icon, title, description, accentIcon }) => (
+const FeatureCard = ({ icon: Icon, title, description }) => (
   <div
-    className="
-      rounded-2xl
-      shadow-sm
-      transition-all duration-200
-      p-6
-    "
+    className="rounded-2xl p-5 transition-all duration-200 cursor-default"
     style={{
-      backgroundColor: "var(--bg-elevated)",
+      backgroundColor: "var(--bg-primary)",
       border: "1px solid var(--border)",
     }}
-    onMouseEnter={e => e.currentTarget.style.borderColor = "var(--text-muted)"}
-    onMouseLeave={e => e.currentTarget.style.borderColor = "var(--border)"}
+    onMouseEnter={e => {
+      e.currentTarget.style.borderColor = "#e8643a";
+      e.currentTarget.style.boxShadow = "0 1px 4px rgba(232,100,58,0.08)";
+    }}
+    onMouseLeave={e => {
+      e.currentTarget.style.borderColor = "var(--border)";
+      e.currentTarget.style.boxShadow = "none";
+    }}
   >
-    {/* Icon block */}
+    {/* Icon container */}
     <div
-      className="w-12 h-12 rounded-xl flex items-center justify-center"
-      style={
-        accentIcon
-          ? { backgroundColor: "var(--accent-light)", color: "var(--accent)" }
-          : { backgroundColor: "var(--bg-surface)", color: "var(--text-secondary)" }
-      }
+      className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+      style={{ backgroundColor: "var(--accent-light)" }}
     >
-      <Icon size={22} strokeWidth={2} />
+      <Icon size={20} strokeWidth={2} style={{ color: "#e8643a" }} />
     </div>
 
     {/* Title */}
-    <h3 className="text-xl font-semibold mt-4" style={{ color: "var(--text-primary)" }}>{title}</h3>
+    <h3
+      className="text-sm font-bold mb-2"
+      style={{ color: "var(--text-primary)" }}
+    >
+      {title}
+    </h3>
 
     {/* Description */}
-    <p className="text-sm mt-2 leading-relaxed" style={{ color: "var(--text-secondary)" }}>{description}</p>
+    <p
+      className="text-xs leading-relaxed"
+      style={{ color: "var(--text-secondary)" }}
+    >
+      {description}
+    </p>
   </div>
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
-const FeaturesSection = () => {
-  return (
-    <section
-      id="features"
-      className="py-20 px-4"
-      style={{
-        backgroundColor: "var(--bg-surface)",
-        borderTop: "1px solid var(--border)",
-      }}
-    >
-      <div className="max-w-5xl mx-auto">
+const FeaturesSection = () => (
+  <section
+    id="features"
+    className="py-16 px-4"
+    style={{
+      backgroundColor: "var(--bg-surface)",
+      borderTop:    "1px solid var(--border)",
+      borderBottom: "1px solid var(--border)",
+    }}
+  >
+    <div className="max-w-5xl mx-auto">
 
-        {/* ── Section header ─────────────────────────────────────────────────── */}
-        <div className="text-center">
-          <h2
-            className="text-3xl md:text-4xl font-bold text-center"
-            style={{ color: "var(--text-primary)" }}
-          >
-            Everything happening on campus — right here.
-          </h2>
-          <p className="text-lg mt-3 text-center" style={{ color: "var(--text-secondary)" }}>
-            The private space our campus was missing.
-          </p>
-        </div>
-
-        {/* ── Cards grid ────────────────────────────────────────────────────── */}
-        <div className="
-          grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3
-          gap-6 mt-12
-        ">
-          {CARDS.map((card) => (
-            <FeatureCard key={card.title} {...card} />
-          ))}
-        </div>
-
+      {/* ── Section label (pill badge) ────────────────────────────────────── */}
+      <div
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold"
+        style={{
+          backgroundColor: "var(--accent-light)",
+          border: "0.5px solid var(--accent-border)",
+          color: "#9a3412",
+        }}
+      >
+        <LayoutGrid size={13} />
+        Features
       </div>
-    </section>
-  );
-};
+
+      {/* ── Section title ─────────────────────────────────────────────────── */}
+      <h2
+        className="text-3xl md:text-4xl font-black mt-3 mb-2"
+        style={{ color: "var(--text-primary)", letterSpacing: "-0.03em" }}
+      >
+        One platform. Endless connections.
+      </h2>
+
+      {/* ── Section subtitle ──────────────────────────────────────────────── */}
+      <p
+        className="text-sm leading-relaxed mb-10 max-w-sm"
+        style={{ color: "var(--text-secondary)" }}
+      >
+        Everything your campus needs in one place — no more scattered WhatsApp groups.
+      </p>
+
+      {/* ── Cards grid ────────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {CARDS.map(card => (
+          <FeatureCard key={card.title} {...card} />
+        ))}
+      </div>
+
+    </div>
+  </section>
+);
 
 export default FeaturesSection;
