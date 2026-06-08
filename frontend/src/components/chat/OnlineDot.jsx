@@ -1,7 +1,8 @@
 /**
- * OnlineDot.jsx — Real-Time Online Presence Indicator (Dark Theme)
+ * OnlineDot.jsx — Real-Time Online Presence Indicator (Theme-Aware)
  *
- * ring-2 ring-zinc-900 so the ring matches the dark card surface.
+ * The ring matches the card surface via var(--bg-surface) so it blends
+ * correctly in both light (Warm Cream) and dark (Warm Black) themes.
  * Stays bg-emerald-500 (green dot is universally understood = online).
  *
  * Props:
@@ -33,10 +34,13 @@ const OnlineDot = ({ userId, size = "md", className = "" }) => {
       className={`
         inline-block ${sizeClass} rounded-full
         bg-emerald-500
-        ring-2 ring-zinc-900
         animate-pulse
         ${className}
       `}
+      style={{
+        /* Ring matches the card surface — adapts to both light and dark themes */
+        boxShadow: "0 0 0 2px var(--bg-surface)",
+      }}
     />
   );
 };

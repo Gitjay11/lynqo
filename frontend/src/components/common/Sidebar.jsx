@@ -1,9 +1,9 @@
 /**
- * Sidebar.jsx — Desktop Left Navigation (Dark Theme)
+ * Sidebar.jsx — Desktop Left Navigation (Themed)
  *
- * bg-zinc-900 border-r border-zinc-800
- * Active: bg-zinc-800 text-white
- * Inactive: text-zinc-400 hover:bg-zinc-800
+ * bg-bg-surface border-r border-app-border
+ * Active: bg-bg-elevated text-text-primary
+ * Inactive: text-text-secondary hover:bg-bg-elevated
  */
 
 import { NavLink, useNavigate } from "react-router-dom";
@@ -35,20 +35,23 @@ const Sidebar = () => {
     rounded-xl text-sm font-medium
     min-h-[44px]
     transition-all duration-150
-    ${isActive
-      ? "bg-zinc-800 text-white font-semibold"
-      : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
-    }
+    ${isActive ? "font-semibold" : ""}
   `;
+
+  const activeStyle   = { backgroundColor: "var(--bg-elevated)", color: "var(--text-primary)" };
+  const inactiveStyle = { color: "var(--text-secondary)" };
 
   return (
     <aside
       aria-label="Sidebar navigation"
+      style={{
+        backgroundColor: "var(--bg-surface)",
+        borderRight:     "1px solid var(--border)",
+      }}
       className="
         hidden lg:flex flex-col
         fixed top-14 left-0 bottom-0
         w-sidebar
-        bg-zinc-900 border-r border-zinc-800 shadow-sidebar-r
         z-30 overflow-y-auto
       "
     >
@@ -61,19 +64,22 @@ const Sidebar = () => {
             end={to === "/feed"}
             className={linkClass}
             aria-label={label}
+            style={({ isActive }) => isActive ? activeStyle : inactiveStyle}
           >
             {({ isActive }) => (
               <>
                 <Icon
                   size={20}
                   strokeWidth={isActive ? 2.5 : 2}
-                  className={isActive ? "text-white" : "text-zinc-500"}
                 />
                 <span>{label}</span>
 
                 {/* Active indicator dot */}
                 {isActive && (
-                  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white" />
+                  <span
+                    className="ml-auto w-1.5 h-1.5 rounded-full"
+                    style={{ backgroundColor: "var(--accent)" }}
+                  />
                 )}
               </>
             )}
@@ -86,17 +92,20 @@ const Sidebar = () => {
             to={`/profile/${user.id}`}
             className={linkClass}
             aria-label="My Profile"
+            style={({ isActive }) => isActive ? activeStyle : inactiveStyle}
           >
             {({ isActive }) => (
               <>
                 <User
                   size={20}
                   strokeWidth={isActive ? 2.5 : 2}
-                  className={isActive ? "text-white" : "text-zinc-500"}
                 />
                 <span>Profile</span>
                 {isActive && (
-                  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white" />
+                  <span
+                    className="ml-auto w-1.5 h-1.5 rounded-full"
+                    style={{ backgroundColor: "var(--accent)" }}
+                  />
                 )}
               </>
             )}
@@ -106,22 +115,24 @@ const Sidebar = () => {
 
       {/* ── User card + logout at the bottom ───────────────────────────────── */}
       {user && (
-        <div className="px-3 py-4 border-t border-zinc-800">
+        <div className="px-3 py-4" style={{ borderTop: "1px solid var(--border)" }}>
           {/* User info chip */}
           <button
             onClick={() => navigate(`/profile/${user.id}`)}
             className="
               w-full flex items-center gap-3 p-3
-              rounded-xl hover:bg-zinc-800
+              rounded-xl
               transition-colors duration-150
               min-h-[44px] text-left
-              focus:outline-none focus:ring-2 focus:ring-zinc-400
+              focus:outline-none focus:ring-2
             "
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--bg-elevated)"}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
           >
             <Avatar src={user.avatar} name={user.name} size="sm" />
             <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-semibold text-zinc-100 truncate">{user.name}</p>
-              <p className="text-xs text-zinc-500 truncate">{user.email}</p>
+              <p className="text-sm font-semibold truncate" style={{ color: "var(--text-primary)" }}>{user.name}</p>
+              <p className="text-xs truncate" style={{ color: "var(--text-secondary)" }}>{user.email}</p>
             </div>
           </button>
 
@@ -130,7 +141,7 @@ const Sidebar = () => {
             onClick={logout}
             className="
               mt-1 w-full flex items-center gap-3 px-3 py-2.5
-              rounded-xl text-sm font-medium text-red-400
+              rounded-xl text-sm font-medium text-red-500
               hover:bg-red-500/10 transition-colors duration-150
               min-h-[44px]
               focus:outline-none focus:ring-2 focus:ring-red-500/50

@@ -34,7 +34,7 @@ import BottomTabBar from "./BottomTabBar.jsx";
 // ─────────────────────────────────────────────────────────────────────────────
 const AppLayout = () => {
   return (
-    <div className="min-h-screen bg-zinc-950">
+    <div className="min-h-screen bg-bg-primary">
 
       {/* Fixed top bar — always visible */}
       <Navbar />

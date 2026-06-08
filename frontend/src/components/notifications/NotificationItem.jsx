@@ -1,5 +1,5 @@
 /**
- * NotificationItem.jsx — Single Notification Row
+ * NotificationItem.jsx — Single Notification Row (Themed)
  *
  * Renders one notification entry inside the NotificationPanel list.
  * Extracted into its own component so:
@@ -26,12 +26,13 @@ import { Trash2, Heart, ThumbsDown, MessageSquare, MessageCircle, User } from "l
 import { formatDistanceToNow } from "date-fns";
 
 // ── Icon map — one entry per notification type ────────────────────────────────
+// bg and color are now applied via inline styles using CSS variables
 const TYPE_ICON = {
-  like_post:    { Icon: Heart,         color: "text-white",   bg: "bg-zinc-700"    },
-  dislike_post: { Icon: ThumbsDown,    color: "text-red-400", bg: "bg-red-500/10"  },
-  comment_post: { Icon: MessageSquare, color: "text-white",   bg: "bg-zinc-700"    },
-  like_anon:    { Icon: Heart,         color: "text-white",   bg: "bg-zinc-700"    },
-  new_message:  { Icon: MessageCircle, color: "text-white",   bg: "bg-zinc-700"    },
+  like_post:    { Icon: Heart,         useAccent: true  },
+  dislike_post: { Icon: ThumbsDown,    useError: true   },
+  comment_post: { Icon: MessageSquare, useAccent: true  },
+  like_anon:    { Icon: Heart,         useAccent: true  },
+  new_message:  { Icon: MessageCircle, useAccent: true  },
 };
 
 // ── Relative timestamp helper ─────────────────────────────────────────────────
@@ -59,40 +60,51 @@ const MiniAvatar = ({ src, name }) => {
     ? name.trim().split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2)
     : "?";
   return (
-    <div className="w-8 h-8 rounded-full bg-zinc-700 flex items-center justify-center flex-shrink-0">
-      <span className="text-xs font-semibold text-zinc-300">{initials}</span>
+    <div
+      className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+      style={{ backgroundColor: "var(--bg-elevated)", border: "1px solid var(--border)" }}
+    >
+      <span className="text-xs font-semibold" style={{ color: "var(--text-secondary)" }}>{initials}</span>
     </div>
   );
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
 const NotificationItem = ({ notification, onClick, onDelete }) => {
-  const { Icon, color, bg } = TYPE_ICON[notification.type] ?? TYPE_ICON.like_post;
+  const { Icon, useAccent, useError } = TYPE_ICON[notification.type] ?? TYPE_ICON.like_post;
 
   // For anonymous post likes we never show the real sender avatar
   const isAnon = notification.type === "like_anon";
+
+  // Badge background and icon color derived from type
+  const badgeBg    = useError  ? "var(--error)"  : useAccent ? "var(--accent)" : "var(--bg-elevated)";
+  const badgeColor = "#ffffff";
 
   return (
     <li>
       <button
         id={`notification-${notification._id}`}
         onClick={() => onClick(notification)}
-        className={`
+        className="
           w-full flex items-start gap-3 px-3 py-2.5 rounded-xl text-left
           transition-colors duration-100 min-h-[56px] group
-          ${notification.read
-            ? "hover:bg-zinc-800/60"
-            : "bg-zinc-800/40 hover:bg-zinc-800/70"
-          }
-        `}
+        "
+        style={{
+          backgroundColor: notification.read ? "transparent" : "var(--accent-light)",
+        }}
+        onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--bg-elevated)"}
+        onMouseLeave={e => e.currentTarget.style.backgroundColor = notification.read ? "transparent" : "var(--accent-light)"}
         aria-label={notification.message}
       >
         {/* ── Avatar column ──────────────────────────────────────────────── */}
         <div className="relative flex-shrink-0 mt-0.5">
           {isAnon ? (
             // Anon: masked icon — privacy layer 2 (layer 1 is the message text)
-            <div className="w-8 h-8 rounded-full bg-zinc-700 flex items-center justify-center">
-              <User size={14} className="text-zinc-400" />
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: "var(--bg-elevated)", border: "1px solid var(--border)" }}
+            >
+              <User size={14} style={{ color: "var(--text-muted)" }} />
             </div>
           ) : (
             <MiniAvatar
@@ -103,15 +115,19 @@ const NotificationItem = ({ notification, onClick, onDelete }) => {
 
           {/* Type badge — overlaid bottom-right of avatar */}
           <span
-            className={`
+            className="
               absolute -bottom-1 -right-1
-              w-4 h-4 rounded-full ${bg}
+              w-4 h-4 rounded-full
               flex items-center justify-center
-              ring-1 ring-zinc-900
-            `}
+            "
+            style={{
+              backgroundColor: useError ? "var(--error)" : "var(--accent)",
+              /* ring matches bg-surface for clean layering */
+              boxShadow: "0 0 0 1.5px var(--bg-surface)",
+            }}
             aria-hidden="true"
           >
-            <Icon size={9} className={color} strokeWidth={2.5} />
+            <Icon size={9} color={badgeColor} strokeWidth={2.5} />
           </span>
         </div>
 
@@ -119,14 +135,16 @@ const NotificationItem = ({ notification, onClick, onDelete }) => {
         <div className="flex-1 min-w-0">
           {/* Message text — bold when unread */}
           <p
-            className={`text-xs leading-snug ${
-              notification.read ? "text-zinc-400" : "text-zinc-100 font-medium"
-            }`}
+            className="text-xs leading-snug"
+            style={{
+              color: notification.read ? "var(--text-secondary)" : "var(--text-primary)",
+              fontWeight: notification.read ? 400 : 600,
+            }}
           >
             {notification.message}
           </p>
           {/* Relative timestamp */}
-          <p className="text-[10px] text-zinc-600 mt-0.5">
+          <p className="text-[10px] mt-0.5" style={{ color: "var(--text-muted)" }}>
             {relativeTime(notification.createdAt)}
           </p>
         </div>
@@ -134,7 +152,8 @@ const NotificationItem = ({ notification, onClick, onDelete }) => {
         {/* ── Unread dot ─────────────────────────────────────────────────── */}
         {!notification.read && (
           <span
-            className="w-1.5 h-1.5 rounded-full bg-white flex-shrink-0 mt-2"
+            className="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-2"
+            style={{ backgroundColor: "var(--accent)" }}
             aria-hidden="true"
           />
         )}
@@ -147,10 +166,12 @@ const NotificationItem = ({ notification, onClick, onDelete }) => {
           className="
             opacity-0 group-hover:opacity-100
             p-1 rounded-lg
-            text-zinc-600 hover:text-red-400 hover:bg-red-500/10
             transition-all duration-150 flex-shrink-0
             min-h-[28px] min-w-[28px] flex items-center justify-center
           "
+          style={{ color: "var(--text-muted)" }}
+          onMouseEnter={e => { e.currentTarget.style.color = "var(--error)"; e.currentTarget.style.backgroundColor = "rgba(239,68,68,0.1)"; }}
+          onMouseLeave={e => { e.currentTarget.style.color = "var(--text-muted)"; e.currentTarget.style.backgroundColor = "transparent"; }}
         >
           <Trash2 size={13} />
         </button>

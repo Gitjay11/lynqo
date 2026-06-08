@@ -30,12 +30,12 @@ import ChatWindow                 from "../components/chat/ChatWindow.jsx";
 
 // ── Desktop right-panel empty state ──────────────────────────────────────────
 const NoConversationSelected = () => (
-  <div className="flex flex-col items-center justify-center h-full text-center px-8 bg-zinc-950">
-    <div className="w-20 h-20 rounded-full bg-zinc-800 flex items-center justify-center mb-5">
-      <MessageCircle size={36} className="text-zinc-400" />
+  <div className="flex flex-col items-center justify-center h-full text-center px-8" style={{ backgroundColor: "var(--bg-primary)" }}>
+    <div className="w-20 h-20 rounded-full flex items-center justify-center mb-5" style={{ backgroundColor: "var(--bg-elevated)" }}>
+      <MessageCircle size={36} style={{ color: "var(--text-secondary)" }} />
     </div>
-    <h2 className="text-zinc-100 font-semibold text-base mb-2">Select a conversation</h2>
-    <p className="text-zinc-400 text-sm max-w-[200px]">
+    <h2 className="font-semibold text-base mb-2" style={{ color: "var(--text-primary)" }}>Select a conversation</h2>
+    <p className="text-sm max-w-[200px]" style={{ color: "var(--text-secondary)" }}>
       Choose a thread on the left or search for a classmate to start chatting.
     </p>
   </div>
@@ -85,7 +85,7 @@ const ChatPage = () => {
         "
       >
         {/* Left panel — conversation list */}
-        <div className="w-80 flex-shrink-0 border-r border-zinc-800 h-full overflow-hidden">
+        <div className="w-80 flex-shrink-0 h-full overflow-hidden" style={{ borderRight: "1px solid var(--border)" }}>
           <ChatList onSelectConv={handleSelectConv} />
         </div>
 

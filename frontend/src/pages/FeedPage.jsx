@@ -188,7 +188,7 @@ const FeedPage = () => {
         </div>
 
         {/* ── Mobile separator ────────────────────────────────────────────── */}
-        <div className="md:hidden h-px bg-zinc-800" aria-hidden="true" />
+        <div className="md:hidden h-px" style={{ backgroundColor: "var(--border)" }} aria-hidden="true" />
 
         {/* ══════════════════════════════════════════════════════════════════
             SEARCH MODE — show results instead of normal feed
@@ -208,21 +208,21 @@ const FeedPage = () => {
             {/* Search error */}
             {!searchLoading && searchError && (
               <div className="flex flex-col items-center gap-2 py-10 px-4 text-center">
-                <p className="text-sm text-zinc-500">{searchError}</p>
+                <p className="text-sm" style={{ color: "var(--text-secondary)" }}>{searchError}</p>
               </div>
             )}
 
             {/* Search empty state */}
             {!searchLoading && !searchError && searchResults.length === 0 && (
               <div className="flex flex-col items-center gap-3 py-16 px-4 text-center">
-                <div className="w-14 h-14 rounded-full bg-zinc-800 flex items-center justify-center">
-                  <Search size={22} className="text-zinc-500" />
+                <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "var(--bg-elevated)" }}>
+                  <Search size={22} style={{ color: "var(--text-muted)" }} />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-zinc-200">
-                    No posts found for "{searchQuery}"
+                  <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+                    No posts found for &ldquo;{searchQuery}&rdquo;
                   </p>
-                  <p className="text-xs text-zinc-500 mt-1">
+                  <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
                     Try a different keyword
                   </p>
                 </div>
@@ -234,9 +234,9 @@ const FeedPage = () => {
               <>
                 {/* Result count banner */}
                 <div className="px-4 py-2 md:px-0">
-                  <p className="text-xs text-zinc-500">
-                    {searchResults.length} result{searchResults.length !== 1 ? "s" : ""} for "
-                    <span className="text-zinc-300">{searchQuery}</span>"
+                  <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                    {searchResults.length} result{searchResults.length !== 1 ? "s" : ""} for &ldquo;
+                    <span style={{ color: "var(--text-primary)" }}>{searchQuery}</span>&rdquo;
                   </p>
                 </div>
 
@@ -271,7 +271,7 @@ const FeedPage = () => {
             <PostForm currentUser={user} onPost={handleNewPost} />
 
             {/* ── Feed divider (mobile only) ────────────────────────────── */}
-            <div className="md:hidden h-2 bg-zinc-900" aria-hidden="true" />
+            <div className="md:hidden h-2" style={{ backgroundColor: "var(--bg-elevated)" }} aria-hidden="true" />
 
             {/* ── Loading skeleton ──────────────────────────────────────── */}
             {loading && (
@@ -285,7 +285,7 @@ const FeedPage = () => {
             {/* Error with retry */}
             {!loading && error && (
               <div className="flex flex-col items-center gap-3 py-12 px-4">
-                <p className="text-sm text-zinc-500 text-center">{error}</p>
+                <p className="text-sm text-center" style={{ color: "var(--text-secondary)" }}>{error}</p>
                 <button
                   onClick={() => fetchPosts(1, false)}
                   className="btn-secondary flex items-center gap-2 text-sm"
@@ -299,11 +299,11 @@ const FeedPage = () => {
             {/* ── Empty state ───────────────────────────────────────────── */}
             {!loading && !error && posts.length === 0 && (
               <div className="flex flex-col items-center gap-3 py-16 px-4 text-center">
-                <div className="w-16 h-16 rounded-full bg-zinc-800 flex items-center justify-center mb-1">
-                  <Newspaper size={28} className="text-zinc-400" />
+                <div className="w-16 h-16 rounded-full flex items-center justify-center mb-1" style={{ backgroundColor: "var(--bg-elevated)" }}>
+                  <Newspaper size={28} style={{ color: "var(--text-secondary)" }} />
                 </div>
-                <p className="text-base font-semibold text-zinc-100">No posts yet</p>
-                <p className="text-sm text-zinc-400 max-w-[240px] leading-relaxed">
+                <p className="text-base font-semibold" style={{ color: "var(--text-primary)" }}>No posts yet</p>
+                <p className="text-sm max-w-[240px] leading-relaxed" style={{ color: "var(--text-secondary)" }}>
                   Be the first to post something!
                 </p>
               </div>
@@ -335,15 +335,15 @@ const FeedPage = () => {
                     >
                       {loadingMore
                         ? <>
-                            <span className="w-4 h-4 border-2 border-zinc-600 border-t-white rounded-full animate-spin" />
+                            <span className="w-4 h-4 border-2 rounded-full animate-spin" style={{ borderColor: "var(--border)", borderTopColor: "var(--accent)" }} />
                             Loading…
                           </>
                         : "Load more posts"
                       }
                     </button>
                   ) : (
-                    <p className="text-xs text-zinc-500">
-                      You've reached the end of the feed 🎉
+                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                      You&apos;ve reached the end of the feed 🎉
                     </p>
                   )}
                 </div>

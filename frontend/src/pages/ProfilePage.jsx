@@ -58,12 +58,21 @@ function calcCompletion(profile) {
 
 // ── Small display helpers ──────────────────────────────────────────────────────
 const SectionCard = ({ icon: Icon, title, children }) => (
-  <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 mb-4">
+  <div
+    className="rounded-2xl p-5 mb-4"
+    style={{
+      backgroundColor: "var(--bg-surface)",
+      border: "1px solid var(--border)",
+    }}
+  >
     <div className="flex items-center gap-2.5 mb-4">
-      <span className="bg-zinc-800 rounded-lg p-1.5 flex items-center justify-center">
-        <Icon size={15} className="text-zinc-300" />
+      <span
+        className="rounded-lg p-1.5 flex items-center justify-center"
+        style={{ backgroundColor: "var(--bg-elevated)" }}
+      >
+        <Icon size={15} style={{ color: "var(--text-secondary)" }} />
       </span>
-      <h2 className="text-sm font-semibold text-white">{title}</h2>
+      <h2 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{title}</h2>
     </div>
     {children}
   </div>
@@ -72,20 +81,30 @@ const SectionCard = ({ icon: Icon, title, children }) => (
 const FieldBox = ({ label, value, href }) => {
   const isEmpty = !value || (Array.isArray(value) && value.length === 0);
   return (
-    <div className="bg-zinc-800 rounded-xl p-3">
-      <p className="text-[10px] font-medium text-zinc-500 uppercase tracking-wide mb-1">
+    <div
+      className="rounded-xl p-3"
+      style={{ backgroundColor: "var(--bg-elevated)", border: "1px solid var(--border)" }}
+    >
+      <p
+        className="text-[10px] font-medium uppercase tracking-wide mb-1"
+        style={{ color: "var(--text-muted)" }}
+      >
         {label}
       </p>
       {isEmpty ? (
-        <p className="text-sm text-zinc-600">Not set</p>
+        <p className="text-sm italic" style={{ color: "var(--text-muted)" }}>Not set</p>
       ) : href ? (
         <a href={href} target="_blank" rel="noopener noreferrer"
-          className="text-sm text-zinc-200 hover:text-white flex items-center gap-1 transition-colors break-all">
+          className="text-sm flex items-center gap-1 transition-colors break-all"
+          style={{ color: "var(--text-primary)" }}
+          onMouseEnter={e => e.currentTarget.style.color = "var(--accent)"}
+          onMouseLeave={e => e.currentTarget.style.color = "var(--text-primary)"}
+        >
           {value}
           <ExternalLink size={11} className="flex-shrink-0" />
         </a>
       ) : (
-        <p className="text-sm text-zinc-200 break-words">{value}</p>
+        <p className="text-sm break-words" style={{ color: "var(--text-primary)" }}>{value}</p>
       )}
     </div>
   );
@@ -94,10 +113,17 @@ const FieldBox = ({ label, value, href }) => {
 const TagChips = ({ items }) => (
   <div className="flex flex-wrap gap-1.5 mt-1">
     {items.length === 0
-      ? <p className="text-sm text-zinc-600">Not set</p>
+      ? <p className="text-sm italic" style={{ color: "var(--text-muted)" }}>Not set</p>
       : items.map((t, i) => (
-          <span key={i}
-            className="px-2.5 py-1 bg-zinc-800 text-zinc-200 text-xs rounded-full border border-zinc-700">
+          <span
+            key={i}
+            className="px-2.5 py-1 text-xs rounded-full"
+            style={{
+              backgroundColor: "var(--bg-elevated)",
+              border: "1px solid var(--border)",
+              color: "var(--text-primary)",
+            }}
+          >
             {t}
           </span>
         ))
@@ -108,12 +134,15 @@ const TagChips = ({ items }) => (
 const LookingForDisplay = ({ items }) => (
   <div className="flex flex-wrap gap-2 mt-1">
     {LOOKING_FOR_CHIPS.map((chip) => (
-      <span key={chip}
-        className={`px-3 py-1 rounded-full text-xs font-medium border ${
+      <span
+        key={chip}
+        className="px-3 py-1 rounded-full text-xs font-medium"
+        style={
           items.includes(chip)
-            ? "bg-white text-black border-white"
-            : "bg-transparent text-zinc-600 border-zinc-700"
-        }`}>
+            ? { backgroundColor: "var(--accent)", color: "#ffffff", border: "1px solid var(--accent)" }
+            : { backgroundColor: "transparent", color: "var(--text-muted)", border: "1px solid var(--border)" }
+        }
+      >
         {chip}
       </span>
     ))}
@@ -286,11 +315,11 @@ const ProfilePage = () => {
   // ── Loading skeleton ─────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-950 py-6 px-4">
+      <div className="min-h-screen py-6 px-4" style={{ backgroundColor: "var(--bg-primary)" }}>
         <div className="w-full max-w-3xl mx-auto space-y-4 animate-pulse">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 h-48" />
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 h-40" />
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 h-40" />
+          <div className="rounded-2xl p-5 h-48" style={{ backgroundColor: "var(--bg-surface)", border: "1px solid var(--border)" }} />
+          <div className="rounded-2xl p-5 h-40" style={{ backgroundColor: "var(--bg-surface)", border: "1px solid var(--border)" }} />
+          <div className="rounded-2xl p-5 h-40" style={{ backgroundColor: "var(--bg-surface)", border: "1px solid var(--border)" }} />
         </div>
       </div>
     );
@@ -298,11 +327,11 @@ const ProfilePage = () => {
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center px-4">
+      <div className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: "var(--bg-primary)" }}>
         <div className="text-center">
           <p className="text-5xl mb-4">👤</p>
-          <h2 className="text-xl font-semibold text-zinc-50 mb-2">User not found</h2>
-          <p className="text-sm text-zinc-400">This profile doesn't exist or has been removed.</p>
+          <h2 className="text-xl font-semibold mb-2" style={{ color: "var(--text-primary)" }}>User not found</h2>
+          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>This profile doesn't exist or has been removed.</p>
         </div>
       </div>
     );
@@ -315,11 +344,14 @@ const ProfilePage = () => {
     : "";
 
   return (
-    <div className="min-h-screen bg-zinc-950 py-6 px-4 pb-10">
+    <div className="min-h-screen py-6 px-4 pb-10" style={{ backgroundColor: "var(--bg-primary)" }}>
       <div className="w-full max-w-3xl mx-auto">
 
         {/* ── SECTION 1: Profile Header ─────────────────────────────────── */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 mb-4">
+        <div
+          className="rounded-2xl p-5 mb-4"
+          style={{ backgroundColor: "var(--bg-surface)", border: "1px solid var(--border)" }}
+        >
 
           {/* Top row: avatar + name/meta + edit button */}
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 sm:items-start">
@@ -336,17 +368,23 @@ const ProfilePage = () => {
                 )}
               </div>
               {isOwnProfile && !avatarPreview && (
-                <p className="text-[10px] text-zinc-500 text-center">Tap to change</p>
+                <p className="text-[10px] text-center" style={{ color: "var(--text-muted)" }}>Tap to change</p>
               )}
               {avatarPreview && (
                 <div className="flex gap-2 mt-1">
                   <button id="avatar-confirm-btn" onClick={handleAvatarConfirm} disabled={uploading}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-white text-black text-xs font-semibold rounded-lg min-h-[36px] disabled:opacity-50 transition-colors">
+                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg min-h-[36px] disabled:opacity-50 transition-colors"
+                    style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}
+                  >
                     {uploading ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} strokeWidth={2.5} />}
                     {uploading ? "Uploading…" : "Confirm"}
                   </button>
                   <button id="avatar-cancel-btn" onClick={handleAvatarCancel} disabled={uploading}
-                    className="flex items-center gap-1 px-3 py-1.5 border border-zinc-700 text-zinc-400 hover:text-red-400 hover:border-red-500 text-xs font-medium rounded-lg min-h-[36px] disabled:opacity-50 transition-colors">
+                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-lg min-h-[36px] disabled:opacity-50 transition-colors"
+                    style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}
+                    onMouseEnter={e => { e.currentTarget.style.color = "#ef4444"; e.currentTarget.style.borderColor = "#ef4444"; }}
+                    onMouseLeave={e => { e.currentTarget.style.color = "var(--text-secondary)"; e.currentTarget.style.borderColor = "var(--border)"; }}
+                  >
                     <X size={12} strokeWidth={2.5} /> Cancel
                   </button>
                 </div>
@@ -359,15 +397,15 @@ const ProfilePage = () => {
             <div className="flex-1 min-w-0">
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                 <div className="min-w-0">
-                  <h1 className="text-xl font-bold text-white leading-tight break-words">{profile.name}</h1>
+                  <h1 className="text-xl font-bold leading-tight break-words" style={{ color: "var(--text-primary)" }}>{profile.name}</h1>
                   <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5">
                     {profile.branch && (
-                      <span className="flex items-center gap-1.5 text-sm text-zinc-400">
+                      <span className="flex items-center gap-1.5 text-sm" style={{ color: "var(--text-secondary)" }}>
                         <BookOpen size={13} className="flex-shrink-0" /> {profile.branch}
                       </span>
                     )}
                     {profile.semester && (
-                      <span className="flex items-center gap-1.5 text-sm text-zinc-400">
+                      <span className="flex items-center gap-1.5 text-sm" style={{ color: "var(--text-secondary)" }}>
                         <GraduationCap size={13} className="flex-shrink-0" /> Semester {profile.semester}
                       </span>
                     )}
@@ -377,17 +415,31 @@ const ProfilePage = () => {
                 {/* Edit / Follow buttons */}
                 {isOwnProfile ? (
                   <button id="edit-profile-btn" onClick={enterEditMode}
-                    className="flex items-center justify-center gap-2 px-4 py-2 border border-zinc-700 hover:border-zinc-500 text-zinc-300 hover:text-white rounded-xl text-sm font-medium transition-colors min-h-[44px] flex-shrink-0">
+                    className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors min-h-[44px] flex-shrink-0"
+                    style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--accent)"; e.currentTarget.style.color = "var(--text-primary)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.color = "var(--text-secondary)"; }}
+                  >
                     <Pencil size={14} strokeWidth={2} /> Edit Profile
                   </button>
                 ) : (
                   <button id="follow-toggle-btn" onClick={handleFollowToggle} disabled={followLoading}
                     aria-label={isFollowing ? "Unfollow user" : "Follow user"}
-                    className={`flex items-center justify-center gap-2 px-5 py-2 rounded-full text-sm font-semibold min-h-[44px] flex-shrink-0 transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${
+                    className="flex items-center justify-center gap-2 px-5 py-2 rounded-full text-sm font-semibold min-h-[44px] flex-shrink-0 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                    style={
                       isFollowing
-                        ? "border border-zinc-600 text-white hover:bg-zinc-800"
-                        : "bg-white text-black hover:bg-zinc-100"
-                    }`}>
+                        ? { border: "1px solid var(--border)", color: "var(--text-primary)", backgroundColor: "transparent" }
+                        : { backgroundColor: "var(--accent)", color: "#ffffff", border: "1px solid var(--accent)" }
+                    }
+                    onMouseEnter={e => {
+                      if (isFollowing) e.currentTarget.style.backgroundColor = "var(--bg-elevated)";
+                      else e.currentTarget.style.backgroundColor = "var(--accent-hover)";
+                    }}
+                    onMouseLeave={e => {
+                      if (isFollowing) e.currentTarget.style.backgroundColor = "transparent";
+                      else e.currentTarget.style.backgroundColor = "var(--accent)";
+                    }}
+                  >
                     {followLoading ? <Loader2 size={14} className="animate-spin" /> : (isFollowing ? "Unfollow" : "Follow")}
                   </button>
                 )}
@@ -397,39 +449,39 @@ const ProfilePage = () => {
               <div className="flex items-center gap-5 mt-3">
                 <button id="followers-stat-btn" onClick={() => openModal("followers")}
                   className="flex flex-col items-start group">
-                  <span className="text-base font-bold text-white group-hover:text-zinc-200 transition-colors">{profile.followerCount ?? 0}</span>
-                  <span className="text-xs text-zinc-500 group-hover:text-zinc-400 transition-colors">Followers</span>
+                  <span className="text-base font-bold transition-colors" style={{ color: "var(--text-primary)" }}>{profile.followerCount ?? 0}</span>
+                  <span className="text-xs transition-colors" style={{ color: "var(--text-muted)" }}>Followers</span>
                 </button>
-                <div className="w-px h-7 bg-zinc-800" />
+                <div className="w-px h-7" style={{ backgroundColor: "var(--border)" }} />
                 <button id="following-stat-btn" onClick={() => openModal("following")}
                   className="flex flex-col items-start group">
-                  <span className="text-base font-bold text-white group-hover:text-zinc-200 transition-colors">{profile.followingCount ?? 0}</span>
-                  <span className="text-xs text-zinc-500 group-hover:text-zinc-400 transition-colors">Following</span>
+                  <span className="text-base font-bold transition-colors" style={{ color: "var(--text-primary)" }}>{profile.followingCount ?? 0}</span>
+                  <span className="text-xs transition-colors" style={{ color: "var(--text-muted)" }}>Following</span>
                 </button>
               </div>
 
               {/* Bio */}
               {profile.bio ? (
-                <p className="mt-3 text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap">{profile.bio}</p>
+                <p className="mt-3 text-sm leading-relaxed whitespace-pre-wrap" style={{ color: "var(--text-secondary)" }}>{profile.bio}</p>
               ) : isOwnProfile ? (
-                <p className="mt-3 text-sm text-zinc-600 italic">Add a bio to tell people about yourself.</p>
+                <p className="mt-3 text-sm italic" style={{ color: "var(--text-muted)" }}>Add a bio to tell people about yourself.</p>
               ) : null}
 
               {/* Profile completion — own profile only */}
               {isOwnProfile && (
                 <div className="mt-4">
                   <div className="flex items-center justify-between mb-1.5">
-                    <p className="text-xs text-zinc-500">Profile completion</p>
-                    <p className="text-xs font-semibold text-zinc-300">{completion}%</p>
+                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>Profile completion</p>
+                    <p className="text-xs font-semibold" style={{ color: "var(--text-secondary)" }}>{completion}%</p>
                   </div>
-                  <div className="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                  <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--bg-elevated)" }}>
                     <div
-                      className="h-full bg-white rounded-full transition-all duration-500"
-                      style={{ width: `${completion}%` }}
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{ width: `${completion}%`, backgroundColor: "var(--accent)" }}
                     />
                   </div>
                   {completion < 100 && (
-                    <p className="text-[10px] text-zinc-600 mt-1">
+                    <p className="text-[10px] mt-1" style={{ color: "var(--text-muted)" }}>
                       Fill in more details to complete your profile.
                     </p>
                   )}
@@ -472,15 +524,15 @@ const ProfilePage = () => {
         <SectionCard icon={Zap} title="Skills &amp; Interests">
           <div className="space-y-4">
             <div>
-              <p className="text-[10px] font-medium text-zinc-500 uppercase tracking-wide mb-2">Skills</p>
+              <p className="text-[10px] font-medium uppercase tracking-wide mb-2" style={{ color: "var(--text-muted)" }}>Skills</p>
               <TagChips items={profile.skills ?? []} />
             </div>
             <div>
-              <p className="text-[10px] font-medium text-zinc-500 uppercase tracking-wide mb-2">Hobbies</p>
+              <p className="text-[10px] font-medium uppercase tracking-wide mb-2" style={{ color: "var(--text-muted)" }}>Hobbies</p>
               <TagChips items={profile.hobbies ?? []} />
             </div>
             <div>
-              <p className="text-[10px] font-medium text-zinc-500 uppercase tracking-wide mb-2">Looking For</p>
+              <p className="text-[10px] font-medium uppercase tracking-wide mb-2" style={{ color: "var(--text-muted)" }}>Looking For</p>
               <LookingForDisplay items={profile.lookingFor ?? []} />
             </div>
           </div>
@@ -489,39 +541,59 @@ const ProfilePage = () => {
         {/* ── SECTION 6: Social Links ───────────────────────────────────────── */}
         <SectionCard icon={Link2} title="Social Links">
           <div className="space-y-3">
-            <div className="bg-zinc-800 rounded-xl p-3 flex items-center gap-3">
-              <Link2 size={16} className="text-zinc-400 flex-shrink-0" />
+            {/* GitHub */}
+            <div
+              className="rounded-xl p-3 flex items-center gap-3"
+              style={{ backgroundColor: "var(--bg-elevated)", border: "1px solid var(--border)" }}
+            >
+              <Link2 size={16} className="flex-shrink-0" style={{ color: "var(--text-muted)" }} />
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-medium text-zinc-500 uppercase tracking-wide mb-0.5">GitHub</p>
+                <p className="text-[10px] font-medium uppercase tracking-wide mb-0.5" style={{ color: "var(--text-muted)" }}>GitHub</p>
                 {profile.github
                   ? <a href={profile.github} target="_blank" rel="noopener noreferrer"
-                      className="text-sm text-zinc-200 hover:text-white transition-colors break-all flex items-center gap-1">
+                      className="text-sm transition-colors break-all flex items-center gap-1"
+                      style={{ color: "var(--text-primary)" }}
+                      onMouseEnter={e => e.currentTarget.style.color = "var(--accent)"}
+                      onMouseLeave={e => e.currentTarget.style.color = "var(--text-primary)"}
+                    >
                       {profile.github} <ExternalLink size={11} className="flex-shrink-0" />
                     </a>
-                  : <p className="text-sm text-zinc-600">Not set</p>
+                  : <p className="text-sm italic" style={{ color: "var(--text-muted)" }}>Not set</p>
                 }
               </div>
             </div>
-            <div className="bg-zinc-800 rounded-xl p-3 flex items-center gap-3">
-              <Link2 size={16} className="text-zinc-400 flex-shrink-0" />
+            {/* LinkedIn */}
+            <div
+              className="rounded-xl p-3 flex items-center gap-3"
+              style={{ backgroundColor: "var(--bg-elevated)", border: "1px solid var(--border)" }}
+            >
+              <Link2 size={16} className="flex-shrink-0" style={{ color: "var(--text-muted)" }} />
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-medium text-zinc-500 uppercase tracking-wide mb-0.5">LinkedIn</p>
+                <p className="text-[10px] font-medium uppercase tracking-wide mb-0.5" style={{ color: "var(--text-muted)" }}>LinkedIn</p>
                 {profile.linkedin
                   ? <a href={profile.linkedin} target="_blank" rel="noopener noreferrer"
-                      className="text-sm text-zinc-200 hover:text-white transition-colors break-all flex items-center gap-1">
+                      className="text-sm transition-colors break-all flex items-center gap-1"
+                      style={{ color: "var(--text-primary)" }}
+                      onMouseEnter={e => e.currentTarget.style.color = "var(--accent)"}
+                      onMouseLeave={e => e.currentTarget.style.color = "var(--text-primary)"}
+                    >
                       {profile.linkedin} <ExternalLink size={11} className="flex-shrink-0" />
                     </a>
-                  : <p className="text-sm text-zinc-600">Not set</p>
+                  : <p className="text-sm italic" style={{ color: "var(--text-muted)" }}>Not set</p>
                 }
               </div>
             </div>
-            <div className="bg-zinc-800 rounded-xl p-3 flex items-center gap-3">
-              <Globe size={16} className="text-zinc-400 flex-shrink-0" />
+            {/* Instagram */}
+            <div
+              className="rounded-xl p-3 flex items-center gap-3"
+              style={{ backgroundColor: "var(--bg-elevated)", border: "1px solid var(--border)" }}
+            >
+              <Globe size={16} className="flex-shrink-0" style={{ color: "var(--text-muted)" }} />
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-medium text-zinc-500 uppercase tracking-wide mb-0.5">Instagram</p>
+                <p className="text-[10px] font-medium uppercase tracking-wide mb-0.5" style={{ color: "var(--text-muted)" }}>Instagram</p>
                 {profile.instagram
-                  ? <p className="text-sm text-zinc-200">@{profile.instagram.replace(/^@/, "")}</p>
-                  : <p className="text-sm text-zinc-600">Not set</p>
+                  ? <p className="text-sm" style={{ color: "var(--text-primary)" }}>@{profile.instagram.replace(/^@/, "")}</p>
+                  : <p className="text-sm italic" style={{ color: "var(--text-muted)" }}>Not set</p>
                 }
               </div>
             </div>

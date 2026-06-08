@@ -45,11 +45,11 @@ const AnonInfoWidget = () => (
   <aside className="hidden lg:block sticky top-20 space-y-4" aria-label="About the Anon Board">
     <div className="card p-0 overflow-hidden">
       {/* Header */}
-      <div className="flex items-center gap-2 px-4 pt-4 pb-3 border-b border-zinc-800">
-        <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-zinc-800">
-          <Ghost size={14} className="text-zinc-400" />
+      <div className="flex items-center gap-2 px-4 pt-4 pb-3" style={{ borderBottom: "1px solid var(--border)" }}>
+        <span className="flex items-center justify-center w-7 h-7 rounded-lg" style={{ backgroundColor: "var(--bg-elevated)", color: "var(--text-muted)" }}>
+          <Ghost size={14} />
         </span>
-        <h2 className="text-sm font-semibold text-zinc-100">About Anon Board</h2>
+        <h2 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>About Anon Board</h2>
       </div>
 
       {/* Rules */}
@@ -57,33 +57,36 @@ const AnonInfoWidget = () => (
         {[
           {
             icon: EyeOff,
-            color: "text-zinc-400",
-            bg:    "bg-zinc-800",
             title: "Your identity is hidden",
             desc:  "Nobody, not even admins, can see who posted what on this board.",
+            teal: false,
           },
           {
             icon: ShieldCheck,
-            color: "text-emerald-500",
-            bg:    "bg-emerald-600/10",
             title: "Auto-moderation",
             desc:  "Posts reported by 5+ users are automatically hidden to keep things safe.",
+            teal: true,
           },
           {
             icon: RefreshCw,
-            color: "text-zinc-400",
-            bg:    "bg-zinc-800",
             title: "Newest first",
             desc:  "The feed shows the most recent posts at the top.",
+            teal: false,
           },
-        ].map(({ icon: Icon, color, bg, title, desc }) => (
+        ].map(({ icon: Icon, title, desc, teal }) => (
           <li key={title} className="flex items-start gap-3">
-            <span className={`flex-shrink-0 flex items-center justify-center w-7 h-7 rounded-lg ${bg} ${color} mt-0.5`}>
+            <span
+              className="flex-shrink-0 flex items-center justify-center w-7 h-7 rounded-lg mt-0.5"
+              style={teal
+                ? { backgroundColor: "var(--accent-light)", color: "var(--accent)" }
+                : { backgroundColor: "var(--bg-elevated)",  color: "var(--text-muted)" }
+              }
+            >
               <Icon size={13} />
             </span>
             <div>
-              <p className="text-xs font-semibold text-zinc-200 leading-tight">{title}</p>
-              <p className="text-[11px] text-zinc-500 leading-snug mt-0.5">{desc}</p>
+              <p className="text-xs font-semibold leading-tight" style={{ color: "var(--text-primary)" }}>{title}</p>
+              <p className="text-[11px] leading-snug mt-0.5" style={{ color: "var(--text-secondary)" }}>{desc}</p>
             </div>
           </li>
         ))}
@@ -213,12 +216,12 @@ const AnonPage = () => {
 
         {/* ── Page header (mobile only) ──────────────────────────────────── */}
         <div className="flex items-center gap-2 px-4 pt-4 pb-2 lg:hidden">
-          <Ghost size={16} className="text-zinc-400 flex-shrink-0" />
+          <Ghost size={16} className="flex-shrink-0" style={{ color: "var(--text-muted)" }} />
           <div>
-            <h1 className="text-base font-semibold text-zinc-50 leading-tight">
+            <h1 className="text-base font-semibold leading-tight" style={{ color: "var(--text-primary)" }}>
               Anon Board
             </h1>
-            <p className="text-xs text-zinc-400 mt-0.5">
+            <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
               Post freely — your identity is always hidden
             </p>
           </div>
@@ -234,7 +237,7 @@ const AnonPage = () => {
         </div>
 
         {/* ── Mobile separator ──────────────────────────────────────────── */}
-        <div className="md:hidden h-px bg-zinc-800" aria-hidden="true" />
+        <div className="md:hidden h-px" style={{ backgroundColor: "var(--border)" }} aria-hidden="true" />
 
         {/* ════════════════════════════════════════════════════════════════
             SEARCH MODE — show results instead of normal board
@@ -254,21 +257,21 @@ const AnonPage = () => {
             {/* Search error */}
             {!searchLoading && searchError && (
               <div className="flex flex-col items-center gap-2 py-10 px-4 text-center">
-                <p className="text-sm text-zinc-500">{searchError}</p>
+                <p className="text-sm" style={{ color: "var(--text-secondary)" }}>{searchError}</p>
               </div>
             )}
 
             {/* Search empty state */}
             {!searchLoading && !searchError && searchResults.length === 0 && (
               <div className="flex flex-col items-center gap-3 py-16 px-4 text-center">
-                <div className="w-14 h-14 rounded-full bg-zinc-800 flex items-center justify-center">
-                  <Search size={22} className="text-zinc-500" />
+                <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "var(--bg-elevated)" }}>
+                  <Search size={22} style={{ color: "var(--text-muted)" }} />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-zinc-200">
-                    No confessions found for "{searchQuery}"
+                  <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+                    No confessions found for &ldquo;{searchQuery}&rdquo;
                   </p>
-                  <p className="text-xs text-zinc-500 mt-1">
+                  <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
                     Try a different keyword
                   </p>
                 </div>
@@ -280,9 +283,9 @@ const AnonPage = () => {
               <>
                 {/* Result count */}
                 <div className="px-4 py-2 md:px-0">
-                  <p className="text-xs text-zinc-500">
-                    {searchResults.length} result{searchResults.length !== 1 ? "s" : ""} for "
-                    <span className="text-zinc-300">{searchQuery}</span>"
+                  <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                    {searchResults.length} result{searchResults.length !== 1 ? "s" : ""} for &ldquo;
+                    <span style={{ color: "var(--text-primary)" }}>{searchQuery}</span>&rdquo;
                   </p>
                 </div>
 
@@ -317,7 +320,7 @@ const AnonPage = () => {
             <AnonPostForm currentUser={user} onPost={handleNewPost} />
 
             {/* ── Visual separator (mobile only) ────────────────────────── */}
-            <div className="md:hidden h-2 bg-zinc-900" aria-hidden="true" />
+            <div className="md:hidden h-2" style={{ backgroundColor: "var(--bg-elevated)" }} aria-hidden="true" />
 
             {/* ── Loading skeleton ──────────────────────────────────────── */}
             {loading && (
@@ -331,7 +334,7 @@ const AnonPage = () => {
             {/* Error with retry */}
             {!loading && error && (
               <div className="flex flex-col items-center gap-3 py-12 px-4">
-                <p className="text-sm text-zinc-500 text-center">{error}</p>
+                <p className="text-sm text-center" style={{ color: "var(--text-secondary)" }}>{error}</p>
                 <button
                   onClick={() => fetchPosts(1, false)}
                   className="btn-secondary flex items-center gap-2 text-sm"
@@ -345,11 +348,11 @@ const AnonPage = () => {
             {/* ── Empty state ───────────────────────────────────────────── */}
             {!loading && !error && posts.length === 0 && (
               <div className="flex flex-col items-center gap-3 py-16 px-4 text-center">
-                <div className="w-16 h-16 rounded-full bg-zinc-800 flex items-center justify-center mb-1">
-                  <Ghost size={28} className="text-zinc-400" />
+                <div className="w-16 h-16 rounded-full flex items-center justify-center mb-1" style={{ backgroundColor: "var(--bg-elevated)" }}>
+                  <Ghost size={28} style={{ color: "var(--text-secondary)" }} />
                 </div>
-                <p className="text-base font-semibold text-zinc-100">No confessions yet</p>
-                <p className="text-sm text-zinc-400 max-w-[240px] leading-relaxed">
+                <p className="text-base font-semibold" style={{ color: "var(--text-primary)" }}>No confessions yet</p>
+                <p className="text-sm max-w-[240px] leading-relaxed" style={{ color: "var(--text-secondary)" }}>
                   You go first.
                 </p>
               </div>
@@ -382,15 +385,15 @@ const AnonPage = () => {
                     >
                       {loadingMore
                         ? <>
-                            <span className="w-4 h-4 border-2 border-zinc-600 border-t-white rounded-full animate-spin" />
+                            <span className="w-4 h-4 border-2 rounded-full animate-spin" style={{ borderColor: "var(--border)", borderTopColor: "var(--accent)" }} />
                             Loading…
                           </>
                         : "Load more posts"
                       }
                     </button>
                   ) : (
-                    <p className="text-xs text-zinc-500">
-                      You've reached the end of the Anon board 👻
+                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                      You&apos;ve reached the end of the Anon board 👻
                     </p>
                   )}
                 </div>

@@ -1,7 +1,8 @@
 /**
- * AnonymousSection.jsx — The Viral Hook Section (Dark Theme)
+ * AnonymousSection.jsx — The Viral Hook Section (Theme-Aware)
  *
- * Background: bg-zinc-950 border-t border-zinc-800
+ * Background: bg-bg-primary border-t border-app-border
+ * Cards: bg-bg-surface border-app-border
  */
 
 import { Check } from "lucide-react";
@@ -9,11 +10,12 @@ import { Link } from "react-router-dom";
 
 // ── Checkpoint bullet ─────────────────────────────────────────────────────────
 const Checkpoint = ({ text }) => (
-  <li className="flex items-center gap-3 text-zinc-400 text-sm">
+  <li className="flex items-center gap-3 text-sm" style={{ color: "var(--text-secondary)" }}>
     <Check
       size={20}
       strokeWidth={2.5}
-      className="text-emerald-500 flex-shrink-0"
+      style={{ color: "var(--success)" }}
+      className="flex-shrink-0"
     />
     <span>{text}</span>
   </li>
@@ -21,24 +23,38 @@ const Checkpoint = ({ text }) => (
 
 // ── Mock anon post card ───────────────────────────────────────────────────────
 const AnonCard = ({ content, likes, time }) => (
-  <div className="bg-zinc-800/60 border border-zinc-700 rounded-xl p-4">
+  <div
+    className="rounded-xl p-4"
+    style={{
+      backgroundColor: "var(--bg-elevated)",
+      border: "1px solid var(--border)",
+    }}
+  >
     {/* Top row: ghost emoji + "Anonymous" + timestamp */}
-    <div className="flex items-center gap-2 text-zinc-500 text-xs">
+    <div className="flex items-center gap-2 text-xs" style={{ color: "var(--text-muted)" }}>
       <span>👻</span>
-      <span className="font-medium text-zinc-400">Anonymous</span>
+      <span className="font-medium" style={{ color: "var(--text-secondary)" }}>Anonymous</span>
       <span>· {time}</span>
     </div>
 
     {/* Post content */}
-    <p className="text-zinc-300 text-sm mt-2 leading-relaxed">{content}</p>
+    <p className="text-sm mt-2 leading-relaxed" style={{ color: "var(--text-primary)" }}>{content}</p>
 
     {/* Bottom row: likes + flag */}
-    <div className="flex items-center gap-4 mt-3 text-zinc-600 text-xs">
-      <button className="flex items-center gap-1 hover:text-zinc-400 transition-colors min-h-0">
+    <div className="flex items-center gap-4 mt-3 text-xs" style={{ color: "var(--text-muted)" }}>
+      <button
+        className="flex items-center gap-1 transition-colors min-h-0"
+        onMouseEnter={e => e.currentTarget.style.color = "var(--text-secondary)"}
+        onMouseLeave={e => e.currentTarget.style.color = "var(--text-muted)"}
+      >
         <span>🤍</span>
         <span>{likes}</span>
       </button>
-      <button className="flex items-center gap-1 hover:text-zinc-400 transition-colors min-h-0">
+      <button
+        className="flex items-center gap-1 transition-colors min-h-0"
+        onMouseEnter={e => e.currentTarget.style.color = "var(--text-secondary)"}
+        onMouseLeave={e => e.currentTarget.style.color = "var(--text-muted)"}
+      >
         <span>🚩</span>
       </button>
     </div>
@@ -50,29 +66,39 @@ const AnonymousSection = () => {
   return (
     <section
       id="anonymous"
-      className="bg-zinc-950 border-t border-zinc-800 py-20 px-4"
+      className="py-20 px-4"
+      style={{
+        backgroundColor: "var(--bg-primary)",
+        borderTop: "1px solid var(--border)",
+      }}
     >
       <div className="max-w-6xl mx-auto lg:grid lg:grid-cols-2 lg:gap-16 lg:items-center">
 
         {/* ── Left: Text content ────────────────────────────────────────────── */}
         <div>
           {/* Label pill */}
-          <span className="
-            inline-block
-            bg-zinc-800 text-zinc-400 text-xs
-            border border-zinc-700
-            px-3 py-1.5 rounded-full
-          ">
+          <span
+            className="
+              inline-block
+              text-xs
+              px-3 py-1.5 rounded-full
+            "
+            style={{
+              backgroundColor: "var(--bg-elevated)",
+              border: "1px solid var(--border)",
+              color: "var(--text-secondary)",
+            }}
+          >
             👻 Anonymous Posting
           </span>
 
           {/* Headline */}
-          <h2 className="text-3xl md:text-4xl font-bold text-zinc-50 mt-4">
+          <h2 className="text-3xl md:text-4xl font-bold mt-4" style={{ color: "var(--text-primary)" }}>
             Say it. Anonymously.
           </h2>
 
           {/* Description */}
-          <p className="text-zinc-400 text-base mt-4 leading-relaxed">
+          <p className="text-base mt-4 leading-relaxed" style={{ color: "var(--text-secondary)" }}>
             The things you want to say but can't. Say them here. Your identity
             stays completely hidden.
           </p>
@@ -91,23 +117,31 @@ const AnonymousSection = () => {
             className="
               inline-flex items-center justify-center
               min-h-[48px] px-6 py-3 mt-8
-              bg-white hover:bg-zinc-100 active:bg-zinc-200
-              text-black font-semibold text-base
+              text-white font-semibold text-base
               rounded-full
               transition-all duration-200
-              focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-zinc-950
+              focus:outline-none focus:ring-2 focus:ring-offset-2
             "
+            style={{ backgroundColor: "var(--accent)" }}
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--accent-hover)"}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--accent)"}
           >
             Start Confessing →
           </Link>
         </div>
 
         {/* ── Right: Mock anon feed ─────────────────────────────────────────── */}
-        <div className="
-          bg-zinc-900 border border-zinc-800 rounded-2xl
-          p-5 space-y-3
-          mt-10 lg:mt-0
-        ">
+        <div
+          className="
+            rounded-2xl
+            p-5 space-y-3
+            mt-10 lg:mt-0
+          "
+          style={{
+            backgroundColor: "var(--bg-surface)",
+            border: "1px solid var(--border)",
+          }}
+        >
           <AnonCard
             content="The canteen food has been getting worse every week. Someone needs to say it 💀"
             likes="24"

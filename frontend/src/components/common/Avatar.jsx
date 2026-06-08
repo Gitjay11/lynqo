@@ -26,16 +26,18 @@ const SIZE_MAP = {
   "2xl": { wrapper: "w-32 h-32", text: "text-4xl"  },
 };
 
-// ── Black & white fallback palette ────────────────────────────────────────────
+// ── Themed fallback — uses accent-light bg + accent text ─────────────────────
+// A single deterministic mapping: all avatars use the accent palette with
+// slight saturation variation based on name hash for visual differentiation.
 const FALLBACK_COLORS = [
-  "bg-zinc-700 text-zinc-100",
-  "bg-zinc-600 text-white",
-  "bg-zinc-800 text-zinc-200",
-  "bg-zinc-700 text-zinc-100",
-  "bg-zinc-500 text-white",
-  "bg-zinc-600 text-zinc-100",
-  "bg-zinc-800 text-zinc-300",
-  "bg-zinc-700 text-white",
+  "bg-bg-elevated text-text-primary",
+  "bg-accent-light text-app-accent",
+  "bg-bg-elevated text-text-secondary",
+  "bg-accent-light text-app-accent",
+  "bg-bg-elevated text-text-primary",
+  "bg-accent-light text-app-accent",
+  "bg-bg-elevated text-text-secondary",
+  "bg-accent-light text-app-accent",
 ];
 
 // ── Deterministic color from name string ──────────────────────────────────────

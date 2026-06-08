@@ -1,7 +1,7 @@
 /**
- * PostForm.jsx — Post Composer (Dark Theme)
+ * PostForm.jsx — Post Composer (Themed)
  *
- * bg-zinc-900 card, bg-zinc-800 textarea area
+ * bg-bg-surface card, bg-transparent textarea
  */
 
 import { useState, useRef } from "react";
@@ -76,10 +76,11 @@ const PostForm = ({ currentUser, onPost }) => {
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
-    <div className="
-      bg-zinc-900
-      md:rounded-2xl md:shadow-sm md:border md:border-zinc-800
-    ">
+    <div
+      style={{ backgroundColor: "var(--bg-surface)" }}
+      className="md:rounded-2xl md:shadow-sm"
+      style={{ backgroundColor: "var(--bg-surface)", border: "1px solid var(--border)" }}
+    >
       <form onSubmit={handleSubmit} className="p-4">
 
         {/* ── Top row: avatar + textarea ──────────────────────────────────── */}
@@ -98,10 +99,11 @@ const PostForm = ({ currentUser, onPost }) => {
               onChange={(e) => setContent(e.target.value.slice(0, MAX_CHARS))}
               placeholder="What's on your mind?"
               rows={3}
+              style={{ color: "var(--text-primary)" }}
               className="
                 w-full px-0 py-1
-                text-sm text-zinc-100 placeholder-zinc-600
                 bg-transparent border-none outline-none resize-none leading-relaxed
+                text-sm
               "
             />
 
@@ -111,17 +113,23 @@ const PostForm = ({ currentUser, onPost }) => {
                 <img
                   src={imagePreview}
                   alt="Preview"
-                  className="max-h-40 rounded-xl object-cover border border-zinc-700"
+                  className="max-h-40 rounded-xl object-cover"
+                  style={{ border: "1px solid var(--border)" }}
                 />
                 <button
                   type="button"
                   onClick={removeImage}
                   aria-label="Remove image"
+                  style={{
+                    backgroundColor: "var(--bg-elevated)",
+                    border:          "1px solid var(--border)",
+                    color:           "var(--text-secondary)",
+                  }}
                   className="
                     absolute -top-2 -right-2
-                    w-6 h-6 rounded-full bg-zinc-800 border border-zinc-700
+                    w-6 h-6 rounded-full
                     flex items-center justify-center
-                    text-zinc-400 hover:text-zinc-100 transition-colors min-h-0
+                    transition-colors min-h-0
                   "
                 >
                   <X size={12} strokeWidth={2.5} />
@@ -132,10 +140,12 @@ const PostForm = ({ currentUser, onPost }) => {
             {/* Character counter */}
             <div className="flex justify-end mt-1">
               <span className={`text-xs tabular-nums font-medium ${
-                remaining <= 20 ? "text-red-400"
-                : remaining <= 100 ? "text-amber-400"
-                : "text-zinc-600"
-              }`}>
+                remaining <= 20  ? "text-red-500"
+                : remaining <= 100 ? "text-amber-500"
+                : ""
+              }`}
+              style={remaining > 100 ? { color: "var(--text-muted)" } : {}}
+              >
                 {content.length}/{MAX_CHARS}
               </span>
             </div>
@@ -143,7 +153,7 @@ const PostForm = ({ currentUser, onPost }) => {
         </div>
 
         {/* ── Divider ──────────────────────────────────────────────────────── */}
-        <hr className="border-zinc-800 mt-3" />
+        <hr className="mt-3" style={{ borderColor: "var(--border)" }} />
 
         {/* ── Bottom toolbar ────────────────────────────────────────────────── */}
         <div className="flex items-center gap-2 mt-3">
@@ -161,11 +171,12 @@ const PostForm = ({ currentUser, onPost }) => {
             type="button"
             onClick={() => fileInputRef.current?.click()}
             aria-label="Attach image"
+            style={{ color: "var(--text-secondary)" }}
             className="
               p-2 rounded-xl min-h-0
-              text-zinc-500 hover:bg-zinc-800 hover:text-white
+              hover:bg-bg-elevated
               transition-colors duration-150
-              focus:outline-none focus:ring-2 focus:ring-zinc-400
+              focus:outline-none focus:ring-2
             "
           >
             <Image size={18} />

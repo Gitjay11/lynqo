@@ -1,9 +1,9 @@
 /**
- * BottomTabBar.jsx — Mobile Primary Navigation (Dark Theme)
+ * BottomTabBar.jsx — Mobile Primary Navigation (Themed)
  *
- * bg-zinc-900 border-t border-zinc-800
- * Active tab:  text-white border-t-2 border-white
- * Inactive:    text-zinc-500
+ * bg-bg-elevated border-t border-app-border
+ * Active tab:  text-app-accent border-t-2 border-app-accent
+ * Inactive:    text-text-muted
  */
 
 import { NavLink } from "react-router-dom";
@@ -27,26 +27,32 @@ const BottomTabBar = () => {
     flex-1 h-full
     text-[10px] font-semibold tracking-wide
     transition-colors duration-150 select-none
-    focus:outline-none focus:ring-2 focus:ring-inset focus:ring-zinc-400
+    focus:outline-none
     ${isActive
-      ? "text-white border-t-2 border-white -mt-px"
-      : "text-zinc-500 hover:text-zinc-300"
+      ? "-mt-px"   /* border-top offset handled via inline style */
+      : ""
     }
   `;
+
+  const activeStyle  = { color: "var(--accent)", borderTop: "2px solid var(--accent)" };
+  const inactiveStyle = { color: "var(--text-muted)" };
 
   return (
     <nav
       aria-label="Bottom tab bar"
+      style={{
+        backgroundColor: "var(--bg-elevated)",
+        borderTop:       "1px solid var(--border)",
+      }}
       className="
         fixed bottom-0 left-0 right-0 z-40
         lg:hidden
         flex items-stretch
         h-14 w-full
-        bg-zinc-900 border-t border-zinc-800
         safe-area-inset-bottom
       "
     >
-      {/* ── Feed, Anon, Search, Chat ───────────────────────────────────────── */}
+      {/* ── Feed, Anon, Chat ──────────────────────────────────────────────── */}
       {STATIC_TABS.map(({ to, label, icon: Icon }) => (
         <NavLink
           key={to}
@@ -56,14 +62,16 @@ const BottomTabBar = () => {
           aria-label={label}
         >
           {({ isActive }) => (
-            <>
+            <span
+              style={isActive ? activeStyle : inactiveStyle}
+              className="flex flex-col items-center justify-center gap-0.5 w-full h-full"
+            >
               <Icon
                 size={22}
                 strokeWidth={isActive ? 2.5 : 2}
-                className={isActive ? "text-white" : "text-zinc-500"}
               />
               <span>{label}</span>
-            </>
+            </span>
           )}
         </NavLink>
       ))}
@@ -75,14 +83,16 @@ const BottomTabBar = () => {
         aria-label="Profile"
       >
         {({ isActive }) => (
-          <>
+          <span
+            style={isActive ? activeStyle : inactiveStyle}
+            className="flex flex-col items-center justify-center gap-0.5 w-full h-full"
+          >
             <User
               size={22}
               strokeWidth={isActive ? 2.5 : 2}
-              className={isActive ? "text-white" : "text-zinc-500"}
             />
             <span>Profile</span>
-          </>
+          </span>
         )}
       </NavLink>
     </nav>

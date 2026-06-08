@@ -13,12 +13,8 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
-// ── Configurable college email domains ─────────────────────────────────────
-// Add or remove domains as needed. Only emails ending with one of these
-// domains will be accepted during registration.
-const ALLOWED_EMAIL_DOMAINS = ["@college.edu"];
+// ── Password hashing rounds ────────────────────────────────────────────────
 
-// ── Password hashing config ────────────────────────────────────────────────
 const SALT_ROUNDS = 12;
 
 // ── User Schema ────────────────────────────────────────────────────────────
@@ -38,13 +34,8 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
       validate: {
-        validator: function (value) {
-          // Check that the email ends with at least one allowed domain
-          return ALLOWED_EMAIL_DOMAINS.some((domain) =>
-            value.endsWith(domain)
-          );
-        },
-        message: `Email must end with one of: ${ALLOWED_EMAIL_DOMAINS.join(", ")}`,
+        validator: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),
+        message: "Please enter a valid email address",
       },
     },
 

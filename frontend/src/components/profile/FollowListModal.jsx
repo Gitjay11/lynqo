@@ -1,5 +1,5 @@
 /**
- * FollowListModal.jsx — Followers / Following List Modal
+ * FollowListModal.jsx — Followers / Following List Modal (Themed)
  *
  * Displays a scrollable bottom-sheet style modal listing either the followers
  * or following users for any profile. Follows the Instagram-style stat pattern.
@@ -18,7 +18,7 @@
  *  - Scroll is locked on <body> while the modal is open
  *
  * Design:
- *  - bg-zinc-900 border border-zinc-800 rounded-2xl — per spec
+ *  - bg-bg-surface border border-app-border rounded-2xl — theme-aware
  *  - Mobile-first: fixed overlay with centered card (max-w-sm on mobile, sm:max-w-md)
  *  - Touch target for each user row: min-h-[56px]
  */
@@ -39,7 +39,6 @@ const FollowListModal = ({ isOpen, onClose, title, userId, type }) => {
   const [error,   setError]   = useState(null);
 
   // ── Fetch the list whenever the modal opens ─────────────────────────────
-  // `type` is either "followers" or "following" — maps directly to the API path.
   useEffect(() => {
     if (!isOpen || !userId) return;
 
@@ -50,7 +49,6 @@ const FollowListModal = ({ isOpen, onClose, title, userId, type }) => {
 
       try {
         const { data } = await api.get(`/users/${userId}/${type}`);
-        // Both endpoints return arrays under their respective key name
         setUsers(data[type] ?? []);
       } catch (err) {
         setError(err.response?.data?.message ?? "Failed to load list.");
@@ -108,22 +106,24 @@ const FollowListModal = ({ isOpen, onClose, title, userId, type }) => {
       <div
         className="
           relative w-full max-w-sm sm:max-w-md
-          bg-zinc-900 border border-zinc-800 rounded-2xl
+          rounded-2xl
           flex flex-col
           max-h-[80vh]
           animate-fade-in
         "
+        style={{
+          backgroundColor: "var(--bg-surface)",
+          border: "1px solid var(--border)",
+        }}
         onClick={(e) => e.stopPropagation()}
       >
 
         {/* ── Header ──────────────────────────────────────────────────── */}
-        <div className="
-          flex items-center justify-between
-          px-5 py-4
-          border-b border-zinc-800
-          flex-shrink-0
-        ">
-          <h2 className="text-base font-semibold text-zinc-50">{title}</h2>
+        <div
+          className="flex items-center justify-between px-5 py-4 flex-shrink-0"
+          style={{ borderBottom: "1px solid var(--border)" }}
+        >
+          <h2 className="text-base font-semibold" style={{ color: "var(--text-primary)" }}>{title}</h2>
           <button
             id="follow-modal-close-btn"
             onClick={onClose}
@@ -131,10 +131,11 @@ const FollowListModal = ({ isOpen, onClose, title, userId, type }) => {
             className="
               flex items-center justify-center
               w-8 h-8 rounded-full
-              text-zinc-400 hover:text-zinc-200
-              hover:bg-zinc-800
               transition-colors duration-150
             "
+            style={{ color: "var(--text-secondary)" }}
+            onMouseEnter={e => { e.currentTarget.style.color = "var(--text-primary)"; e.currentTarget.style.backgroundColor = "var(--bg-elevated)"; }}
+            onMouseLeave={e => { e.currentTarget.style.color = "var(--text-secondary)"; e.currentTarget.style.backgroundColor = "transparent"; }}
           >
             <X size={18} strokeWidth={2.5} />
           </button>
@@ -146,22 +147,22 @@ const FollowListModal = ({ isOpen, onClose, title, userId, type }) => {
           {/* Loading state */}
           {loading && (
             <div className="flex items-center justify-center py-12">
-              <Loader2 size={24} className="animate-spin text-zinc-500" />
+              <Loader2 size={24} className="animate-spin" style={{ color: "var(--text-muted)" }} />
             </div>
           )}
 
           {/* Error state */}
           {!loading && error && (
             <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-              <p className="text-sm text-red-400">{error}</p>
+              <p className="text-sm text-red-500">{error}</p>
             </div>
           )}
 
           {/* Empty state */}
           {!loading && !error && users.length === 0 && (
             <div className="flex flex-col items-center justify-center py-12 px-4 gap-3">
-              <Users size={32} className="text-zinc-700" />
-              <p className="text-sm text-zinc-500">
+              <Users size={32} style={{ color: "var(--text-muted)" }} />
+              <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
                 {type === "followers" ? "No followers yet." : "Not following anyone yet."}
               </p>
             </div>
@@ -169,18 +170,19 @@ const FollowListModal = ({ isOpen, onClose, title, userId, type }) => {
 
           {/* User list */}
           {!loading && !error && users.length > 0 && (
-            <ul className="divide-y divide-zinc-800/60">
+            <ul>
               {users.map((person) => (
-                <li key={person._id}>
+                <li key={person._id} style={{ borderBottom: "1px solid var(--border)" }}>
                   <button
                     onClick={() => handleUserClick(person._id)}
                     className="
                       w-full flex items-center gap-3
                       px-5 py-3.5 min-h-[56px]
-                      hover:bg-zinc-800/60 active:bg-zinc-800
                       transition-colors duration-150
                       text-left
                     "
+                    onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--bg-elevated)"}
+                    onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
                   >
                     {/* Avatar */}
                     <div className="flex-shrink-0">
@@ -193,10 +195,10 @@ const FollowListModal = ({ isOpen, onClose, title, userId, type }) => {
 
                     {/* Name + meta */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-zinc-100 truncate">
+                      <p className="text-sm font-semibold truncate" style={{ color: "var(--text-primary)" }}>
                         {person.name}
                       </p>
-                      <p className="text-xs text-zinc-500 truncate mt-0.5">
+                      <p className="text-xs truncate mt-0.5" style={{ color: "var(--text-muted)" }}>
                         {[person.branch, person.semester && `Sem ${person.semester}`]
                           .filter(Boolean)
                           .join(" · ")}

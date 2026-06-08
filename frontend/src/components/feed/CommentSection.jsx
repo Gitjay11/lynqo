@@ -1,7 +1,7 @@
 /**
- * CommentSection.jsx — Collapsible Post Comments (Dark Theme)
+ * CommentSection.jsx — Collapsible Post Comments (Themed)
  *
- * bg-zinc-900 card, comment bubbles bg-zinc-800, input bg-zinc-800
+ * bg-bg-surface card, comment bubbles bg-bg-elevated, input bg-bg-elevated
  */
 
 import { useState, useCallback } from "react";
@@ -28,16 +28,19 @@ const CommentRow = ({ comment }) => (
     />
     <div className="flex-1 min-w-0">
       {/* Bubble */}
-      <div className="bg-zinc-800 rounded-2xl rounded-tl-sm px-3 py-2 inline-block max-w-full">
-        <p className="text-xs font-semibold text-zinc-100 leading-tight">
+      <div
+        className="rounded-2xl rounded-tl-sm px-3 py-2 inline-block max-w-full"
+        style={{ backgroundColor: "var(--bg-elevated)" }}
+      >
+        <p className="text-xs font-semibold leading-tight" style={{ color: "var(--text-primary)" }}>
           {comment.author?.name ?? "Unknown"}
         </p>
-        <p className="text-sm text-zinc-300 mt-0.5 leading-snug break-words whitespace-pre-wrap">
+        <p className="text-sm mt-0.5 leading-snug break-words whitespace-pre-wrap" style={{ color: "var(--text-primary)" }}>
           {comment.text}
         </p>
       </div>
       {/* Timestamp */}
-      <p className="text-[10px] text-zinc-600 mt-0.5 pl-1">
+      <p className="text-[10px] mt-0.5 pl-1" style={{ color: "var(--text-muted)" }}>
         {relTime(comment.createdAt)}
       </p>
     </div>
@@ -67,7 +70,7 @@ const CommentSection = ({ postId, initialComments = [], currentUser }) => {
       if (!open) setOpen(true);
     } catch (err) {
       toast.error(err.response?.data?.message ?? "Failed to post comment");
-      setText(trimmed); // restore text on error
+      setText(trimmed);
     } finally {
       setLoading(false);
     }
@@ -81,7 +84,7 @@ const CommentSection = ({ postId, initialComments = [], currentUser }) => {
   };
 
   return (
-    <div className="border-t border-zinc-800">
+    <div style={{ borderTop: "1px solid var(--border)" }}>
 
       {/* ── Toggle comments button ─────────────────────────────────────────── */}
       {comments.length > 0 && (
@@ -89,9 +92,10 @@ const CommentSection = ({ postId, initialComments = [], currentUser }) => {
           onClick={() => setOpen((v) => !v)}
           className="
             flex items-center gap-1.5 px-4 py-2
-            text-xs text-zinc-500 hover:text-zinc-300
+            text-xs
             transition-colors duration-150 min-h-0
           "
+          style={{ color: "var(--text-secondary)" }}
         >
           <MessageSquare size={13} />
           {open
@@ -103,17 +107,14 @@ const CommentSection = ({ postId, initialComments = [], currentUser }) => {
       {/* ── Comment list — animated expand/collapse ────────────────────────── */}
       <div
         style={{
-          display: "grid",
+          display:          "grid",
           gridTemplateRows: open ? "1fr" : "0fr",
-          transition: "grid-template-rows 200ms cubic-bezier(0.4, 0, 0.2, 1)",
+          transition:       "grid-template-rows 200ms cubic-bezier(0.4, 0, 0.2, 1)",
         }}
       >
         <div style={{ overflow: "hidden", minHeight: 0 }}>
           <div
-            style={{
-              opacity: open ? 1 : 0,
-              transition: "opacity 150ms ease 50ms",
-            }}
+            style={{ opacity: open ? 1 : 0, transition: "opacity 150ms ease 50ms" }}
             className="px-4 py-3 space-y-3"
           >
             {comments.map((c) => (
@@ -145,11 +146,16 @@ const CommentSection = ({ postId, initialComments = [], currentUser }) => {
           placeholder="Write a comment…"
           maxLength={500}
           aria-label="Write a comment"
+          style={{
+            backgroundColor: "var(--bg-elevated)",
+            border:          "1px solid var(--border)",
+            color:           "var(--text-primary)",
+          }}
           className="
             flex-1 px-3 py-2
-            bg-zinc-800 border border-zinc-700 rounded-full
-            text-sm text-zinc-100 placeholder-zinc-600
-          focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent
+            rounded-full
+            text-sm
+            focus:outline-none focus:ring-2
             transition duration-200 min-h-0 h-9
           "
         />
@@ -159,13 +165,14 @@ const CommentSection = ({ postId, initialComments = [], currentUser }) => {
           type="submit"
           disabled={!canSubmit}
           aria-label="Post comment"
+          style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}
           className="
             flex items-center justify-center
             w-9 h-9 rounded-full
-            bg-white hover:bg-zinc-100 active:bg-zinc-200
             disabled:opacity-40 disabled:cursor-not-allowed
-            text-black transition-all duration-150 min-h-0 flex-shrink-0
-            focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-1 focus:ring-offset-zinc-900
+            transition-all duration-150 min-h-0 flex-shrink-0
+            focus:outline-none focus:ring-2 focus:ring-offset-1
+            active:scale-95
           "
         >
           {loading

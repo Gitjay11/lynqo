@@ -1,7 +1,7 @@
 /**
- * HeroSection.jsx — Full-Viewport Landing Hero (Dark Theme)
+ * HeroSection.jsx — Full-Viewport Landing Hero (Theme-Aware)
  *
- * Background: solid bg-black (no gradient)
+ * Background: bg-bg-primary
  * Height:     min-h-screen
  * Layout:     flex col, centered vertically + horizontally, text-center
  */
@@ -17,31 +17,37 @@ const HeroSection = () => {
       className="
         relative overflow-hidden
         min-h-screen
-        bg-black
         flex flex-col items-center justify-center
         text-center
         px-4
         pt-14 lg:pt-16
       "
+      style={{ backgroundColor: "var(--bg-primary)" }}
     >
-      {/* ── Subtle decorative circles (zinc tones only) ───────────────────── */}
-      <div aria-hidden="true" className="pointer-events-none absolute -top-16 -left-16 w-48 h-48 rounded-full bg-zinc-900/60" />
-      <div aria-hidden="true" className="pointer-events-none absolute top-10 right-8 w-16 h-16 rounded-full bg-zinc-800/40" />
-      <div aria-hidden="true" className="pointer-events-none absolute top-1/2 -right-12 w-32 h-32 rounded-full bg-zinc-900/30" />
-      <div aria-hidden="true" className="pointer-events-none absolute -bottom-20 -right-20 w-48 h-48 rounded-full bg-zinc-900/40" />
-      <div aria-hidden="true" className="pointer-events-none absolute bottom-16 left-6 w-8 h-8 rounded-full bg-zinc-800/50" />
+      {/* ── Subtle decorative circles ─────────────────────────────────────── */}
+      <div aria-hidden="true" className="pointer-events-none absolute -top-16 -left-16 w-48 h-48 rounded-full" style={{ backgroundColor: "var(--bg-elevated)", opacity: 0.5 }} />
+      <div aria-hidden="true" className="pointer-events-none absolute top-10 right-8 w-16 h-16 rounded-full" style={{ backgroundColor: "var(--border)", opacity: 0.4 }} />
+      <div aria-hidden="true" className="pointer-events-none absolute top-1/2 -right-12 w-32 h-32 rounded-full" style={{ backgroundColor: "var(--bg-elevated)", opacity: 0.3 }} />
+      <div aria-hidden="true" className="pointer-events-none absolute -bottom-20 -right-20 w-48 h-48 rounded-full" style={{ backgroundColor: "var(--bg-elevated)", opacity: 0.4 }} />
+      <div aria-hidden="true" className="pointer-events-none absolute bottom-16 left-6 w-8 h-8 rounded-full" style={{ backgroundColor: "var(--border)", opacity: 0.5 }} />
 
       {/* ── Main content ───────────────────────────────────────────────────── */}
       <div className="relative z-10 flex flex-col items-center max-w-2xl mx-auto w-full">
 
         {/* 1. College pill tag */}
-        <div className="
-          inline-flex items-center gap-2
-          bg-zinc-900 text-zinc-300 text-xs
-          border border-zinc-800
-          px-4 py-1.5 rounded-full
-          mb-8 select-none
-        ">
+        <div
+          className="
+            inline-flex items-center gap-2
+            text-xs
+            px-4 py-1.5 rounded-full
+            mb-8 select-none
+          "
+          style={{
+            backgroundColor: "var(--bg-surface)",
+            border: "1px solid var(--border)",
+            color: "var(--text-secondary)",
+          }}
+        >
           <span>🎓</span>
           <span className="font-medium tracking-wide">
             Exclusively for college students
@@ -49,31 +55,39 @@ const HeroSection = () => {
         </div>
 
         {/* 2. H1 headline */}
-        <h1 className="
-          text-4xl md:text-5xl lg:text-6xl
-          font-bold text-white leading-tight
-          mb-4
-        ">
+        <h1
+          className="
+            text-4xl md:text-5xl lg:text-6xl
+            font-bold leading-tight
+            mb-4
+          "
+          style={{ color: "var(--text-primary)" }}
+        >
           Everything happening on campus —{" "}
-          <span className="whitespace-nowrap text-zinc-300">right here.</span>
+          <span className="whitespace-nowrap" style={{ color: "var(--text-secondary)" }}>right here.</span>
         </h1>
 
         {/* 3. Subheadline */}
-        <p className="
-          text-zinc-400 text-lg md:text-xl
-          max-w-lg mx-auto mt-4
-          leading-relaxed
-        ">
+        <p
+          className="
+            text-lg md:text-xl
+            max-w-lg mx-auto mt-4
+            leading-relaxed
+          "
+          style={{ color: "var(--text-secondary)" }}
+        >
           The private space our campus was missing.
         </p>
 
         {/* 4. CTA buttons */}
-        <div className="
-          mt-8 flex flex-col sm:flex-row
-          gap-3 items-center
-          w-full sm:w-auto
-        ">
-          {/* Primary — white solid */}
+        <div
+          className="
+            mt-8 flex flex-col sm:flex-row
+            gap-3 items-center
+            w-full sm:w-auto
+          "
+        >
+          {/* Primary — accent solid */}
           <Link
             to="/signup"
             id="hero-cta-signup"
@@ -81,18 +95,20 @@ const HeroSection = () => {
               w-full sm:w-auto
               inline-flex items-center justify-center
               min-h-[48px] px-8 py-3
-              bg-white hover:bg-zinc-100 active:bg-zinc-200
-              text-black font-semibold text-base
+              text-white font-semibold text-base
               rounded-full
-              shadow-lg shadow-black/40
+              shadow-lg
               transition-all duration-200
-              focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black
+              focus:outline-none focus:ring-2 focus:ring-offset-2
             "
+            style={{ backgroundColor: "var(--accent)" }}
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--accent-hover)"}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--accent)"}
           >
             Get Started →
           </Link>
 
-          {/* Secondary — transparent, zinc-700 border */}
+          {/* Secondary — bordered */}
           <Link
             to="/login"
             id="hero-cta-login"
@@ -100,21 +116,21 @@ const HeroSection = () => {
               w-full sm:w-auto
               inline-flex items-center justify-center
               min-h-[48px] px-8 py-3
-              bg-transparent
-              border border-zinc-700
-              text-zinc-300 font-semibold text-base
+              font-semibold text-base
               rounded-full
-              hover:bg-zinc-900 hover:border-zinc-500 active:bg-zinc-800
               transition-all duration-200
-              focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 focus:ring-offset-black
+              focus:outline-none focus:ring-2 focus:ring-offset-2
             "
+            style={{ border: "1px solid var(--border)", color: "var(--text-secondary)", backgroundColor: "transparent" }}
+            onMouseEnter={e => { e.currentTarget.style.backgroundColor = "var(--bg-elevated)"; e.currentTarget.style.borderColor = "var(--text-muted)"; }}
+            onMouseLeave={e => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.borderColor = "var(--border)"; }}
           >
             Login
           </Link>
         </div>
 
         {/* 5. Trust line */}
-        <p className="text-zinc-600 text-sm mt-4 select-none">
+        <p className="text-sm mt-4 select-none" style={{ color: "var(--text-muted)" }}>
           Free forever. No ads. No nonsense.
         </p>
 
@@ -124,7 +140,8 @@ const HeroSection = () => {
       <div className="absolute bottom-8 left-0 right-0 flex justify-center pointer-events-none">
         <ChevronDown
           size={28}
-          className="text-zinc-600 animate-bounce"
+          className="animate-bounce"
+          style={{ color: "var(--text-muted)" }}
           aria-hidden="true"
         />
       </div>

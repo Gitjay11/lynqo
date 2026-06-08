@@ -5,6 +5,7 @@
  *   shows a friendly error page instead of a blank screen
  * - Wraps <App /> in <BrowserRouter> for client-side routing
  * - Wraps in <StrictMode> for development warnings
+ * - Wraps in <ThemeProvider> for global dark/light mode state
  * - Mounts the root component into #root in index.html
  */
 
@@ -14,17 +15,22 @@ import { BrowserRouter } from "react-router-dom";
 import "./index.css";
 import App from "./App.jsx";
 import ErrorBoundary from "./components/common/ErrorBoundary.jsx";
+import { ThemeProvider } from "./context/ThemeContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     {/*
-     * ErrorBoundary is the outermost wrapper so it catches crashes
-     * anywhere in the tree — including inside BrowserRouter and AuthProvider.
+     * ThemeProvider is the outermost React wrapper — reads localStorage before
+     * first paint (the inline script in index.html handles pre-React FOUT).
+     * ErrorBoundary catches any crash inside the full tree.
      */}
-    <ErrorBoundary>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </ErrorBoundary>
+    <ThemeProvider>
+      <ErrorBoundary>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </ErrorBoundary>
+    </ThemeProvider>
   </StrictMode>
 );
+

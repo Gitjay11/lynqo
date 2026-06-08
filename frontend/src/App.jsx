@@ -75,23 +75,25 @@ const App = () => {
           toastOptions={{
             duration: 3500,
             style: {
-              background: "#18181B", // zinc-900
-              color: "#FAFAFA",      // zinc-50
+              background:   "var(--bg-elevated)",
+              color:        "var(--text-primary)",
+              border:       "1px solid var(--border)",
               borderRadius: "12px",
-              fontSize: "14px",
-              padding: "12px 16px",
-              maxWidth: "340px",
+              fontSize:     "14px",
+              padding:      "12px 16px",
+              maxWidth:     "340px",
+              boxShadow:    "0 4px 16px rgba(0,0,0,0.15)",
             },
             success: {
               iconTheme: {
-                primary: "#FFFFFF", // white
-                secondary: "#18181B",  // zinc-900
+                primary:   "var(--accent)",
+                secondary: "var(--bg-elevated)",
               },
             },
             error: {
               iconTheme: {
-                primary: "#EF4444", // red-500
-                secondary: "#fff",
+                primary:   "#EF4444",
+                secondary: "var(--bg-elevated)",
               },
             },
           }}

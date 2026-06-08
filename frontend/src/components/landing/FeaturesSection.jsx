@@ -1,8 +1,8 @@
 /**
- * FeaturesSection.jsx — What Lynqo Offers (Dark Theme)
+ * FeaturesSection.jsx — What Lynqo Offers (Theme-Aware)
  *
- * Background: bg-zinc-950
- * Cards: bg-zinc-900 border-zinc-800
+ * Background: bg-bg-surface
+ * Cards: bg-bg-elevated border-app-border
  */
 
 import { MessageSquare, MessageCircle, Users } from "lucide-react";
@@ -11,55 +11,60 @@ import { MessageSquare, MessageCircle, Users } from "lucide-react";
 const CARDS = [
   {
     icon: MessageSquare,
-    iconColor: "text-zinc-300",
-    iconBg: "bg-zinc-800",
     title: "Campus Feed",
     description:
       "Post updates, ask questions, share memes, and stay connected with your entire college in a real-time feed.",
+    accentIcon: false,
   },
   {
     icon: MessageCircle,
-    iconColor: "text-zinc-300",
-    iconBg: "bg-zinc-800",
     title: "Direct Messaging",
     description:
       "Chat one-on-one with any student. Real-time messages, online status, and typing indicators.",
+    accentIcon: false,
   },
   {
     icon: Users,
-    iconColor: "text-emerald-400",
-    iconBg: "bg-emerald-500/10",
     title: "Student Profiles",
     description:
       "Find students by branch and semester. Build your campus identity and network before placements.",
+    accentIcon: true,
   },
 ];
 
 // ── Single feature card ───────────────────────────────────────────────────────
-const FeatureCard = ({ icon: Icon, iconColor, iconBg, title, description }) => (
+const FeatureCard = ({ icon: Icon, title, description, accentIcon }) => (
   <div
     className="
-      bg-zinc-900 rounded-2xl border border-zinc-800
-      shadow-sm hover:border-zinc-700
+      rounded-2xl
+      shadow-sm
       transition-all duration-200
       p-6
     "
+    style={{
+      backgroundColor: "var(--bg-elevated)",
+      border: "1px solid var(--border)",
+    }}
+    onMouseEnter={e => e.currentTarget.style.borderColor = "var(--text-muted)"}
+    onMouseLeave={e => e.currentTarget.style.borderColor = "var(--border)"}
   >
     {/* Icon block */}
     <div
-      className={`
-        w-12 h-12 ${iconBg} rounded-xl
-        flex items-center justify-center
-      `}
+      className="w-12 h-12 rounded-xl flex items-center justify-center"
+      style={
+        accentIcon
+          ? { backgroundColor: "var(--accent-light)", color: "var(--accent)" }
+          : { backgroundColor: "var(--bg-surface)", color: "var(--text-secondary)" }
+      }
     >
-      <Icon size={22} className={iconColor} strokeWidth={2} />
+      <Icon size={22} strokeWidth={2} />
     </div>
 
     {/* Title */}
-    <h3 className="text-xl font-semibold text-zinc-50 mt-4">{title}</h3>
+    <h3 className="text-xl font-semibold mt-4" style={{ color: "var(--text-primary)" }}>{title}</h3>
 
     {/* Description */}
-    <p className="text-zinc-400 text-sm mt-2 leading-relaxed">{description}</p>
+    <p className="text-sm mt-2 leading-relaxed" style={{ color: "var(--text-secondary)" }}>{description}</p>
   </div>
 );
 
@@ -68,18 +73,23 @@ const FeaturesSection = () => {
   return (
     <section
       id="features"
-      className="bg-zinc-950 py-20 px-4 border-t border-zinc-900"
+      className="py-20 px-4"
+      style={{
+        backgroundColor: "var(--bg-surface)",
+        borderTop: "1px solid var(--border)",
+      }}
     >
       <div className="max-w-5xl mx-auto">
 
         {/* ── Section header ─────────────────────────────────────────────────── */}
         <div className="text-center">
-          <h2 className="
-            text-3xl md:text-4xl font-bold text-zinc-50 text-center
-          ">
+          <h2
+            className="text-3xl md:text-4xl font-bold text-center"
+            style={{ color: "var(--text-primary)" }}
+          >
             Everything happening on campus — right here.
           </h2>
-          <p className="text-zinc-400 text-lg mt-3 text-center">
+          <p className="text-lg mt-3 text-center" style={{ color: "var(--text-secondary)" }}>
             The private space our campus was missing.
           </p>
         </div>

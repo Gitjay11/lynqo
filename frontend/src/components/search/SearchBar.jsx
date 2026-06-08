@@ -78,12 +78,13 @@ const SearchBar = ({ onSearch, placeholder = "Search posts…", loading = false 
       <div
         className="
           absolute left-3.5 top-1/2 -translate-y-1/2
-          text-zinc-500 pointer-events-none
+          pointer-events-none
         "
+        style={{ color: "var(--text-muted)" }}
         aria-hidden="true"
       >
         {loading
-          ? <Loader2 size={16} className="animate-spin text-zinc-400" />
+          ? <Loader2 size={16} className="animate-spin" />
           : <Search size={16} />
         }
       </div>
@@ -101,16 +102,18 @@ const SearchBar = ({ onSearch, placeholder = "Search posts…", loading = false 
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onKeyDown={handleKeyDown}
+        style={{
+          backgroundColor: "var(--bg-elevated)",
+          border:          "1px solid var(--border)",
+          color:           "var(--text-primary)",
+        }}
         className="
           w-full min-h-[44px]
           pl-10 pr-10
-          bg-zinc-900 border border-zinc-800
-          hover:border-zinc-700
-          focus:border-zinc-600 focus:bg-zinc-800/80
           rounded-xl
-          text-sm text-white placeholder:text-zinc-500
+          text-sm
           transition-colors duration-150
-          focus:outline-none
+          focus:outline-none focus:ring-2
         "
       />
 
@@ -119,14 +122,16 @@ const SearchBar = ({ onSearch, placeholder = "Search posts…", loading = false 
         <button
           onClick={handleClear}
           aria-label="Clear search"
+          style={{ color: "var(--text-muted)" }}
           className="
             absolute right-3 top-1/2 -translate-y-1/2
             w-6 h-6 flex items-center justify-center
-            text-zinc-500 hover:text-zinc-300
-            rounded-full hover:bg-zinc-700
+            rounded-full
             transition-colors duration-100
-            focus:outline-none
+            focus:outline-none min-h-0
           "
+          onMouseEnter={e => { e.currentTarget.style.backgroundColor = "var(--bg-elevated)"; e.currentTarget.style.color = "var(--text-secondary)"; }}
+          onMouseLeave={e => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "var(--text-muted)"; }}
         >
           <X size={13} />
         </button>

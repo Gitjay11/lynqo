@@ -1,7 +1,7 @@
 /**
- * TrendingWidget.jsx — Right Sidebar Trending Widget (Dark Theme)
+ * TrendingWidget.jsx — Right Sidebar Trending Widget (Themed)
  *
- * bg-zinc-900 card, zinc-800 borders, violet accents
+ * bg-bg-surface card, border-app-border, accent for active elements
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -34,23 +34,25 @@ const TrendingWidget = () => {
     }
   }, []);
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchData(); }, [fetchData]);
 
   // ── Loading state ─────────────────────────────────────────────────────────
   if (loading) return (
     <div className="card p-5 flex items-center justify-center min-h-[120px]">
-      <Loader2 size={20} className="animate-spin text-zinc-400" />
+      <Loader2 size={20} className="animate-spin" style={{ color: "var(--text-secondary)" }} />
     </div>
   );
 
   // ── Error state ───────────────────────────────────────────────────────────
   if (error) return (
     <div className="card p-5 flex flex-col items-center gap-3">
-      <p className="text-sm text-zinc-500 text-center">{error}</p>
+      <p className="text-sm text-center" style={{ color: "var(--text-secondary)" }}>{error}</p>
       <button
         onClick={fetchData}
-        className="text-xs text-zinc-400 hover:text-zinc-200 flex items-center gap-1.5 min-h-0"
+        className="text-xs flex items-center gap-1.5 min-h-0 transition-colors"
+        style={{ color: "var(--text-muted)" }}
+        onMouseEnter={e => e.currentTarget.style.color = "var(--text-secondary)"}
+        onMouseLeave={e => e.currentTarget.style.color = "var(--text-muted)"}
       >
         <RefreshCw size={12} /> Retry
       </button>
@@ -65,9 +67,12 @@ const TrendingWidget = () => {
       {data.trending.length > 0 && (
         <div className="card p-0 overflow-hidden">
           {/* Header */}
-          <div className="flex items-center gap-2 px-4 pt-4 pb-3 border-b border-zinc-800">
-            <TrendingUp size={15} className="text-zinc-400" />
-            <h2 className="text-sm font-semibold text-zinc-100">Trending</h2>
+          <div
+            className="flex items-center gap-2 px-4 pt-4 pb-3"
+            style={{ borderBottom: "1px solid var(--border)" }}
+          >
+            <TrendingUp size={15} style={{ color: "var(--text-secondary)" }} />
+            <h2 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Trending</h2>
           </div>
 
           {/* Tag rows */}
@@ -79,14 +84,16 @@ const TrendingWidget = () => {
                   className="
                     w-full flex items-center justify-between
                     px-4 py-2.5 min-h-0
-                    hover:bg-zinc-800 transition-colors duration-100 text-left
-                    border-b border-zinc-800/50 last:border-b-0
+                    transition-colors duration-100 text-left
                   "
+                  style={{ borderBottom: "1px solid var(--border)" }}
+                  onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--bg-elevated)"}
+                  onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
                 >
-                  <span className="text-sm font-medium text-zinc-300">
+                  <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
                     #{tag.name}
                   </span>
-                  <span className="text-xs text-zinc-600">{tag.count} posts</span>
+                  <span className="text-xs" style={{ color: "var(--text-muted)" }}>{tag.count} posts</span>
                 </button>
               </li>
             ))}
@@ -98,9 +105,12 @@ const TrendingWidget = () => {
       {data.activeUsers.length > 0 && (
         <div className="card p-0 overflow-hidden">
           {/* Header */}
-          <div className="flex items-center gap-2 px-4 pt-4 pb-3 border-b border-zinc-800">
-            <Users size={15} className="text-emerald-400" />
-            <h2 className="text-sm font-semibold text-zinc-100">Active Students</h2>
+          <div
+            className="flex items-center gap-2 px-4 pt-4 pb-3"
+            style={{ borderBottom: "1px solid var(--border)" }}
+          >
+            <Users size={15} className="text-app-success" style={{ color: "var(--success)" }} />
+            <h2 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Active Students</h2>
           </div>
 
           {/* User rows */}
@@ -111,9 +121,11 @@ const TrendingWidget = () => {
                   onClick={() => navigate(`/profile/${u._id}`)}
                   className="
                     w-full flex items-center gap-3 px-4 py-2.5 min-h-0
-                    hover:bg-zinc-800 transition-colors duration-100 text-left
-                    border-b border-zinc-800/50 last:border-b-0
+                    transition-colors duration-100 text-left
                   "
+                  style={{ borderBottom: "1px solid var(--border)" }}
+                  onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--bg-elevated)"}
+                  onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
                 >
                   <div className="relative flex-shrink-0">
                     <Avatar src={u.profilePicture} name={u.name} size="sm" />
@@ -124,9 +136,9 @@ const TrendingWidget = () => {
                     />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-zinc-100 truncate">{u.name}</p>
+                    <p className="text-sm font-medium truncate" style={{ color: "var(--text-primary)" }}>{u.name}</p>
                     {u.branch && (
-                      <p className="text-xs text-zinc-600 truncate">{u.branch}</p>
+                      <p className="text-xs truncate" style={{ color: "var(--text-muted)" }}>{u.branch}</p>
                     )}
                   </div>
                 </button>

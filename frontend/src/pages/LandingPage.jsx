@@ -1,14 +1,16 @@
 /**
- * LandingPage.jsx — Public Landing Page (Dark Theme)
+ * LandingPage.jsx — Public Landing Page (Theme-Aware)
  *
- * Shown to unauthenticated visitors at "/".
+ * The landing page is fully theme-aware — it adapts to both light ("Warm Cream")
+ * and dark ("Warm Black") modes via CSS variables.
+ *
  * Structure:
- *   <LandingTopBar />      ← zinc-950 bg, violet wordmark
- *   <HeroSection />        ← violet-900 → zinc-950 gradient
- *   <FeaturesSection />    ← zinc-950 bg
- *   <AnonymousSection />   ← zinc-950 bg (dark)
- *   <ChatPreviewSection /> ← zinc-900 bg
- *   <LandingFooter />      ← zinc-950 bg (dark)
+ *   <LandingTopBar />      ← themed top bar
+ *   <HeroSection />        ← bg-bg-primary hero
+ *   <FeaturesSection />    ← bg-bg-surface bg
+ *   <AnonymousSection />   ← bg-bg-primary bg
+ *   <ChatPreviewSection /> ← bg-bg-surface bg
+ *   <LandingFooter />      ← themed footer
  */
 
 import { Link } from "react-router-dom";
@@ -20,16 +22,19 @@ import ChatPreviewSection from "../components/landing/ChatPreviewSection.jsx";
 import LandingFooter      from "../components/landing/LandingFooter.jsx";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// LandingTopBar — Inline component (not exported — only used inside this page)
+// LandingTopBar — Fixed app-bar for the landing page
 // ─────────────────────────────────────────────────────────────────────────────
 const LandingTopBar = () => (
   <header
     className="
       fixed top-0 left-0 right-0 z-40
       h-14 lg:h-16
-      bg-zinc-950/95 backdrop-blur-sm
-      border-b border-zinc-800
+      backdrop-blur-sm
     "
+    style={{
+      backgroundColor: "var(--bg-surface)",
+      borderBottom: "1px solid var(--border)",
+    }}
   >
     <div
       className="
@@ -38,34 +43,35 @@ const LandingTopBar = () => (
         flex items-center justify-between
       "
     >
-      {/* ── Wordmark ─────────────────────────────────────────────────────── */}
+      {/* ── Wordmark ───────────────────────────────────────────────────────── */}
       <Link
         to="/"
         id="landing-topbar-logo"
         className="
           flex items-center gap-2
           min-h-[44px]
-          text-white font-bold text-xl tracking-tight
+          font-bold text-xl tracking-tight
           select-none flex-shrink-0
-          focus:outline-none focus:ring-2 focus:ring-zinc-400 rounded-lg
+          focus:outline-none focus:ring-2 focus:ring-offset-1 rounded-lg
         "
+        style={{ color: "var(--text-primary)" }}
         aria-label="Lynqo home"
       >
-        {/* Gradient logo mark */}
+        {/* Logo mark */}
         <span
           className="
             w-8 h-8 rounded-xl
-            bg-white
             flex items-center justify-center
-            text-black text-sm font-black
+            text-white text-sm font-black
           "
+          style={{ backgroundColor: "var(--accent)" }}
         >
           L
         </span>
         <span>Lynqo</span>
       </Link>
 
-      {/* ── Right: nav buttons ────────────────────────────────────────────── */}
+      {/* ── Right: nav buttons ─────────────────────────────────────────────── */}
       <div className="flex items-center gap-2">
         {/* Log In — outline */}
         <Link
@@ -74,33 +80,36 @@ const LandingTopBar = () => (
           className="
             inline-flex items-center justify-center
             min-h-[44px]
-            text-sm font-medium text-zinc-300
+            text-sm font-medium
             px-3 py-1.5
             rounded-full
-            border border-zinc-700
-            hover:border-zinc-500 hover:text-zinc-100 hover:bg-zinc-800
             transition-all duration-200
-            focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-1 focus:ring-offset-zinc-950
+            focus:outline-none focus:ring-2 focus:ring-offset-1
           "
+          style={{ color: "var(--text-secondary)", border: "1px solid var(--border)" }}
+          onMouseEnter={e => { e.currentTarget.style.color = "var(--text-primary)"; e.currentTarget.style.borderColor = "var(--text-muted)"; e.currentTarget.style.backgroundColor = "var(--bg-elevated)"; }}
+          onMouseLeave={e => { e.currentTarget.style.color = "var(--text-secondary)"; e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.backgroundColor = "transparent"; }}
         >
           Log In
         </Link>
 
-        {/* Get Started — solid violet */}
+        {/* Get Started — accent solid */}
         <Link
           to="/signup"
           id="landing-topbar-signup"
           className="
             inline-flex items-center justify-center
             min-h-[44px]
-            text-sm font-semibold text-black
+            text-sm font-semibold text-white
             px-4 py-1.5
             rounded-full
-            bg-white hover:bg-zinc-100 active:bg-zinc-200
-            shadow-sm shadow-black/50
+            shadow-sm
             transition-all duration-200
-            focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-1 focus:ring-offset-zinc-950
+            focus:outline-none focus:ring-2 focus:ring-offset-1
           "
+          style={{ backgroundColor: "var(--accent)" }}
+          onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--accent-hover)"}
+          onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--accent)"}
         >
           Get Started
         </Link>
@@ -110,15 +119,11 @@ const LandingTopBar = () => (
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
-// LandingPage — Root Container
-// ─────────────────────────────────────────────────────────────────────────────
 const LandingPage = () => {
   return (
-    <div className="min-h-screen bg-zinc-950">
-      {/* Fixed top bar — pushes content down via pt-14 lg:pt-16 on HeroSection */}
+    <div className="min-h-screen" style={{ backgroundColor: "var(--bg-primary)" }}>
       <LandingTopBar />
 
-      {/* Sections render in order, each with its own background */}
       <main id="landing-main">
         <HeroSection />
         <FeaturesSection />

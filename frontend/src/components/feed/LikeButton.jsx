@@ -1,8 +1,8 @@
 /**
- * LikeButton.jsx — Reaction Button (Dark Theme)
+ * LikeButton.jsx — Reaction Button (Themed)
  *
- * Active state:   text-violet-400 bg-violet-600/10 (or rose for dislike)
- * Inactive state: text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300
+ * Active state:   text-accent bg-accent-light (or red for dislike)
+ * Inactive state: text-text-muted hover:bg-bg-elevated
  */
 
 import { useState, useCallback } from "react";
@@ -15,9 +15,8 @@ const LikeButton = ({
   initialCount,
   initialActive,
   endpoint,        // e.g. `/posts/${postId}/like`
-  activeColor,     // Tailwind text class when active, e.g. "text-white"
-  activeBg,        // Tailwind bg class when active, e.g. "bg-white/10"
-  ringColor,       // focus ring color, e.g. "focus:ring-zinc-400"
+  activeColor,     // CSS variable string when active, e.g. "var(--accent)"
+  activeBg,        // CSS variable string when active, e.g. "var(--accent-light)"
   ariaLabelActive,
   ariaLabelInactive,
 }) => {
@@ -28,22 +27,18 @@ const LikeButton = ({
   const handleClick = useCallback(async () => {
     if (inFlight) return;
 
-    // Snapshot for rollback
     const prevActive = isActive;
     const prevCount  = count;
 
-    // Optimistic update
     setIsActive(!isActive);
     setCount((n) => (isActive ? Math.max(0, n - 1) : n + 1));
 
     setInFlight(true);
     try {
       const { data } = await api.put(endpoint);
-      // Sync with server truth
       setCount(data.count ?? data.likes ?? data.dislikes ?? 0);
       setIsActive(data.active ?? data.liked ?? data.disliked ?? false);
     } catch (err) {
-      // Roll back
       setIsActive(prevActive);
       setCount(prevCount);
       toast.error(err.response?.data?.message ?? "Action failed");
@@ -58,23 +53,25 @@ const LikeButton = ({
       disabled={inFlight}
       aria-label={isActive ? ariaLabelActive : ariaLabelInactive}
       aria-pressed={isActive}
-      className={`
+      style={isActive
+        ? { color: activeColor, backgroundColor: activeBg }
+        : { color: "var(--text-muted)" }
+      }
+      className="
         flex items-center gap-1.5
         min-h-[44px] px-3 rounded-xl
         text-sm font-medium
-        transition-all duration-150 active:scale-95
-        focus:outline-none focus:ring-2 ${ringColor} focus:ring-offset-1 focus:ring-offset-zinc-900
+        transition-colors duration-150 active:scale-95
+        focus:outline-none focus:ring-2 focus:ring-offset-1
         disabled:cursor-not-allowed disabled:opacity-60
-        ${isActive
-          ? `${activeColor} ${activeBg}`
-          : "text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
-        }
-      `}
+      "
+      onMouseEnter={e => { if (!isActive) e.currentTarget.style.backgroundColor = "var(--bg-elevated)"; }}
+      onMouseLeave={e => { if (!isActive) e.currentTarget.style.backgroundColor = "transparent"; }}
     >
       <span
         aria-hidden="true"
         style={{
-          display: "inline-flex",
+          display:    "inline-flex",
           transition: "transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1)",
         }}
       >

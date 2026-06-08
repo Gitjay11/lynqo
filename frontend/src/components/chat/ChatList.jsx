@@ -1,32 +1,7 @@
 /**
- * ChatList.jsx — Conversation Inbox + User Search
+ * ChatList.jsx — Conversation Inbox + User Search (Themed)
  *
- * Two modes in one component, toggled by whether searchQuery is non-empty:
- *
- *  Default mode (searchQuery empty):
- *   → Fetches GET /api/chat/conversations on mount
- *   → Lists conversations sorted by most-recent (server-sorted by updatedAt)
- *   → Each row shows: avatar + OnlineDot, name, last message preview, timestamp
- *   → Updates live: listens to "receive_message" socket event to refresh
- *     lastMessage preview without a full re-fetch
- *
- *  Search mode (searchQuery non-empty):
- *   → Debounced 400ms → GET /api/users/search?q=...
- *   → Lists matching users with their avatar and name
- *   → Clicking a result → POST /api/chat/conversation/:userId
- *                       → navigate to /chat/:convId
- *
- * Props:
- *  onSelectConv  {function}  — called with convId string; used by ChatPage on
- *                              mobile to switch panel without page navigation.
- *                              On desktop this is a no-op (navigation handles it).
- *
- * Data shapes expected:
- *  conversation: {
- *    _id, participants: [{ _id, name, profilePicture }],
- *    lastMessage: { text, createdAt } | null,
- *    updatedAt
- *  }
+ * bg-bg-surface, border-app-border, inputs bg-bg-elevated.
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -40,7 +15,7 @@ import Avatar             from "../common/Avatar.jsx";
 import OnlineDot          from "./OnlineDot.jsx";
 import ChatListSkeleton   from "../common/ChatListSkeleton.jsx";
 
-// ── Timestamp helper for last-message preview ─────────────────────────────────
+// ── Timestamp helper ──────────────────────────────────────────────────────────
 const formatPreviewTime = (dateString) => {
   if (!dateString) return "";
   const date  = new Date(dateString);
@@ -48,7 +23,7 @@ const formatPreviewTime = (dateString) => {
   const diffH = (now - date) / (1000 * 60 * 60);
 
   if (diffH < 24)  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  if (diffH < 168) return date.toLocaleDateString([], { weekday: "short" }); // last 7 days
+  if (diffH < 168) return date.toLocaleDateString([], { weekday: "short" });
   return date.toLocaleDateString([], { day: "numeric", month: "short" });
 };
 
@@ -58,17 +33,16 @@ const ChatList = ({ onSelectConv }) => {
   const { socket }          = useSocket();
   const navigate            = useNavigate();
 
-  // ── State ─────────────────────────────────────────────────────────────────
   const [conversations,  setConversations]  = useState([]);
   const [searchQuery,    setSearchQuery]    = useState("");
   const [searchResults,  setSearchResults]  = useState([]);
   const [loading,        setLoading]        = useState(true);
   const [searching,      setSearching]      = useState(false);
-  const [startingConv,   setStartingConv]   = useState(null); // userId of in-flight conv
+  const [startingConv,   setStartingConv]   = useState(null);
 
-  const searchTimer = useRef(null); // debounce timer ref
+  const searchTimer = useRef(null);
 
-  // ── Fetch conversations on mount ──────────────────────────────────────────
+  // ── Fetch conversations ───────────────────────────────────────────────────
   const fetchConversations = useCallback(async () => {
     try {
       setLoading(true);
@@ -76,70 +50,42 @@ const ChatList = ({ onSelectConv }) => {
       setConversations(data.conversations ?? []);
     } catch (err) {
       console.error("[ChatList] Failed to fetch conversations:", err.message);
-      toast.error(
-        err?.response?.data?.message ||
-          "Couldn’t load your conversations. Please refresh."
-      );
+      toast.error(err?.response?.data?.message || "Couldn't load your conversations. Please refresh.");
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchConversations();
-  }, [fetchConversations]);
+  useEffect(() => { fetchConversations(); }, [fetchConversations]);
 
-  // ── Live: update lastMessage preview when a new message arrives ───────────
-  // We listen to receive_message here (not just in ChatWindow) so that if
-  // the user is looking at the ChatList while a message arrives in another
-  // conversation, the preview and sort order update immediately.
+  // ── Live: update lastMessage preview ─────────────────────────────────────
   useEffect(() => {
     if (!socket) return;
-
     const handleNewMessage = ({ message }) => {
       setConversations((prev) => {
         const updated = prev.map((conv) => {
           if (conv._id === message.conversation) {
-            // Replace lastMessage and bubble this conv to the top
             return { ...conv, lastMessage: message, updatedAt: message.createdAt };
           }
           return conv;
         });
-        // Re-sort by updatedAt descending (most recent first)
-        return [...updated].sort(
-          (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
-        );
+        return [...updated].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
       });
     };
-
     socket.on("receive_message", handleNewMessage);
     return () => socket.off("receive_message", handleNewMessage);
   }, [socket]);
 
   // ── Search: debounced user lookup ─────────────────────────────────────────
   useEffect(() => {
-    // Clear previous timer
     clearTimeout(searchTimer.current);
+    if (!searchQuery.trim()) { setSearchResults([]); setSearching(false); return; }
 
-    if (!searchQuery.trim()) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setSearchResults([]);
-      setSearching(false);
-      return;
-    }
-
-    // Debounce: wait 400ms after the last keystroke before hitting the API
     searchTimer.current = setTimeout(async () => {
       try {
         setSearching(true);
-        const { data } = await api.get("/users/search", {
-          params: { q: searchQuery.trim() },
-        });
-        // Exclude ourselves from search results
-        setSearchResults(
-          (data.users ?? []).filter((u) => String(u.id) !== String(user?.id))
-        );
+        const { data } = await api.get("/users/search", { params: { q: searchQuery.trim() } });
+        setSearchResults((data.users ?? []).filter((u) => String(u.id) !== String(user?.id)));
       } catch (err) {
         console.error("[ChatList] Search error:", err.message);
       } finally {
@@ -150,38 +96,27 @@ const ChatList = ({ onSelectConv }) => {
     return () => clearTimeout(searchTimer.current);
   }, [searchQuery, user]);
 
-  // ── Start or open a conversation with a search result user ───────────────
+  // ── Start / open a conversation ───────────────────────────────────────────
   const handleSelectUser = async (targetUser) => {
     try {
       setStartingConv(targetUser.id);
       const { data } = await api.post(`/chat/conversation/${targetUser.id}`);
       const convId   = data.conversation._id;
-
-      // Clear search so we drop back to the list view
       setSearchQuery("");
       setSearchResults([]);
-
-      // Let parent know (for mobile panel switching), then navigate
       onSelectConv?.(convId);
       navigate(`/chat/${convId}`);
     } catch (err) {
       console.error("[ChatList] Failed to start conversation:", err.message);
-      toast.error(
-        err?.response?.data?.message ||
-          "Couldn’t open that conversation. Please try again."
-      );
+      toast.error(err?.response?.data?.message || "Couldn't open that conversation. Please try again.");
     } finally {
       setStartingConv(null);
     }
   };
 
-  // ── Derive the "other user" from a conversation's participants ────────────
   const getOtherUser = (conv) =>
-    conv.participants.find(
-      (p) => String(p._id) !== String(user?.id)
-    ) ?? conv.participants[0];
+    conv.participants.find((p) => String(p._id) !== String(user?.id)) ?? conv.participants[0];
 
-  // ── Handlers ──────────────────────────────────────────────────────────────
   const handleSelectConv = (convId) => {
     onSelectConv?.(convId);
     navigate(`/chat/${convId}`);
@@ -194,17 +129,18 @@ const ChatList = ({ onSelectConv }) => {
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
-    <div className="flex flex-col h-full bg-zinc-900">
+    <div className="flex flex-col h-full" style={{ backgroundColor: "var(--bg-surface)" }}>
 
-      {/* ── Header ────────────────────────────────────────────────────────── */}
-      <div className="px-4 pt-4 pb-3 border-b border-zinc-800 flex-shrink-0">
-        <h1 className="text-xl font-bold text-zinc-50 mb-3">Messages</h1>
+      {/* ── Header ──────────────────────────────────────────────────────────── */}
+      <div className="px-4 pt-4 pb-3 flex-shrink-0" style={{ borderBottom: "1px solid var(--border)" }}>
+        <h1 className="text-xl font-bold mb-3" style={{ color: "var(--text-primary)" }}>Messages</h1>
 
         {/* Search bar */}
         <div className="relative">
           <Search
             size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none"
+            className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+            style={{ color: "var(--text-muted)" }}
           />
           <input
             id="chat-search"
@@ -212,24 +148,28 @@ const ChatList = ({ onSelectConv }) => {
             placeholder="Search people..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              backgroundColor: "var(--bg-elevated)",
+              border:          "1px solid var(--border)",
+              color:           "var(--text-primary)",
+            }}
             className="
               w-full h-11 pl-9 pr-9
-              bg-zinc-800 border border-zinc-700 rounded-xl
-              text-sm text-zinc-50 placeholder-zinc-500
-              focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:border-transparent
+              rounded-xl
+              text-sm
+              focus:outline-none focus:ring-2
               transition duration-200
             "
             autoComplete="off"
           />
-          {/* Clear button — only shown when there is text */}
           {searchQuery && (
             <button
               onClick={clearSearch}
               aria-label="Clear search"
+              style={{ color: "var(--text-muted)" }}
               className="
                 absolute right-2 top-1/2 -translate-y-1/2
-                p-1.5 rounded-full text-zinc-500
-                hover:text-zinc-300 hover:bg-zinc-800
+                p-1.5 rounded-full
                 transition-colors min-h-0
               "
             >
@@ -239,24 +179,26 @@ const ChatList = ({ onSelectConv }) => {
         </div>
       </div>
 
-      {/* ── Scrollable body ───────────────────────────────────────────────── */}
+      {/* ── Scrollable body ──────────────────────────────────────────────────── */}
       <div className="flex-1 overflow-y-auto">
 
-        {/* ── Search results ──────────────────────────────────────────────── */}
+        {/* ── Search results ─────────────────────────────────────────────────── */}
         {searchQuery.trim() && (
           <>
             {searching ? (
               <div className="flex items-center justify-center py-10">
-                <Loader2 size={20} className="animate-spin text-zinc-400" />
+                <Loader2 size={20} className="animate-spin" style={{ color: "var(--text-muted)" }} />
               </div>
             ) : searchResults.length === 0 ? (
-              /* ── No search results empty state ──────────────────────────── */
               <div className="flex flex-col items-center py-12 px-6 text-center">
-                <div className="w-14 h-14 rounded-full bg-zinc-800 flex items-center justify-center mb-3">
-                  <Search size={22} className="text-zinc-600" />
+                <div
+                  className="w-14 h-14 rounded-full flex items-center justify-center mb-3"
+                  style={{ backgroundColor: "var(--bg-elevated)" }}
+                >
+                  <Search size={22} style={{ color: "var(--text-muted)" }} />
                 </div>
-                <p className="text-sm font-semibold text-zinc-400">No students found</p>
-                <p className="text-xs text-zinc-500 mt-1">
+                <p className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>No students found</p>
+                <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
                   Try a different name or check the spelling.
                 </p>
               </div>
@@ -268,34 +210,30 @@ const ChatList = ({ onSelectConv }) => {
                       id={`search-result-${u.id}`}
                       onClick={() => handleSelectUser(u)}
                       disabled={startingConv === u.id}
+                      style={{ borderBottom: "1px solid var(--border)" }}
                       className="
                         w-full flex items-center gap-3 px-4 py-3
-                        hover:bg-zinc-800 active:bg-zinc-700
                         transition-colors text-left min-h-[60px]
                         disabled:opacity-60
+                        focus:outline-none
                       "
+                      onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--bg-elevated)"}
+                      onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
                     >
                       <div className="relative flex-shrink-0">
                         <Avatar src={u.profilePicture} name={u.name} size="sm" />
-                        <OnlineDot
-                          userId={u.id}
-                          size="sm"
-                          className="absolute -bottom-0.5 -right-0.5"
-                        />
+                        <OnlineDot userId={u.id} size="sm" className="absolute -bottom-0.5 -right-0.5" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-zinc-50 truncate">
-                          {u.name}
-                        </p>
+                        <p className="text-sm font-semibold truncate" style={{ color: "var(--text-primary)" }}>{u.name}</p>
                         {u.branch && (
-                          <p className="text-xs text-zinc-500 truncate">
-                            {u.branch}
-                            {u.semester ? ` · Sem ${u.semester}` : ""}
+                          <p className="text-xs truncate" style={{ color: "var(--text-secondary)" }}>
+                            {u.branch}{u.semester ? ` · Sem ${u.semester}` : ""}
                           </p>
                         )}
                       </div>
                       {startingConv === u.id && (
-                        <Loader2 size={14} className="animate-spin text-zinc-400 flex-shrink-0" />
+                        <Loader2 size={14} className="animate-spin flex-shrink-0" style={{ color: "var(--text-muted)" }} />
                       )}
                     </button>
                   </li>
@@ -305,22 +243,21 @@ const ChatList = ({ onSelectConv }) => {
           </>
         )}
 
-        {/* ── Conversations list (default view) ───────────────────────────── */}
+        {/* ── Conversations list (default view) ────────────────────────────── */}
         {!searchQuery.trim() && (
           <>
             {loading ? (
-              /* ── Skeleton rows while conversations load ──────────────────── */
               <ChatListSkeleton />
             ) : conversations.length === 0 ? (
-              /* ── No conversations empty state ───────────────────────────── */
               <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-                <div className="w-16 h-16 rounded-full bg-zinc-800 flex items-center justify-center mb-4">
-                  <MessageCircle size={28} className="text-zinc-400" />
+                <div
+                  className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+                  style={{ backgroundColor: "var(--bg-elevated)" }}
+                >
+                  <MessageCircle size={28} style={{ color: "var(--text-secondary)" }} />
                 </div>
-                <p className="text-zinc-100 font-semibold mb-1">No chats yet</p>
-                <p className="text-zinc-400 text-sm">
-                  Find a student and say hi.
-                </p>
+                <p className="font-semibold mb-1" style={{ color: "var(--text-primary)" }}>No chats yet</p>
+                <p className="text-sm" style={{ color: "var(--text-secondary)" }}>Find a student and say hi.</p>
               </div>
             ) : (
               <ul aria-label="Conversations">
@@ -335,38 +272,30 @@ const ChatList = ({ onSelectConv }) => {
                       <button
                         id={`conv-${conv._id}`}
                         onClick={() => handleSelectConv(conv._id)}
+                        style={{ borderBottom: "1px solid var(--border)" }}
                         className="
                           w-full flex items-center gap-3 px-4 py-3.5
-                          hover:bg-zinc-800 active:bg-zinc-700
                           transition-colors text-left min-h-[72px]
-                          border-b border-zinc-800/50 last:border-b-0
+                          focus:outline-none
                         "
+                        onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--bg-elevated)"}
+                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
                       >
-                        {/* Avatar + online dot */}
                         <div className="relative flex-shrink-0">
-                          <Avatar
-                            src={other?.profilePicture}
-                            name={other?.name ?? "?"}
-                            size="md"
-                          />
-                          <OnlineDot
-                            userId={other?._id}
-                            size="sm"
-                            className="absolute -bottom-0.5 -right-0.5"
-                          />
+                          <Avatar src={other?.profilePicture} name={other?.name ?? "?"} size="md" />
+                          <OnlineDot userId={other?._id} size="sm" className="absolute -bottom-0.5 -right-0.5" />
                         </div>
 
-                        {/* Name + preview */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between mb-0.5">
-                            <p className="text-sm font-semibold text-zinc-50 truncate pr-2">
+                            <p className="text-sm font-semibold truncate pr-2" style={{ color: "var(--text-primary)" }}>
                               {other?.name ?? "Unknown"}
                             </p>
-                            <span className="text-[11px] text-zinc-500 flex-shrink-0">
+                            <span className="text-[11px] flex-shrink-0" style={{ color: "var(--text-muted)" }}>
                               {time}
                             </span>
                           </div>
-                          <p className="text-xs text-zinc-500 truncate">
+                          <p className="text-xs truncate" style={{ color: "var(--text-secondary)" }}>
                             {previewText}
                           </p>
                         </div>

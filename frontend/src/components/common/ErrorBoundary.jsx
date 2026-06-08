@@ -1,7 +1,7 @@
 /**
- * ErrorBoundary.jsx — Global React Error Boundary (Dark Theme)
+ * ErrorBoundary.jsx — Global React Error Boundary (Theme-Aware)
  *
- * bg-zinc-950 full-screen fallback UI.
+ * Full-screen fallback UI using CSS variable tokens (bg-primary, text-primary, accent).
  */
 
 import { Component } from "react";
@@ -49,8 +49,9 @@ class ErrorBoundary extends Component {
         className="
           min-h-[100dvh] w-full
           flex flex-col items-center justify-center
-          bg-zinc-950 px-6 text-center
+          px-6 text-center
         "
+        style={{ backgroundColor: "var(--bg-primary)" }}
       >
         {/* Icon */}
         <div className="
@@ -62,12 +63,12 @@ class ErrorBoundary extends Component {
         </div>
 
         {/* Heading */}
-        <h1 className="text-2xl font-bold text-zinc-50 mb-2">
+        <h1 className="text-2xl font-bold mb-2" style={{ color: "var(--text-primary)" }}>
           Oops! Something went wrong
         </h1>
 
         {/* Friendly message */}
-        <p className="text-sm text-zinc-400 max-w-[300px] leading-relaxed mb-2">
+        <p className="text-sm max-w-[300px] leading-relaxed mb-2" style={{ color: "var(--text-secondary)" }}>
           Lynqo hit an unexpected error. Don't worry — your data is safe.
           Try reloading the page or go back to the home feed.
         </p>
@@ -94,12 +95,12 @@ class ErrorBoundary extends Component {
               w-full sm:w-auto
               flex items-center justify-center gap-2
               px-6 py-3 rounded-xl
-              bg-white hover:bg-zinc-100 active:bg-zinc-200
-              text-black text-sm font-semibold
+              text-white text-sm font-semibold
               min-h-[44px]
               transition-colors duration-150 active:scale-95
-              focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-zinc-950
+              focus:outline-none focus:ring-2 focus:ring-offset-2
             "
+            style={{ backgroundColor: "var(--accent)" }}
           >
             <RefreshCw size={16} />
             Reload Page
@@ -113,13 +114,16 @@ class ErrorBoundary extends Component {
               w-full sm:w-auto
               flex items-center justify-center gap-2
               px-6 py-3 rounded-xl
-              border border-zinc-700 hover:border-zinc-600
-              bg-zinc-900 hover:bg-zinc-800
-              text-zinc-300 text-sm font-medium
+              text-sm font-medium
               min-h-[44px]
               transition-colors duration-150 active:scale-95
-              focus:outline-none focus:ring-2 focus:ring-zinc-600 focus:ring-offset-2 focus:ring-offset-zinc-950
+              focus:outline-none focus:ring-2 focus:ring-offset-2
             "
+            style={{
+              border:          "1px solid var(--border)",
+              backgroundColor: "var(--bg-surface)",
+              color:           "var(--text-secondary)",
+            }}
           >
             <Home size={16} />
             Go Home

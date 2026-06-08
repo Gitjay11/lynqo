@@ -1,8 +1,9 @@
-/* ─────────────────────────────────────────────
+/* ─────────────────────────────────────────────────────────────────────────────
    Lynqo — Global Stylesheet
-   Black & White Dark Theme
+   Dual-theme: Warm Cream (light) + Warm Black (dark)
    Mobile-first. 375px → 768px → 1024px → 1280px+
-   ───────────────────────────────────────────── */
+   Theme switching via CSS variables + data-theme attribute on <html>
+   ───────────────────────────────────────────────────────────────────────────── */
 
 /* Google Fonts — Inter */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
@@ -12,10 +13,45 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Base resets ── */
+/* ── Theme: Light Mode (Warm Cream) — default ──────────────────────────────── */
+:root {
+  --bg-primary:    #faf8f5;   /* Main app background */
+  --bg-surface:    #ffffff;   /* All cards, panels, modals */
+  --bg-elevated:   #f5f2ed;   /* Navbar, bottom tab bar, inputs */
+  --border:        #e8e0d5;   /* All card and input borders */
+  --text-primary:  #2d2416;   /* Headings, names, main content */
+  --text-secondary:#8a7a6a;   /* Meta info, timestamps, placeholders */
+  --text-muted:    #b8a898;   /* Disabled, very subtle labels */
+  --accent:        #14b8a6;   /* Buttons, active tabs, liked state, links */
+  --accent-hover:  #0d9488;   /* Hover state on teal elements */
+  --accent-light:  #e8f8f6;   /* Teal tinted backgrounds, avatar bg */
+  --error:         #ef4444;   /* Error messages, delete actions */
+  --success:       #10b981;   /* Online dot only */
+}
+
+/* ── Theme: Dark Mode (Warm Black) ─────────────────────────────────────────── */
+[data-theme="dark"] {
+  --bg-primary:    #12110f;   /* Main app background */
+  --bg-surface:    #1a1916;   /* All cards, panels, modals */
+  --bg-elevated:   #242220;   /* Navbar, bottom tab bar, inputs */
+  --border:        #2e2c28;   /* All card and input borders */
+  --text-primary:  #f5f0e8;   /* Headings, names, main content */
+  --text-secondary:#8a8278;   /* Meta info, timestamps */
+  --text-muted:    #4a4640;   /* Disabled, very subtle labels */
+  --accent:        #14b8a6;   /* Buttons, active tabs, liked state, links */
+  --accent-hover:  #0d9488;   /* Hover state on teal elements */
+  --accent-light:  #1a2e2c;   /* Teal tinted backgrounds in dark mode */
+  --error:         #ef4444;   /* Error messages, delete actions */
+  --success:       #10b981;   /* Online dot only */
+}
+
+/* ── Base resets ─────────────────────────────────────────────────────────────── */
 @layer base {
   *, *::before, *::after {
     box-sizing: border-box;
+    /* Smooth color transition on theme toggle — excludes elements with their own
+       animation (add transition-none to those manually to avoid interference). */
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease;
   }
 
   html {
@@ -25,8 +61,10 @@
   }
 
   body {
-    /* App background: #09090B (zinc-950), primary text: #FAFAFA (zinc-50) */
-    @apply font-sans bg-zinc-950 text-zinc-50 antialiased;
+    /* Theme-aware background and text via CSS variables */
+    @apply font-sans antialiased;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
     /* Prevent iOS tap highlight */
     -webkit-tap-highlight-color: transparent;
   }
@@ -41,50 +79,66 @@
     display: block;
   }
 
-  /* Native select / option dark-mode fix */
+  /* Native select/option — match elevated surface */
   select option {
-    @apply bg-zinc-800 text-zinc-50;
+    background-color: var(--bg-elevated);
+    color: var(--text-primary);
   }
 }
 
-/* ── Reusable component classes ── */
+/* ── Reusable component classes ─────────────────────────────────────────────── */
 @layer components {
-  /* Primary button — white bg, black text */
+  /* Primary button — accent bg, white text */
   .btn-primary {
     @apply inline-flex items-center justify-center min-h-[44px] px-5 py-2.5
-           bg-white hover:bg-zinc-100 active:bg-zinc-200
-           text-black text-sm font-semibold rounded-xl
-           transition-all duration-200 ease-in-out
-           focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-zinc-950
+           text-white text-sm font-semibold rounded-xl
+           transition-colors duration-200 ease-in-out
+           focus:outline-none focus:ring-2 focus:ring-offset-2
            disabled:opacity-50 disabled:cursor-not-allowed;
+    background-color: var(--accent);
+    /* Skip the global 0.2s background transition so active:scale-95 works cleanly */
+    transition: background-color 0.15s ease, transform 0.1s ease;
   }
+  .btn-primary:hover { background-color: var(--accent-hover); }
 
-  /* Secondary / outline button — zinc-700 border */
+  /* Secondary / outline button */
   .btn-secondary {
     @apply inline-flex items-center justify-center min-h-[44px] px-5 py-2.5
-           border border-zinc-700 hover:border-zinc-500 hover:bg-zinc-800
-           text-zinc-300 hover:text-white text-sm font-medium rounded-xl
+           text-sm font-medium rounded-xl
            transition-all duration-200 ease-in-out
-           focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 focus:ring-offset-zinc-950
+           focus:outline-none focus:ring-2 focus:ring-offset-2
            disabled:opacity-50 disabled:cursor-not-allowed;
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    background-color: transparent;
   }
+  .btn-secondary:hover { background-color: var(--bg-elevated); }
 
-  /* Input field — zinc-800 bg, zinc-700 border, zinc-50 text */
+  /* Input field */
   .input-field {
     @apply w-full min-h-[44px] px-4 py-2.5
-           border border-zinc-700 rounded-xl bg-zinc-800
-           text-sm text-zinc-50 placeholder-zinc-500
-           focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent
+           rounded-xl text-sm
+           focus:outline-none focus:ring-2
            transition duration-200;
+    border: 1px solid var(--border);
+    background-color: var(--bg-elevated);
+    color: var(--text-primary);
+  }
+  .input-field::placeholder { color: var(--text-muted); }
+  .input-field:focus {
+    border-color: var(--accent);
+    --tw-ring-color: var(--accent);
   }
 
-  /* Card wrapper — zinc-900 bg, zinc-800 border */
+  /* Card wrapper */
   .card {
-    @apply bg-zinc-900 rounded-2xl shadow-sm border border-zinc-800 p-4;
+    @apply rounded-2xl shadow-sm p-4;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border);
   }
 }
 
-/* ── Typing indicator bounce animation ── */
+/* ── Typing indicator bounce animation ──────────────────────────────────────── */
 @keyframes typing-bounce {
   0%, 60%, 100% { transform: translateY(0);    opacity: 0.4; }
   30%            { transform: translateY(-6px); opacity: 1;   }

@@ -146,8 +146,9 @@ export const NotificationProvider = ({ children }) => {
         toast("🔔 New notification", {
           duration: 3000,
           style: {
-            background:   "#18181B", // zinc-900 — matches existing app toast style
-            color:        "#FAFAFA",
+            background:   "var(--bg-elevated)",
+            color:        "var(--text-primary)",
+            border:       "1px solid var(--border)",
             borderRadius: "12px",
             fontSize:     "14px",
             padding:      "12px 16px",

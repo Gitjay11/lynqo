@@ -1,32 +1,9 @@
 /**
- * ChatWindow.jsx — Real-Time One-to-One Chat Window
+ * ChatWindow.jsx — Real-Time One-to-One Chat Window (Themed)
  *
- * Layout (flex-col, fills whatever container it is given):
- *
- *  ┌─ Header [sticky top-0, h-14] ──────────────────────────────────────┐
- *  │  ← back  |  Avatar + OnlineDot  |  Name  |  Online / Offline       │
- *  ├─ Messages [flex-1, overflow-y-auto] ───────────────────────────────┤
- *  │  <MessageBubble /> × N                                             │
- *  │  <TypingDots />  (shows/hides)                                     │
- *  │  <div ref={bottomRef} />  ← auto-scroll anchor                    │
- *  ├─ Input [sticky bottom-0] ──────────────────────────────────────────┤
- *  │  [textarea]                               [Send button]            │
- *  │  pb-14 on mobile (clears BottomTabBar)  · lg:pb-2                 │
- *  └────────────────────────────────────────────────────────────────────┘
- *
- * On mobile: the parent (ChatPage) wraps this in `fixed inset-0 z-50`,
- * making it true h-[100dvh]. On desktop: parent is `h-full`.
- * ChatWindow itself is always `h-full flex-col`.
- *
- * Optimistic sends:
- *  Message is appended immediately with a temp _id. When receive_message
- *  echoes back the DB-persisted version, the temp entry is swapped out.
- *
- * Enter-to-send:
- *  Desktop (non-touch): Enter sends, Shift+Enter = newline.
- *  Mobile (touch/coarse pointer): Enter key is ignored; Send button only.
- *
- * Typing debounce: emit typing on first keystroke, stop_typing after 1.5 s idle.
+ * bg-bg-primary for the message area background.
+ * bg-bg-elevated header and footer.
+ * Message input: bg-bg-elevated border-app-border.
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -47,19 +24,20 @@ const TypingDots = ({ name }) => (
       {[0, 1, 2].map((i) => (
         <span
           key={i}
-          className="w-1.5 h-1.5 rounded-full bg-zinc-500 inline-block"
+          className="w-1.5 h-1.5 rounded-full inline-block"
           style={{
-            animation: "typing-bounce 1.2s ease-in-out infinite",
-            animationDelay: `${i * 0.2}s`,
+            backgroundColor: "var(--text-muted)",
+            animation:       "typing-bounce 1.2s ease-in-out infinite",
+            animationDelay:  `${i * 0.2}s`,
           }}
         />
       ))}
     </div>
-    <span className="text-xs text-zinc-500">{name} is typing…</span>
+    <span className="text-xs" style={{ color: "var(--text-secondary)" }}>{name} is typing…</span>
   </div>
 );
 
-// ── Detect touch/coarse-pointer device (mobile keyboard) ─────────────────────
+// ── Detect touch/coarse-pointer device ───────────────────────────────────────
 const isTouchDevice = () =>
   window.matchMedia("(hover: none) and (pointer: coarse)").matches;
 
@@ -68,10 +46,8 @@ const ChatWindow = ({ convId }) => {
   const { user }                = useAuth();
   const { socket, onlineUsers } = useSocket();
   const navigate                = useNavigate();
-
   const myId = user?.id;
 
-  // ── State ─────────────────────────────────────────────────────────────────
   const [messages,   setMessages]   = useState([]);
   const [otherUser,  setOtherUser]  = useState(null);
   const [newText,    setNewText]    = useState("");
@@ -79,13 +55,12 @@ const ChatWindow = ({ convId }) => {
   const [sendError,  setSendError]  = useState(false);
   const [isTyping,   setIsTyping]   = useState(false);
 
-  // ── Refs ──────────────────────────────────────────────────────────────────
   const bottomRef        = useRef(null);
   const textareaRef      = useRef(null);
   const typingTimer      = useRef(null);
   const typingEmitted    = useRef(false);
 
-  // ── Load message history + derive otherUser ───────────────────────────────
+  // ── Load messages ─────────────────────────────────────────────────────────
   const loadMessages = useCallback(async () => {
     if (!convId) return;
     try {
@@ -108,36 +83,26 @@ const ChatWindow = ({ convId }) => {
       }
     } catch (err) {
       console.error("[ChatWindow] load error:", err.message);
-      // Show a toast so the user knows why the chat is empty
-      toast.error(
-        err?.response?.data?.message ||
-          "Couldn’t load messages. Please try again."
-      );
+      toast.error(err?.response?.data?.message || "Couldn't load messages. Please try again.");
     } finally {
       setLoading(false);
     }
   }, [convId, myId]);
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { loadMessages(); }, [loadMessages]);
 
-  // ── Socket: join room + wire events ──────────────────────────────────────
+  // ── Socket ────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!socket || !convId) return;
-
     socket.emit("join_room", { conversationId: convId });
 
-    // receive_message: swap out matching optimistic entry, then append real one
     const onReceive = ({ message }) => {
       if (message.conversation !== convId) return;
       setMessages((prev) => {
         const senderId = message.sender?._id ?? message.sender;
         const filtered = prev.filter((m) => {
           if (!m.isOptimistic) return true;
-          return !(
-            (m.sender?._id ?? m.sender) === senderId &&
-            m.text === message.text
-          );
+          return !((m.sender?._id ?? m.sender) === senderId && m.text === message.text);
         });
         return [...filtered, message];
       });
@@ -146,7 +111,6 @@ const ChatWindow = ({ convId }) => {
 
     const onTyping     = () => setIsTyping(true);
     const onStopTyping = () => setIsTyping(false);
-    // message_error: socket server couldn't persist the message
     const onError      = () => {
       setSendError(true);
       toast.error("Message failed to send. Please try again.");
@@ -165,7 +129,7 @@ const ChatWindow = ({ convId }) => {
     };
   }, [socket, convId]);
 
-  // ── Auto-scroll to bottom on new messages / typing indicator ─────────────
+  // ── Auto-scroll ───────────────────────────────────────────────────────────
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
@@ -184,13 +148,11 @@ const ChatWindow = ({ convId }) => {
     setSendError(false);
     if (!socket || !convId) return;
 
-    // Emit "typing" only on first keystroke (avoid flooding)
     if (!typingEmitted.current && e.target.value.trim()) {
       socket.emit("typing", { conversationId: convId });
       typingEmitted.current = true;
     }
 
-    // Reset stop_typing debounce — fires 1.5 s after last keystroke
     clearTimeout(typingTimer.current);
     typingTimer.current = setTimeout(() => {
       socket.emit("stop_typing", { conversationId: convId });
@@ -203,14 +165,12 @@ const ChatWindow = ({ convId }) => {
     const trimmed = newText.trim();
     if (!trimmed || !socket || !convId) return;
 
-    // Stop typing
     clearTimeout(typingTimer.current);
     if (typingEmitted.current) {
       socket.emit("stop_typing", { conversationId: convId });
       typingEmitted.current = false;
     }
 
-    // Optimistic append
     const optimistic = {
       _id:          `temp-${Date.now()}`,
       conversation: convId,
@@ -224,11 +184,9 @@ const ChatWindow = ({ convId }) => {
     setMessages((prev) => [...prev, optimistic]);
     setNewText("");
     setSendError(false);
-
     socket.emit("send_message", { conversationId: convId, text: trimmed });
   };
 
-  // ── Keyboard: Enter sends on desktop, Shift+Enter = newline ───────────────
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey && !isTouchDevice()) {
       e.preventDefault();
@@ -240,17 +198,25 @@ const ChatWindow = ({ convId }) => {
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
-    <div className="h-full flex flex-col bg-zinc-950 overflow-hidden">
+    <div className="h-full flex flex-col overflow-hidden" style={{ backgroundColor: "var(--bg-primary)" }}>
 
-      {/* ══ Sticky top header ═══════════════════════════════════════════════ */}
-      <div className="sticky top-0 z-10 flex-shrink-0 h-14 flex items-center gap-3 px-3 bg-zinc-900 border-b border-zinc-800 shadow-sm">
-
+      {/* ══ Sticky top header ═════════════════════════════════════════════════ */}
+      <div
+        className="sticky top-0 z-10 flex-shrink-0 h-14 flex items-center gap-3 px-3 shadow-sm"
+        style={{
+          backgroundColor: "var(--bg-elevated)",
+          borderBottom:    "1px solid var(--border)",
+        }}
+      >
         {/* Back button */}
         <button
           id="chat-back-btn"
           onClick={() => navigate("/chat")}
           aria-label="Back to conversations"
-          className="p-2 -ml-1 rounded-full text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors min-h-0 flex-shrink-0"
+          style={{ color: "var(--text-secondary)" }}
+          className="p-2 -ml-1 rounded-full transition-colors min-h-0 flex-shrink-0 focus:outline-none"
+          onMouseEnter={e => { e.currentTarget.style.backgroundColor = "var(--bg-surface)"; e.currentTarget.style.color = "var(--text-primary)"; }}
+          onMouseLeave={e => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "var(--text-secondary)"; }}
         >
           <ArrowLeft size={20} />
         </button>
@@ -263,30 +229,33 @@ const ChatWindow = ({ convId }) => {
 
         {/* Name + status */}
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-zinc-50 truncate leading-tight">
+          <p className="text-sm font-semibold truncate leading-tight" style={{ color: "var(--text-primary)" }}>
             {otherUser?.name ?? (loading ? "Loading…" : "Chat")}
           </p>
-          <p className={`text-[11px] leading-tight ${otherIsOnline ? "text-emerald-500" : "text-zinc-500"}`}>
+          <p
+            className="text-[11px] leading-tight"
+            style={{ color: otherIsOnline ? "var(--success)" : "var(--text-secondary)" }}
+          >
             {otherIsOnline ? "Online" : "Offline"}
           </p>
         </div>
       </div>
 
-      {/* ══ Messages — scrollable ════════════════════════════════════════════ */}
+      {/* ══ Messages — scrollable ══════════════════════════════════════════════ */}
       <div className="flex-1 overflow-y-auto overscroll-contain py-3">
         {loading && (
           <div className="flex justify-center items-center h-full">
-            <Loader2 size={24} className="animate-spin text-zinc-400" />
+            <Loader2 size={24} className="animate-spin" style={{ color: "var(--text-secondary)" }} />
           </div>
         )}
 
         {!loading && messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center px-6">
             <Avatar src={otherUser?.profilePicture} name={otherUser?.name ?? "?"} size="lg" className="mb-3" />
-            <p className="text-zinc-300 font-semibold text-sm mb-1">
+            <p className="font-semibold text-sm mb-1" style={{ color: "var(--text-primary)" }}>
               Say hi to {otherUser?.name ?? "them"} 👋
             </p>
-            <p className="text-zinc-500 text-xs">Start the conversation below.</p>
+            <p className="text-xs" style={{ color: "var(--text-secondary)" }}>Start the conversation below.</p>
           </div>
         )}
 
@@ -299,19 +268,16 @@ const ChatWindow = ({ convId }) => {
         ))}
 
         {isTyping && otherUser && <TypingDots name={otherUser.name} />}
-
-        {/* Auto-scroll anchor */}
         <div ref={bottomRef} />
       </div>
 
-      {/* ══ Sticky bottom input ══════════════════════════════════════════════ */}
+      {/* ══ Sticky bottom input ═══════════════════════════════════════════════ */}
       <div
-        className="
-          sticky bottom-0 flex-shrink-0
-          bg-zinc-900 border-t border-zinc-800
-          px-3 pt-2 pb-16 lg:pb-2
-          flex flex-col gap-1.5
-        "
+        className="sticky bottom-0 flex-shrink-0 px-3 pt-2 pb-16 lg:pb-2 flex flex-col gap-1.5"
+        style={{
+          backgroundColor: "var(--bg-elevated)",
+          borderTop:       "1px solid var(--border)",
+        }}
       >
         {/* Send error banner */}
         {sendError && (
@@ -333,13 +299,18 @@ const ChatWindow = ({ convId }) => {
             rows={1}
             maxLength={1000}
             aria-label="Message input"
+            style={{
+              backgroundColor: "var(--bg-surface)",
+              border:          "1px solid var(--border)",
+              color:           "var(--text-primary)",
+            }}
             className="
               flex-1 resize-none overflow-y-auto
               min-h-[44px] max-h-[120px]
               px-4 py-2.5
-              bg-zinc-800 border border-zinc-700 rounded-2xl
-              text-sm text-zinc-50 placeholder-zinc-500
-              focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:border-transparent
+              rounded-2xl
+              text-sm
+              focus:outline-none focus:ring-2
               transition duration-200 leading-[1.5]
             "
           />
@@ -350,12 +321,13 @@ const ChatWindow = ({ convId }) => {
             onClick={sendMessage}
             disabled={!newText.trim()}
             aria-label="Send message"
+            style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}
             className="
               flex-shrink-0 w-11 h-11 rounded-full
               flex items-center justify-center
-              bg-white hover:bg-zinc-100 active:bg-zinc-200
               disabled:opacity-40 disabled:cursor-not-allowed
-              text-black transition-all duration-150 shadow-sm min-h-0
+              transition-all duration-150 shadow-sm min-h-0
+              active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-1
             "
           >
             <Send size={18} />

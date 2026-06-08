@@ -1,168 +1,185 @@
 /**
- * NotificationPanel.jsx — Notification Dropdown Panel
+ * NotificationPanel.jsx — Dropdown Notification Panel (Themed)
  *
- * Renders the full notification panel that opens when the bell is clicked.
- * Delegates per-item rendering to <NotificationItem />.
- *
- * Structure:
- *  ┌─────────────────────────────────┐
- *  │  🔔 Notifications   [Mark all] │  ← header
- *  ├─────────────────────────────────┤
- *  │  [skeleton]                     │  ← while loading
- *  │  — or —                         │
- *  │  [empty state]                  │  ← no notifications
- *  │  — or —                         │
- *  │  [NotificationItem]             │  ← populated list
- *  │  [NotificationItem]             │
- *  └─────────────────────────────────┘
- *
- * Routing on item click (resolved inside NotificationItem's onClick handler):
- *  like_post / dislike_post / comment_post → /feed
- *  like_anon                               → /anon
- *  new_message                             → /chat/:conversationId
- *
- * Mobile-first: full-width on mobile, max-w-[380px] on sm+.
- * Panel is absolutely positioned and clipped to the viewport width.
+ * bg-bg-surface card with border-app-border shadow.
+ * Unread badge: bg-app-accent text-white.
  */
 
-import { useNavigate } from "react-router-dom";
-import { Bell, CheckCheck } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { Loader2, Bell, Check } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 import { useNotifications } from "../../hooks/useNotifications.js";
-import NotificationItem from "./NotificationItem.jsx";
 
-// ── Route resolver — determines where clicking a notification navigates ────────
-const resolveRoute = (notification) => {
-  const { type, conversationId } = notification;
-  if (type === "new_message" && conversationId) return `/chat/${conversationId}`;
-  if (type === "like_anon") return "/anon";
-  return "/feed";
+// ── Relative timestamp ────────────────────────────────────────────────────────
+const relTime = (d) => {
+  try { return formatDistanceToNow(new Date(d), { addSuffix: true }); }
+  catch { return ""; }
 };
 
-// ── Loading skeleton — shown while the initial API fetch is in-flight ──────────
-const NotificationSkeleton = () => (
-  <div className="space-y-1 p-2">
-    {[1, 2, 3].map((i) => (
-      <div key={i} className="flex items-start gap-3 p-3 rounded-xl animate-pulse">
-        <div className="w-8 h-8 rounded-full bg-zinc-800 flex-shrink-0" />
-        <div className="flex-1 space-y-2">
-          <div className="h-3 bg-zinc-800 rounded w-3/4" />
-          <div className="h-2 bg-zinc-800 rounded w-1/3" />
-        </div>
+// ── Notification icon map ─────────────────────────────────────────────────────
+const ICONS = {
+  like:     "👍",
+  dislike:  "👎",
+  comment:  "💬",
+  follow:   "👤",
+  message:  "📩",
+  default:  "🔔",
+};
+const notifIcon = (type) => ICONS[type] ?? ICONS.default;
+
+// ── Single notification row ───────────────────────────────────────────────────
+const NotificationRow = ({ notif, onMarkRead }) => {
+  const unread = !notif.read;
+
+  return (
+    <button
+      onClick={() => !notif.read && onMarkRead(notif._id)}
+      disabled={notif.read}
+      aria-label={notif.read ? notif.message : `Mark as read: ${notif.message}`}
+      style={{
+        backgroundColor: unread ? "var(--accent-light)" : "transparent",
+        borderBottom:    "1px solid var(--border)",
+      }}
+      className="
+        w-full flex items-start gap-3 px-4 py-3
+        min-h-[60px] text-left
+        transition-colors duration-100
+        focus:outline-none
+        disabled:cursor-default
+      "
+      onMouseEnter={e => { if (notif.read) e.currentTarget.style.backgroundColor = "var(--bg-elevated)"; }}
+      onMouseLeave={e => { if (notif.read) e.currentTarget.style.backgroundColor = "transparent"; }}
+    >
+      {/* Type icon */}
+      <span className="flex-shrink-0 mt-0.5 text-base" aria-hidden="true">
+        {notifIcon(notif.type)}
+      </span>
+
+      {/* Content */}
+      <div className="flex-1 min-w-0">
+        <p className="text-sm leading-snug" style={{ color: "var(--text-primary)", fontWeight: unread ? 600 : 400 }}>
+          {notif.message}
+        </p>
+        <p className="text-[11px] mt-0.5" style={{ color: "var(--text-secondary)" }}>
+          {relTime(notif.createdAt)}
+        </p>
       </div>
-    ))}
-  </div>
-);
+
+      {/* Unread dot */}
+      {unread && (
+        <span
+          className="flex-shrink-0 mt-1 w-2 h-2 rounded-full"
+          style={{ backgroundColor: "var(--accent)" }}
+          aria-hidden="true"
+        />
+      )}
+    </button>
+  );
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 const NotificationPanel = ({ onClose }) => {
-  const navigate = useNavigate();
   const {
     notifications,
-    unreadCount,
     loading,
+    unreadCount,
     markAsRead,
     markAllAsRead,
-    deleteNotification,
   } = useNotifications();
 
-  // ── Item click: mark read (if unread) + navigate + close panel ───────────
-  const handleItemClick = async (notification) => {
-    if (!notification.read) {
-      await markAsRead(notification._id);
-    }
-    navigate(resolveRoute(notification));
-    onClose();
-  };
+  const panelRef = useRef(null);
 
-  // ── Delete: stop event propagation then call context action ──────────────
-  const handleDelete = async (e, id) => {
-    e.stopPropagation(); // prevent the parent button's onClick (handleItemClick)
-    await deleteNotification(id);
-  };
+  // ── Close on Escape ────────────────────────────────────────────────────────
+  useEffect(() => {
+    const handler = (e) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [onClose]);
 
-  // ── Mark all: stop propagation so the panel itself doesn't close ─────────
-  const handleMarkAll = async (e) => {
-    e.stopPropagation();
-    await markAllAsRead();
-  };
-
+  // ─────────────────────────────────────────────────────────────────────────
   return (
     <div
-      id="notification-panel"
+      ref={panelRef}
       role="dialog"
+      aria-modal="false"
       aria-label="Notifications"
+      style={{
+        backgroundColor: "var(--bg-surface)",
+        border:          "1px solid var(--border)",
+      }}
       className="
-        z-50 overflow-hidden
-        animate-in fade-in slide-in-from-top-2 duration-150
-        bg-zinc-900 rounded-2xl
-        border border-zinc-800 shadow-2xl shadow-black/60
-
-        fixed inset-x-0 top-14 mx-4
-        sm:absolute sm:inset-auto sm:right-0 sm:top-[calc(100%+8px)] sm:mx-0
-        sm:w-80
+        absolute right-0 top-[calc(100%+8px)]
+        w-80 sm:w-96
+        max-h-[480px]
+        rounded-2xl
+        shadow-xl shadow-black/20
+        overflow-hidden
+        flex flex-col
+        z-50
       "
     >
-      {/* ── Panel header ──────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      <div
+        className="flex items-center justify-between px-4 py-3 flex-shrink-0"
+        style={{ borderBottom: "1px solid var(--border)" }}
+      >
         <div className="flex items-center gap-2">
-          <Bell size={16} className="text-zinc-400" />
-          <span className="text-sm font-semibold text-zinc-100">Notifications</span>
+          <Bell size={16} style={{ color: "var(--text-secondary)" }} />
+          <h2 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+            Notifications
+          </h2>
           {unreadCount > 0 && (
-            <span className="text-xs font-bold text-black bg-white rounded-full px-1.5 py-0.5 leading-none">
-              {unreadCount > 99 ? "99+" : unreadCount}
+            <span
+              className="flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[11px] font-bold rounded-full"
+              style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}
+            >
+              {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
         </div>
 
-        {/* "Mark all read" button — only visible when unread count > 0 */}
         {unreadCount > 0 && (
           <button
-            id="mark-all-read-btn"
-            onClick={handleMarkAll}
-            aria-label="Mark all notifications as read"
-            className="
-              flex items-center gap-1.5 text-xs text-zinc-400
-              hover:text-zinc-100 transition-colors duration-150
-              min-h-[36px] px-2 rounded-lg hover:bg-zinc-800
-            "
+            onClick={markAllAsRead}
+            className="flex items-center gap-1 text-xs transition-colors min-h-0"
+            style={{ color: "var(--text-secondary)" }}
+            onMouseEnter={e => e.currentTarget.style.color = "var(--accent)"}
+            onMouseLeave={e => e.currentTarget.style.color = "var(--text-secondary)"}
           >
-            <CheckCheck size={14} />
-            <span className="hidden sm:inline">Mark all read</span>
+            <Check size={12} />
+            Mark all read
           </button>
         )}
       </div>
 
-      {/* ── Scrollable content area ────────────────────────────────────────── */}
-      <div className="max-h-[70vh] overflow-y-auto overscroll-contain">
-        {loading ? (
-          /* Skeleton while fetching */
-          <NotificationSkeleton />
+      {/* ── Body ───────────────────────────────────────────────────────────── */}
+      <div className="flex-1 overflow-y-auto">
+        {loading && (
+          <div className="flex items-center justify-center py-10">
+            <Loader2 size={20} className="animate-spin" style={{ color: "var(--text-secondary)" }} />
+          </div>
+        )}
 
-        ) : notifications.length === 0 ? (
-          /* Empty state */
+        {!loading && notifications.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
-            <div className="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center mb-3">
-              <Bell size={22} className="text-zinc-500" />
+            <div
+              className="w-12 h-12 rounded-full flex items-center justify-center mb-3"
+              style={{ backgroundColor: "var(--bg-elevated)" }}
+            >
+              <Bell size={22} style={{ color: "var(--text-muted)" }} />
             </div>
-            <p className="text-sm font-medium text-zinc-300">You're all caught up 🎉</p>
-            <p className="text-xs text-zinc-600 mt-1">
-              New likes, comments and messages will appear here.
+            <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+              No notifications yet
+            </p>
+            <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
+              We'll let you know when something happens.
             </p>
           </div>
-
-        ) : (
-          /* Notification list — each item rendered by NotificationItem */
-          <ul className="py-1.5 space-y-0.5 px-1.5">
-            {notifications.map((notification) => (
-              <NotificationItem
-                key={notification._id}
-                notification={notification}
-                onClick={handleItemClick}
-                onDelete={handleDelete}
-              />
-            ))}
-          </ul>
         )}
+
+        {!loading && notifications.map((n) => (
+          <NotificationRow key={n._id} notif={n} onMarkRead={markAsRead} />
+        ))}
       </div>
     </div>
   );

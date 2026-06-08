@@ -1,5 +1,5 @@
 /**
- * TagInput.jsx — Reusable tag/chip input
+ * TagInput.jsx — Reusable tag/chip input (Themed)
  *
  * Props:
  *  tags     : string[]           — current list of tags
@@ -35,18 +35,34 @@ const TagInput = ({ tags = [], onChange, placeholder = "Type and press Enter", i
   };
 
   return (
-    <div className="flex flex-wrap gap-1.5 p-2 bg-zinc-700 border border-zinc-600 rounded-xl min-h-[44px] focus-within:border-zinc-400 transition-colors">
+    <div
+      className="flex flex-wrap gap-1.5 p-2 rounded-xl min-h-[44px] transition-colors focus-within:outline-none"
+      style={{
+        backgroundColor: "var(--bg-elevated)",
+        border: "1px solid var(--border)",
+      }}
+      onFocus={e => e.currentTarget.style.borderColor = "var(--accent)"}
+      onBlur={e => e.currentTarget.style.borderColor = "var(--border)"}
+    >
       {tags.map((tag, i) => (
         <span
           key={i}
-          className="flex items-center gap-1 px-2 py-0.5 bg-zinc-600 text-white text-xs rounded-lg"
+          className="flex items-center gap-1 px-2 py-0.5 text-xs rounded-lg"
+          style={{
+            backgroundColor: "var(--accent-light)",
+            color: "var(--accent)",
+            border: "1px solid var(--accent)",
+          }}
         >
           {tag}
           <button
             type="button"
             onClick={() => removeTag(i)}
             aria-label={`Remove ${tag}`}
-            className="text-zinc-400 hover:text-white transition-colors"
+            className="transition-colors min-h-0"
+            style={{ color: "var(--accent)" }}
+            onMouseEnter={e => e.currentTarget.style.color = "var(--error)"}
+            onMouseLeave={e => e.currentTarget.style.color = "var(--accent)"}
           >
             <X size={11} strokeWidth={2.5} />
           </button>
@@ -60,7 +76,8 @@ const TagInput = ({ tags = [], onChange, placeholder = "Type and press Enter", i
         onKeyDown={handleKey}
         onBlur={() => { if (inputVal.trim()) { addTag(inputVal); setInputVal(""); } }}
         placeholder={tags.length === 0 ? placeholder : ""}
-        className="flex-1 min-w-[120px] bg-transparent text-white text-sm outline-none placeholder:text-zinc-500"
+        className="flex-1 min-w-[120px] bg-transparent text-sm outline-none"
+        style={{ color: "var(--text-primary)" }}
       />
     </div>
   );
