@@ -225,7 +225,7 @@ const FeedPage = () => {
     ">
 
       {/* ── Main feed column ───────────────────────────────────────────────── */}
-      <div className="min-w-0">
+      <div className="min-w-0 animate-fade-in">
 
         {/* ── Content wrapper — max-w-xl centered on sm+, full width on mobile ─ */}
         <div className="
@@ -283,10 +283,10 @@ const FeedPage = () => {
                     <Search size={22} style={{ color: "var(--text-muted)" }} />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+                    <p className="text-sm font-bold font-display" style={{ color: "var(--text-primary)" }}>
                       No posts found for &ldquo;{searchQuery}&rdquo;
                     </p>
-                    <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
+                    <p className="text-xs font-normal mt-1" style={{ color: "var(--text-secondary)" }}>
                       Try a different keyword
                     </p>
                   </div>
@@ -297,7 +297,7 @@ const FeedPage = () => {
               {!searchLoading && displayedSearchResults.length > 0 && (
                 <>
                   {/* Result count */}
-                  <p className="text-xs pl-1" style={{ color: "var(--text-secondary)" }}>
+                  <p className="text-xs font-normal pl-1" style={{ color: "var(--text-secondary)" }}>
                     {displayedSearchResults.length} result{displayedSearchResults.length !== 1 ? "s" : ""} for &ldquo;
                     <span style={{ color: "var(--text-primary)" }}>{searchQuery}</span>&rdquo;
                   </p>
@@ -361,10 +361,10 @@ const FeedPage = () => {
                   >
                     <Newspaper size={28} style={{ color: "var(--text-secondary)" }} />
                   </div>
-                  <p className="text-base font-semibold" style={{ color: "var(--text-primary)" }}>
+                  <p className="text-base font-bold font-display" style={{ color: "var(--text-primary)" }}>
                     {selectedTag ? `No ${selectedTag} posts yet` : "No posts yet"}
                   </p>
-                  <p className="text-sm max-w-[240px] leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+                  <p className="text-sm font-normal max-w-[240px] leading-relaxed" style={{ color: "var(--text-secondary)" }}>
                     {selectedTag ? "Try a different filter or be the first to post!" : "Be the first to post something!"}
                   </p>
                 </div>
@@ -401,7 +401,7 @@ const FeedPage = () => {
                       disabled={loadingMore}
                       className="
                         w-full py-3 rounded-2xl
-                        text-sm font-semibold
+                        text-sm font-bold
                         transition-all duration-150
                         active:scale-95
                         disabled:opacity-60 disabled:cursor-not-allowed disabled:scale-100

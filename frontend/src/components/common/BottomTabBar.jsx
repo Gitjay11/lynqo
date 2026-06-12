@@ -25,8 +25,9 @@ const BottomTabBar = () => {
   const tabClass = ({ isActive }) => `
     flex flex-col items-center justify-center gap-0.5
     flex-1 h-full
-    text-[10px] font-semibold tracking-wide
-    transition-colors duration-150 select-none
+    text-[9px] font-semibold tracking-wider font-sans
+    transition-all duration-100 select-none
+    active:scale-90
     focus:outline-none
     ${isActive
       ? "-mt-px"   /* border-top offset handled via inline style */

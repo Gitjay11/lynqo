@@ -1,14 +1,15 @@
 /**
- * OnlineDot.jsx — Real-Time Online Presence Indicator (Theme-Aware)
+ * OnlineDot.jsx — Real-Time Online Presence Indicator (Redesigned)
  *
- * The ring matches the card surface via var(--bg-surface) so it blends
- * correctly in both light (Warm Cream) and dark (Warm Black) themes.
- * Stays bg-emerald-500 (green dot is universally understood = online).
+ * Supports two usage patterns:
+ *  1. Pass `userId` → internally checks onlineUsers Set from SocketContext
+ *  2. Pass `isOnline` boolean → skips internal lookup (use when caller already knows)
  *
  * Props:
- *  userId    {string}  — MongoDB ObjectId to check against onlineUsers Set
- *  size      {string}  — 'sm' (8px) | 'md' (10px, default) | 'lg' (14px)
- *  className {string}  — extra Tailwind classes for positioning
+ *  userId   {string}  — MongoDB ObjectId to check against onlineUsers Set
+ *  isOnline {boolean} — override: if provided, bypasses socket lookup
+ *  size     {string}  — 'sm' (8px) | 'md' (10px, default)
+ *  className{string}  — extra Tailwind classes for absolute positioning
  */
 
 import { useSocket } from "../../hooks/useSocket.js";
@@ -16,14 +17,19 @@ import { useSocket } from "../../hooks/useSocket.js";
 const SIZE_MAP = {
   sm: "w-2 h-2",
   md: "w-2.5 h-2.5",
-  lg: "w-3.5 h-3.5",
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-const OnlineDot = ({ userId, size = "md", className = "" }) => {
+const OnlineDot = ({ userId, isOnline, size = "md", className = "" }) => {
   const { onlineUsers } = useSocket();
 
-  if (!userId || !onlineUsers.has(userId)) return null;
+  // Prefer explicit `isOnline` prop; fall back to socket context lookup
+  const online =
+    isOnline !== undefined
+      ? isOnline
+      : Boolean(userId && onlineUsers.has(String(userId)));
+
+  if (!online) return null;
 
   const sizeClass = SIZE_MAP[size] ?? SIZE_MAP.md;
 
@@ -31,15 +37,10 @@ const OnlineDot = ({ userId, size = "md", className = "" }) => {
     <span
       aria-label="Online"
       title="Online"
-      className={`
-        inline-block ${sizeClass} rounded-full
-        bg-emerald-500
-        animate-pulse
-        ${className}
-      `}
+      className={`inline-block ${sizeClass} rounded-full bg-green-500 ${className}`}
       style={{
-        /* Ring matches the card surface — adapts to both light and dark themes */
-        boxShadow: "0 0 0 2px var(--bg-surface)",
+        /* Ring colour matches the card/page surface — adapts to light + dark themes */
+        border: "2px solid var(--bg-primary)",
       }}
     />
   );

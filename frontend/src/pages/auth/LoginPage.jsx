@@ -29,6 +29,12 @@ const LoginPage = () => {
   const [errors, setErrors]     = useState(INITIAL_ERRORS);
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading]   = useState(false);
+  const [shaking, setShaking]   = useState(false);
+
+  const shake = () => {
+    setShaking(true);
+    setTimeout(() => setShaking(false), 400);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -62,7 +68,7 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate()) { shake(); return; }
     setLoading(true);
     try {
       const { data } = await api.post("/auth/login", {
@@ -85,7 +91,9 @@ const LoginPage = () => {
       style={{ backgroundColor: "var(--bg-primary)" }}
     >
       <div
-        className="w-full sm:max-w-md sm:mx-auto sm:rounded-2xl sm:shadow-lg sm:p-8 md:p-10"
+        className={`w-full sm:max-w-md sm:mx-auto sm:rounded-2xl sm:shadow-lg sm:p-8 md:p-10 animate-fade-in ${
+          shaking ? "animate-shake" : ""
+        }`}
         style={{
           "--sm-bg":     "var(--bg-surface)",
           "--sm-border": "1px solid var(--border)",
@@ -104,8 +112,8 @@ const LoginPage = () => {
             >
               <span className="text-white text-xl font-bold tracking-tight">L</span>
             </div>
-            <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>Welcome back</h1>
-            <p className="mt-1 text-sm" style={{ color: "var(--text-secondary)" }}>Log in to your Lynqo account</p>
+            <h1 className="text-2xl font-bold font-display tracking-snug" style={{ color: "var(--text-primary)" }}>Welcome back</h1>
+            <p className="mt-1 text-sm font-normal" style={{ color: "var(--text-secondary)" }}>Log in to your Lynqo account</p>
           </div>
 
           {/* ── Form ─────────────────────────────────────────────────────────── */}
@@ -113,7 +121,7 @@ const LoginPage = () => {
 
             {/* Email */}
             <div>
-              <label htmlFor="login-email" className="block text-sm font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>
+              <label htmlFor="login-email" className="block text-sm font-semibold mb-1.5" style={{ color: "var(--text-secondary)" }}>
                 College Email
               </label>
               <input
@@ -135,7 +143,7 @@ const LoginPage = () => {
 
             {/* Password */}
             <div>
-              <label htmlFor="login-password" className="block text-sm font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>
+              <label htmlFor="login-password" className="block text-sm font-semibold mb-1.5" style={{ color: "var(--text-secondary)" }}>
                 Password
               </label>
               <div className="relative">
@@ -171,7 +179,7 @@ const LoginPage = () => {
               id="login-submit"
               type="submit"
               disabled={loading}
-              className="btn-primary w-full h-12 mt-2 rounded-xl text-base font-semibold
+              className="btn-primary w-full h-12 mt-2 rounded-xl text-base font-bold tracking-wide
                          disabled:opacity-60 disabled:cursor-not-allowed
                          flex items-center justify-center gap-2"
             >
@@ -190,7 +198,7 @@ const LoginPage = () => {
             <Link
               to="/signup"
               id="login-signup-link"
-              className="font-semibold underline-offset-2 hover:underline transition-colors min-h-[44px] inline-flex items-center"
+              className="font-bold underline-offset-2 hover:underline transition-colors min-h-[44px] inline-flex items-center"
               style={{ color: "var(--accent)" }}
             >
               Sign up

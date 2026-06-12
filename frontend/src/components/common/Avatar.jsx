@@ -48,7 +48,7 @@ const Avatar = ({
 
   // Hover ring classes — only applied when onClick is provided
   const interactiveClasses = onClick
-    ? "cursor-pointer hover:ring-2 hover:ring-[#e8643a] hover:ring-offset-2 transition-all duration-150"
+    ? "cursor-pointer hover:scale-105 hover:ring-2 hover:ring-[#e8643a] hover:ring-offset-2 transition-all duration-150"
     : "";
 
   const base = `

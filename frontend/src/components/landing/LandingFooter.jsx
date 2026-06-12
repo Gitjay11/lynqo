@@ -32,15 +32,15 @@ const LandingFooter = () => {
 
         {/* ── Wordmark ─────────────────────────────────────────────────────── */}
         <p
-          className="text-xl font-black"
-          style={{ color: "#f5f0e8", letterSpacing: "-0.03em" }}
+          className="text-xl font-black font-display"
+          style={{ color: "#f5f0e8", letterSpacing: "-0.035em" }}
         >
           Lynq<span style={{ color: "#e8643a" }}>o</span>
         </p>
 
         {/* ── Tagline ──────────────────────────────────────────────────────── */}
         <p
-          className="text-xs mt-1 mb-6"
+          className="text-xs font-normal mt-1 mb-6"
           style={{ color: "rgba(245,240,232,0.3)" }}
         >
           Made for you. Built with love.
@@ -51,7 +51,7 @@ const LandingFooter = () => {
           {LINKS.map(({ label }) => (
             <button
               key={label}
-              className="text-xs transition-colors duration-150 cursor-pointer min-h-0"
+              className="text-xs font-medium transition-colors duration-150 cursor-pointer min-h-0"
               style={{ color: "rgba(245,240,232,0.3)" }}
               onMouseEnter={e =>
                 (e.currentTarget.style.color = "rgba(245,240,232,0.6)")
@@ -66,7 +66,7 @@ const LandingFooter = () => {
         </div>
 
         {/* ── Copyright ────────────────────────────────────────────────────── */}
-        <p className="text-xs" style={{ color: "rgba(245,240,232,0.2)" }}>
+        <p className="text-xs font-normal" style={{ color: "rgba(245,240,232,0.2)" }}>
           © 2026 Lynqo. Made for college students.
         </p>
 

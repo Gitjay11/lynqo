@@ -116,6 +116,7 @@ const NotificationPanel = ({ onClose }) => {
         overflow-hidden
         flex flex-col
         z-50
+        animate-slide-up
       "
     >
       {/* ── Header ─────────────────────────────────────────────────────────── */}

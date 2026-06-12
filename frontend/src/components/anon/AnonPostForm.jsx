@@ -1,17 +1,20 @@
 /**
- * AnonPostForm.jsx — Anonymous Post Composer (Themed)
+ * AnonPostForm.jsx — Anonymous Post Composer (Redesigned)
  *
- * bg-bg-surface card, transparent textarea.
- * PRIVACY: does not show any author attribution.
+ * Visual redesign: accent gradient top line, ghost emoji avatar, ShieldCheck
+ * disclaimer, ImagePlus attach button, 3-tier character counter.
+ *
+ * All API calls preserved exactly:
+ *   POST /api/anon   — multipart/form-data with content + optional image
  */
 
 import { useState, useRef } from "react";
-import { Ghost, Image, X, Loader2 } from "lucide-react";
+import { ImagePlus, X, Loader2, ShieldCheck } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "../../api/axios.js";
 
 const MAX_CHARS       = 500;
-const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const MAX_IMAGE_BYTES = 2 * 1024 * 1024; // 2 MB
 
 // ─────────────────────────────────────────────────────────────────────────────
 const AnonPostForm = ({ onPost }) => {
@@ -19,17 +22,25 @@ const AnonPostForm = ({ onPost }) => {
   const [imageFile,    setImageFile]    = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [loading,      setLoading]      = useState(false);
-  const fileInputRef = useRef(null);
 
-  const remaining = MAX_CHARS - content.length;
+  const fileInputRef = useRef(null);
+  const textareaRef  = useRef(null);
+
+  const charCount = content.length;
   const canPost   = content.trim().length > 0 && !loading;
+
+  // ── Character counter colour thresholds ────────────────────────────────────
+  const counterColor =
+    charCount > 480 ? "text-red-500"   :
+    charCount > 400 ? "text-amber-500" :
+    "";
 
   // ── Image selection ───────────────────────────────────────────────────────
   const handleImageSelect = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) { toast.error("Only image files are allowed."); return; }
-    if (file.size > MAX_IMAGE_BYTES)     { toast.error("Image must be under 5 MB.");     return; }
+    if (file.size > MAX_IMAGE_BYTES)     { toast.error("Image must be under 2 MB.");     return; }
     if (imagePreview) URL.revokeObjectURL(imagePreview);
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
@@ -42,7 +53,15 @@ const AnonPostForm = ({ onPost }) => {
     setImagePreview(null);
   };
 
-  // ── Submit ────────────────────────────────────────────────────────────────
+  // ── Auto-resize textarea ──────────────────────────────────────────────────
+  const handleContentChange = (e) => {
+    setContent(e.target.value.slice(0, MAX_CHARS));
+    const ta = e.target;
+    ta.style.height = "auto";
+    ta.style.height = `${Math.min(ta.scrollHeight, 160)}px`;
+  };
+
+  // ── Submit: POST /api/anon ────────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!canPost) return;
@@ -56,10 +75,14 @@ const AnonPostForm = ({ onPost }) => {
       const { data } = await api.post("/anon", fd, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      toast.success("Posted anonymously!");
+
+      toast.success("Posted anonymously 👻");
       onPost?.(data.post, "anon");
+
+      // Reset form
       setContent("");
       removeImage();
+      if (textareaRef.current) textareaRef.current.style.height = "auto";
     } catch (err) {
       toast.error(err.response?.data?.message ?? "Failed to post");
     } finally {
@@ -70,89 +93,110 @@ const AnonPostForm = ({ onPost }) => {
   // ─────────────────────────────────────────────────────────────────────────
   return (
     <div
+      className="relative overflow-hidden rounded-2xl transition-colors duration-200"
       style={{
         backgroundColor: "var(--bg-surface)",
         border:          "1px solid var(--border)",
       }}
-      className="md:rounded-2xl md:shadow-sm"
     >
-      <form onSubmit={handleSubmit} className="p-4">
+      {/* ── Accent gradient top line ──────────────────────────────────────── */}
+      <div
+        className="absolute top-0 left-0 right-0 h-[2px] pointer-events-none"
+        style={{
+          background: "linear-gradient(90deg, var(--accent), #f5a623, var(--accent))",
+          opacity:    0.5,
+        }}
+        aria-hidden="true"
+      />
 
-        {/* ── Top row: ghost + textarea ─────────────────────────────────────── */}
-        <div className="flex items-start gap-3">
-          {/* Ghost icon */}
+      <form onSubmit={handleSubmit} className="p-4 pt-5">
+
+        {/* ── Top row: ghost avatar + textarea ─────────────────────────────── */}
+        <div className="flex gap-3 items-start mb-3">
+
+          {/* Ghost avatar */}
           <div
-            className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full mt-0.5"
-            style={{ backgroundColor: "var(--bg-elevated)", color: "var(--text-muted)" }}
+            className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+            style={{
+              backgroundColor: "var(--accent-light)",
+              border:          "1px solid var(--accent-border)",
+            }}
+            aria-hidden="true"
           >
-            <Ghost size={16} />
+            <span className="text-lg leading-none select-none">👻</span>
           </div>
 
-          {/* Textarea + preview */}
-          <div className="flex-1 min-w-0">
-            <textarea
-              id="anon-content-textarea"
-              value={content}
-              onChange={(e) => setContent(e.target.value.slice(0, MAX_CHARS))}
-              placeholder="What's on your mind? Your identity stays hidden."
-              rows={3}
-              style={{ color: "var(--text-primary)" }}
-              className="
-                w-full px-0 py-1
-                bg-transparent border-none outline-none resize-none leading-relaxed
-                text-sm
-              "
-            />
-
-            {/* Image preview */}
-            {imagePreview && (
-              <div className="relative mt-2 inline-block">
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="max-h-40 rounded-xl object-cover"
-                  style={{ border: "1px solid var(--border)" }}
-                />
-                <button
-                  type="button"
-                  onClick={removeImage}
-                  aria-label="Remove image"
-                  style={{
-                    backgroundColor: "var(--bg-elevated)",
-                    border:          "1px solid var(--border)",
-                    color:           "var(--text-secondary)",
-                  }}
-                  className="
-                    absolute -top-2 -right-2
-                    w-6 h-6 rounded-full
-                    flex items-center justify-center
-                    transition-colors min-h-0
-                  "
-                >
-                  <X size={12} strokeWidth={2.5} />
-                </button>
-              </div>
-            )}
-
-            {/* Char counter */}
-            <div className="flex justify-end mt-1">
-              <span
-                className={`text-xs tabular-nums font-medium ${
-                  remaining <= 20 ? "text-red-500" : remaining <= 100 ? "text-amber-500" : ""
-                }`}
-                style={remaining > 100 ? { color: "var(--text-muted)" } : {}}
-              >
-                {content.length}/{MAX_CHARS}
-              </span>
-            </div>
-          </div>
+          {/* Textarea */}
+          <textarea
+            ref={textareaRef}
+            id="anon-content-textarea"
+            value={content}
+            onChange={handleContentChange}
+            placeholder="What's on your mind? Say it anonymously..."
+            rows={2}
+            className="flex-1 bg-transparent resize-none outline-none text-sm font-sans font-normal leading-relaxed"
+            style={{
+              color:     "var(--text-primary)",
+              minHeight: "52px",
+              maxHeight: "160px",
+            }}
+          />
         </div>
 
-        <hr className="mt-3" style={{ borderColor: "var(--border)" }} />
+        {/* ── Image preview ─────────────────────────────────────────────────── */}
+        {imagePreview && (
+          <div
+            className="relative w-full rounded-xl overflow-hidden mt-1 mb-3"
+            style={{
+              aspectRatio: "16 / 9",
+              border:      "1px solid var(--border)",
+            }}
+          >
+            <img
+              src={imagePreview}
+              alt="Image preview"
+              className="w-full h-full object-cover"
+            />
+            <button
+              type="button"
+              onClick={removeImage}
+              aria-label="Remove image"
+              className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/50 text-white
+                         flex items-center justify-center hover:bg-black/70
+                         transition-colors min-h-0 cursor-pointer"
+            >
+              <X size={13} />
+            </button>
+          </div>
+        )}
 
-        {/* ── Bottom toolbar ────────────────────────────────────────────────── */}
-        <div className="flex items-center gap-2 mt-3">
-          {/* Image attach */}
+        {/* ── Disclaimer banner ─────────────────────────────────────────────── */}
+        <div
+          className="flex items-start gap-2 rounded-xl px-3 py-2.5 mt-2"
+          style={{
+            backgroundColor: "var(--accent-light)",
+            border:          "1px solid var(--accent-border)",
+          }}
+        >
+          <ShieldCheck
+            size={14}
+            className="flex-shrink-0 mt-0.5"
+            style={{ color: "var(--accent)" }}
+          />
+          <p
+            className="text-xs font-normal leading-relaxed"
+            style={{ color: "var(--accent)" }}
+          >
+            Your identity is completely hidden. No one can see who posted this — ever.
+          </p>
+        </div>
+
+        {/* ── Bottom action row ─────────────────────────────────────────────── */}
+        <div
+          className="flex items-center gap-2 mt-3 pt-3"
+          style={{ borderTop: "1px solid var(--border)" }}
+        >
+          {/* Hidden file input */}
           <input
             ref={fileInputRef}
             type="file"
@@ -161,35 +205,62 @@ const AnonPostForm = ({ onPost }) => {
             onChange={handleImageSelect}
             aria-hidden="true"
           />
+
+          {/* Attach image button */}
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
             aria-label="Attach image"
-            style={{ color: "var(--text-secondary)" }}
-            className="p-2 rounded-xl min-h-0 hover:bg-bg-elevated transition-colors duration-150 focus:outline-none focus:ring-2"
+            className="w-8 h-8 rounded-lg flex items-center justify-center
+                       transition-colors cursor-pointer min-h-0"
+            style={{
+              backgroundColor: "var(--bg-elevated)",
+              border:          "1px solid var(--border)",
+              color:           "var(--text-secondary)",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "var(--accent)";
+              e.currentTarget.style.color       = "var(--accent)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "var(--border)";
+              e.currentTarget.style.color       = "var(--text-secondary)";
+            }}
           >
-            <Image size={18} />
+            <ImagePlus size={15} />
           </button>
 
-          {/* Ghost note */}
-          <p className="text-xs ml-1 select-none" style={{ color: "var(--text-muted)" }}>
-            👻 Your identity stays hidden
-          </p>
+          {/* Character counter */}
+          <span
+            className={`text-[10px] ml-auto tabular-nums font-medium ${counterColor}`}
+            style={!counterColor ? { color: "var(--text-muted)" } : {}}
+          >
+            {charCount}/500
+          </span>
 
-          <div className="flex-1" />
-
+          {/* Post Anonymously button */}
           <button
             type="submit"
             disabled={!canPost}
-            className="btn-primary px-5 py-2 text-sm min-h-[40px]"
+            className="text-white text-xs font-bold tracking-wide px-4 py-2 rounded-lg
+                       active:scale-95 transition-all duration-150
+                       disabled:opacity-40 disabled:cursor-not-allowed min-h-0"
+            style={{ backgroundColor: "var(--accent)" }}
+            onMouseEnter={(e) => {
+              if (canPost) e.currentTarget.style.backgroundColor = "var(--accent-hover)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "var(--accent)";
+            }}
           >
-            {loading
-              ? <span className="flex items-center gap-2">
-                  <Loader2 size={14} className="animate-spin" />
-                  Posting…
-                </span>
-              : "Post"
-            }
+            {loading ? (
+              <span className="flex items-center gap-1.5">
+                <Loader2 size={12} className="animate-spin" />
+                Posting…
+              </span>
+            ) : (
+              "Post Anonymously"
+            )}
           </button>
         </div>
       </form>

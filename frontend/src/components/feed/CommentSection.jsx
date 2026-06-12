@@ -64,12 +64,12 @@ const CommentRow = ({ comment, currentUser, onDelete }) => {
           <span className="text-xs font-bold leading-none" style={{ color: "var(--text-primary)" }}>
             {comment.author?.name ?? "Unknown"}
           </span>
-          <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+          <span className="text-[10px] font-normal tabular-nums" style={{ color: "var(--text-muted)" }}>
             {relTime(comment.createdAt)}
           </span>
         </div>
         {/* Comment text */}
-        <p className="text-xs leading-relaxed mt-0.5 break-words whitespace-pre-wrap" style={{ color: "var(--text-primary)" }}>
+        <p className="text-xs leading-[1.65] mt-0.5 break-words whitespace-pre-wrap" style={{ color: "var(--text-primary)" }}>
           {comment.text}
         </p>
       </div>
@@ -189,6 +189,7 @@ const CommentSection = ({ postId, initialComments = [], currentUser }) => {
             min-h-0 h-8
           "
           style={{
+            fontFamily: "var(--font-body)",
             backgroundColor: "var(--bg-elevated)",
             border:          text ? "1px solid var(--accent)" : "1px solid var(--border)",
             color:           "var(--text-primary)",

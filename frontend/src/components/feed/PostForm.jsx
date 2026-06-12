@@ -179,7 +179,7 @@ const PostForm = ({ currentUser, onPost }) => {
               className="
                 w-full px-0 py-1
                 bg-transparent border-none outline-none resize-none
-                text-sm leading-relaxed
+                text-sm font-sans font-normal leading-relaxed
                 placeholder:text-[color:var(--text-muted)]
               "
             />
@@ -314,7 +314,7 @@ const PostForm = ({ currentUser, onPost }) => {
                       setTagOpen(false);
                     }}
                     className="
-                      w-full flex items-center gap-2 px-3 py-2.5 text-xs
+                      w-full flex items-center gap-2 px-3 py-2.5 text-xs font-medium
                       transition-colors duration-100 text-left min-h-0
                     "
                     style={{
@@ -338,7 +338,7 @@ const PostForm = ({ currentUser, onPost }) => {
           {/* Selected tag pill */}
           {selectedTag && (
             <span
-              className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full"
+              className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full"
               style={{
                 backgroundColor: "var(--accent-light)",
                 border:          "1px solid var(--accent-border)",
@@ -369,7 +369,7 @@ const PostForm = ({ currentUser, onPost }) => {
               style={{ color: "var(--text-secondary)" }}
               aria-label="Post anonymously"
             >
-              <span className="text-xs font-medium">Anon</span>
+              <span className="text-xs font-semibold">Anon</span>
               {/* Toggle pill */}
               <button
                 type="button"
@@ -397,7 +397,7 @@ const PostForm = ({ currentUser, onPost }) => {
 
             {/* Character counter */}
             <span
-              className="text-xs tabular-nums font-medium"
+              className="text-[10px] tabular-nums font-medium"
               style={charCountStyle()}
             >
               {content.length}/{MAX_CHARS}
@@ -409,7 +409,7 @@ const PostForm = ({ currentUser, onPost }) => {
               id="post-submit-btn"
               disabled={!canPost}
               className="
-                text-white text-xs font-bold px-4 py-2 rounded-lg
+                text-white text-xs font-bold tracking-wide px-4 py-2 rounded-lg
                 transition-all duration-150
                 active:scale-95
                 disabled:opacity-40 disabled:cursor-not-allowed disabled:scale-100

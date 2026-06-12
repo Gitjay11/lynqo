@@ -99,6 +99,9 @@ const PostCard = ({ post, currentUser, onDelete }) => {
   );
   const [dislikingInFlight, setDislikingInFlight] = useState(false);
 
+  // ── Like animation state ──────────────────────────────────────────
+  const [likeAnimating, setLikeAnimating] = useState(false);
+
   // ── Comment toggle ────────────────────────────────────────────────────────
   const [showComments, setShowComments] = useState(false);
 
@@ -114,6 +117,11 @@ const PostCard = ({ post, currentUser, onDelete }) => {
   // ── Toggle Like ───────────────────────────────────────────────────────────
   const handleLike = useCallback(async () => {
     if (likingInFlight) return;
+    // ─ Heart pop animation fires only when toggling ON (not off)
+    if (!isLiked) {
+      setLikeAnimating(true);
+      setTimeout(() => setLikeAnimating(false), 300);
+    }
     const prevLiked    = isLiked;
     const prevCount    = likeCount;
     const prevDisliked = isDisliked;
@@ -262,12 +270,12 @@ const PostCard = ({ post, currentUser, onDelete }) => {
         <div className="flex-1 min-w-0">
           <button
             onClick={() => navigate(`/profile/${post.author?._id}`)}
-            className="text-sm font-bold transition-colors leading-none min-h-0"
+            className="text-sm font-bold font-display tracking-snug transition-colors leading-none min-h-0"
             style={{ color: "var(--text-primary)" }}
           >
             {post.author?.name ?? "Unknown"}
           </button>
-          <p className="text-xs leading-tight mt-1" style={{ color: "var(--text-secondary)" }}>
+          <p className="text-xs font-medium leading-tight mt-1" style={{ color: "var(--text-secondary)" }}>
             {post.author?.branch && `${post.author.branch}`}
             {post.author?.branch && post.author?.semester && " · "}
             {post.author?.semester && `Sem ${post.author.semester}`}
@@ -275,7 +283,7 @@ const PostCard = ({ post, currentUser, onDelete }) => {
         </div>
 
         {/* Timestamp */}
-        <span className="text-xs flex-shrink-0" style={{ color: "var(--text-muted)" }}>
+        <span className="text-[10px] tabular-nums flex-shrink-0" style={{ color: "var(--text-muted)" }}>
           {relTime(post.createdAt)}
         </span>
 
@@ -324,7 +332,7 @@ const PostCard = ({ post, currentUser, onDelete }) => {
       {post.tag && TAG_META[post.tag] && (
         <div className="px-4 pb-2">
           <span
-            className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full"
+            className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full"
             style={{
               backgroundColor: "var(--accent-light)",
               border:          "1px solid var(--accent-border)",
@@ -339,7 +347,7 @@ const PostCard = ({ post, currentUser, onDelete }) => {
       {/* ── Post content ──────────────────────────────────────────────────── */}
       <div className="px-4 pb-3">
         <p
-          className={`text-sm leading-relaxed whitespace-pre-wrap break-words ${
+          className={`text-sm leading-[1.65] whitespace-pre-wrap break-words ${
             isLong && !expanded ? "line-clamp-4" : ""
           }`}
           style={{ color: "var(--text-primary)" }}
@@ -395,7 +403,7 @@ const PostCard = ({ post, currentUser, onDelete }) => {
             size={16}
             strokeWidth={isLiked ? 0 : 2}
             fill={isLiked ? "var(--accent)" : "none"}
-            className="flex-shrink-0"
+            className={`flex-shrink-0 ${likeAnimating ? "animate-heart-pop" : ""}`}
           />
           {likeCount > 0 && <span className="tabular-nums">{likeCount}</span>}
         </ActionBtn>

@@ -94,6 +94,7 @@ const LandingTopBar = () => (
             text-sm font-bold text-white
             px-4 py-2 rounded-lg
             transition-all duration-150
+            hover:shadow-md active:scale-95
             focus:outline-none
           "
           style={{ backgroundColor: "#e8643a" }}
@@ -204,7 +205,7 @@ const FinalCTASection = () => (
 // ─────────────────────────────────────────────────────────────────────────────
 const LandingPage = () => (
   <div
-    className="min-h-screen"
+    className="min-h-screen animate-fade-in"
     style={{
       backgroundColor: "var(--bg-primary)",
       fontFamily: "'Inter', sans-serif",

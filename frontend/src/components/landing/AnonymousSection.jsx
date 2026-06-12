@@ -16,7 +16,7 @@ import { Link } from "react-router-dom";
 // ── Checkpoint row ────────────────────────────────────────────────────────────
 const Checkpoint = ({ text }) => (
   <div
-    className="flex items-center gap-3 text-sm"
+    className="flex items-center gap-3 text-sm font-normal"
     style={{ color: "rgba(245,240,232,0.7)" }}
   >
     <Check
@@ -47,7 +47,7 @@ const AnonCard = ({ content, likes, time }) => (
         👻
       </div>
       <span
-        className="text-xs"
+        className="text-xs font-semibold"
         style={{ color: "rgba(245,240,232,0.5)" }}
       >
         Anonymous
@@ -72,7 +72,7 @@ const AnonCard = ({ content, likes, time }) => (
     <div className="flex items-center gap-4">
       <button className="flex items-center gap-1.5 min-h-0" aria-label="Like">
         <Heart size={14} fill="#e8643a" style={{ color: "#e8643a" }} />
-        <span className="text-xs" style={{ color: "#e8643a" }}>{likes}</span>
+        <span className="text-xs tabular-nums" style={{ color: "#e8643a" }}>{likes}</span>
       </button>
       <button className="flex items-center gap-1.5 min-h-0" aria-label="Dislike">
         <ThumbsDown size={14} style={{ color: "rgba(245,240,232,0.3)" }} />
@@ -95,7 +95,7 @@ const AnonymousSection = () => (
 
         {/* Badge */}
         <div
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
           style={{
             backgroundColor: "rgba(255,255,255,0.08)",
             border: "0.5px solid rgba(255,255,255,0.15)",
@@ -108,15 +108,15 @@ const AnonymousSection = () => (
 
         {/* Headline */}
         <h2
-          className="text-3xl md:text-4xl font-black mt-4 mb-3"
-          style={{ color: "#f5f0e8", letterSpacing: "-0.03em" }}
+          className="text-3xl md:text-4xl font-black font-display mt-4 mb-3"
+          style={{ color: "#f5f0e8", letterSpacing: "-0.035em" }}
         >
           Say it. Anonymously.
         </h2>
 
         {/* Description */}
         <p
-          className="text-sm leading-relaxed mb-6 max-w-sm"
+          className="text-sm font-normal leading-relaxed mb-6 max-w-sm"
           style={{ color: "rgba(245,240,232,0.6)" }}
         >
           The things you want to say but can't. Say them here. Your identity
@@ -136,7 +136,7 @@ const AnonymousSection = () => (
           id="anon-cta-signup"
           className="
             inline-flex items-center justify-center
-            text-sm font-bold text-white
+            text-sm font-bold tracking-wide text-white
             px-6 py-3 rounded-xl
             transition-all duration-150 active:scale-95
             focus:outline-none

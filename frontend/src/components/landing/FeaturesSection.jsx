@@ -40,20 +40,23 @@ const CARDS = [
 ];
 
 // ── Single feature card ───────────────────────────────────────────────────────
-const FeatureCard = ({ icon: Icon, title, description }) => (
+const FeatureCard = ({ icon: Icon, title, description, delay = 0 }) => (
   <div
-    className="rounded-2xl p-5 transition-all duration-200 cursor-default"
+    className="rounded-2xl p-5 transition-all duration-200 cursor-default animate-fade-in"
     style={{
       backgroundColor: "var(--bg-primary)",
       border: "1px solid var(--border)",
+      animationDelay: `${delay}s`,
     }}
     onMouseEnter={e => {
       e.currentTarget.style.borderColor = "#e8643a";
       e.currentTarget.style.boxShadow = "0 1px 4px rgba(232,100,58,0.08)";
+      e.currentTarget.style.transform = "translateY(-2px)";
     }}
     onMouseLeave={e => {
       e.currentTarget.style.borderColor = "var(--border)";
       e.currentTarget.style.boxShadow = "none";
+      e.currentTarget.style.transform = "translateY(0)";
     }}
   >
     {/* Icon container */}
@@ -66,7 +69,7 @@ const FeatureCard = ({ icon: Icon, title, description }) => (
 
     {/* Title */}
     <h3
-      className="text-sm font-bold mb-2"
+      className="text-sm font-bold font-display tracking-snug mb-2"
       style={{ color: "var(--text-primary)" }}
     >
       {title}
@@ -74,7 +77,7 @@ const FeatureCard = ({ icon: Icon, title, description }) => (
 
     {/* Description */}
     <p
-      className="text-xs leading-relaxed"
+      className="text-xs font-normal leading-relaxed"
       style={{ color: "var(--text-secondary)" }}
     >
       {description}
@@ -97,7 +100,7 @@ const FeaturesSection = () => (
 
       {/* ── Section label (pill badge) ────────────────────────────────────── */}
       <div
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
         style={{
           backgroundColor: "var(--accent-light)",
           border: "0.5px solid var(--accent-border)",
@@ -110,24 +113,24 @@ const FeaturesSection = () => (
 
       {/* ── Section title ─────────────────────────────────────────────────── */}
       <h2
-        className="text-3xl md:text-4xl font-black mt-3 mb-2"
-        style={{ color: "var(--text-primary)", letterSpacing: "-0.03em" }}
+        className="text-3xl md:text-4xl font-black font-display mt-3 mb-2"
+        style={{ color: "var(--text-primary)", letterSpacing: "-0.035em" }}
       >
         One platform. Endless connections.
       </h2>
 
       {/* ── Section subtitle ──────────────────────────────────────────────── */}
       <p
-        className="text-sm leading-relaxed mb-10 max-w-sm"
+        className="text-sm font-normal leading-relaxed mb-10 max-w-sm"
         style={{ color: "var(--text-secondary)" }}
       >
         Everything your campus needs in one place — no more scattered WhatsApp groups.
       </p>
 
-      {/* ── Cards grid ────────────────────────────────────────────────────── */}
+      {/* ── Cards grid ──────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {CARDS.map(card => (
-          <FeatureCard key={card.title} {...card} />
+        {CARDS.map((card, i) => (
+          <FeatureCard key={card.title} {...card} delay={i * 0.07} />
         ))}
       </div>
 

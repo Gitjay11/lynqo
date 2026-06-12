@@ -92,7 +92,7 @@ const FollowListModal = ({ isOpen, onClose, title, userId, type }) => {
     <>
       {/* ── Backdrop ───────────────────────────────────────────────────── */}
       <div
-        className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+        className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm animate-fade-in-fast"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -114,7 +114,7 @@ const FollowListModal = ({ isOpen, onClose, title, userId, type }) => {
             rounded-t-2xl
             flex flex-col
             max-h-[85vh]
-            animate-fade-in
+            animate-slide-up md:animate-scale-in
           "
           style={{
             backgroundColor: "var(--bg-surface)",
@@ -128,7 +128,7 @@ const FollowListModal = ({ isOpen, onClose, title, userId, type }) => {
             className="flex items-center justify-between px-5 py-4 flex-shrink-0"
             style={{ borderBottom: "1px solid var(--border)" }}
           >
-            <h2 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>
+            <h2 className="text-base font-bold font-display" style={{ color: "var(--text-primary)" }}>
               {title}
             </h2>
             <button
@@ -163,7 +163,7 @@ const FollowListModal = ({ isOpen, onClose, title, userId, type }) => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="
-                w-full px-4 py-2 rounded-xl text-sm
+                w-full px-4 py-2 rounded-xl text-sm font-normal
                 outline-none transition-colors duration-150
               "
               style={{
@@ -197,7 +197,7 @@ const FollowListModal = ({ isOpen, onClose, title, userId, type }) => {
             {!loading && !error && filtered.length === 0 && (
               <div className="flex flex-col items-center justify-center py-12 gap-3">
                 <Users size={32} style={{ color: "var(--text-muted)" }} />
-                <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                <p className="text-xs font-normal" style={{ color: "var(--text-muted)" }}>
                   {searchQuery.trim()
                     ? "No results found"
                     : type === "followers"
@@ -237,10 +237,10 @@ const FollowListModal = ({ isOpen, onClose, title, userId, type }) => {
 
                 {/* Name + meta */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold truncate" style={{ color: "var(--text-primary)" }}>
+                  <p className="text-sm font-bold font-display tracking-snug truncate" style={{ color: "var(--text-primary)" }}>
                     {person.name}
                   </p>
-                  <p className="text-xs truncate mt-0.5" style={{ color: "var(--text-secondary)" }}>
+                  <p className="text-xs font-normal truncate mt-0.5" style={{ color: "var(--text-secondary)" }}>
                     {[person.branch, person.semester && `Sem ${person.semester}`]
                       .filter(Boolean)
                       .join(" · ")}

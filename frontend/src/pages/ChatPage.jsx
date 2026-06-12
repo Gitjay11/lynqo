@@ -1,16 +1,15 @@
 /**
- * ChatPage.jsx — Chat Layout Orchestrator
+ * ChatPage.jsx — Chat Layout Orchestrator (Redesigned)
  *
  * Mobile (< lg):
  *  - /chat           → <ChatList /> fills available height
  *  - /chat/:convId   → <ChatWindow /> renders as fixed inset-0 z-50 h-[100dvh]
- *                       (covers Navbar + BottomTabBar; ChatWindow manages its own
- *                        header and input clearance via pb-16 on the input bar)
+ *                       (covers Navbar + BottomTabBar; animates in with slide-up)
  *
  * Desktop (lg+):
- *  - Two-panel side-by-side, always both visible
- *  - Left: ChatList (w-80, border-r)
- *  - Right: ChatWindow or empty-state placeholder
+ *  - Two-panel side-by-side: 320px ChatList | flex-1 ChatWindow
+ *  - Both panels always visible
+ *  - No bottom tab bar on desktop
  *
  * Why fixed + h-[100dvh] on mobile?
  *  AppLayout adds pt-14 + pb-16 to its <main>. If ChatWindow sits inside that
@@ -19,8 +18,8 @@
  *  chrome or BottomTabBar on short screens.
  *  By rendering the mobile ChatWindow as `fixed inset-0`, it escapes the
  *  padding context entirely and sticks to the true viewport edges.
- *  `h-[100dvh]` (dynamic viewport height) further prevents layout shifts
- *  caused by the browser URL bar appearing/disappearing on scroll.
+ *  `h-[100dvh]` (dynamic viewport height) prevents layout shifts caused by
+ *  the browser URL bar appearing/disappearing on scroll.
  */
 
 import { useParams, useNavigate } from "react-router-dom";
@@ -30,12 +29,28 @@ import ChatWindow                 from "../components/chat/ChatWindow.jsx";
 
 // ── Desktop right-panel empty state ──────────────────────────────────────────
 const NoConversationSelected = () => (
-  <div className="flex flex-col items-center justify-center h-full text-center px-8" style={{ backgroundColor: "var(--bg-primary)" }}>
-    <div className="w-20 h-20 rounded-full flex items-center justify-center mb-5" style={{ backgroundColor: "var(--bg-elevated)" }}>
-      <MessageCircle size={36} style={{ color: "var(--text-secondary)" }} />
+  <div
+    className="flex flex-col items-center justify-center h-full text-center px-8"
+    style={{ backgroundColor: "var(--bg-primary)" }}
+  >
+    {/* Icon container */}
+    <div
+      className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5"
+      style={{ backgroundColor: "var(--accent-light)" }}
+    >
+      <MessageCircle size={30} style={{ color: "var(--accent)" }} />
     </div>
-    <h2 className="font-semibold text-base mb-2" style={{ color: "var(--text-primary)" }}>Select a conversation</h2>
-    <p className="text-sm max-w-[200px]" style={{ color: "var(--text-secondary)" }}>
+
+    <h2
+      className="text-base font-bold mb-2"
+      style={{ color: "var(--text-primary)" }}
+    >
+      Select a conversation
+    </h2>
+    <p
+      className="text-sm max-w-[220px] leading-relaxed"
+      style={{ color: "var(--text-secondary)" }}
+    >
       Choose a thread on the left or search for a classmate to start chatting.
     </p>
   </div>
@@ -66,9 +81,9 @@ const ChatPage = () => {
         <ChatList onSelectConv={handleSelectConv} />
       </div>
 
-      {/* Mobile — ChatWindow (full-screen fixed overlay) */}
+      {/* Mobile — ChatWindow (full-screen fixed overlay, slides up on entry) */}
       {convId && (
-        <div className="lg:hidden fixed inset-0 z-50 h-[100dvh] flex flex-col">
+        <div className="lg:hidden fixed inset-0 z-50 h-[100dvh] flex flex-col animate-slide-up">
           <ChatWindow convId={convId} />
         </div>
       )}
@@ -85,7 +100,10 @@ const ChatPage = () => {
         "
       >
         {/* Left panel — conversation list */}
-        <div className="w-80 flex-shrink-0 h-full overflow-hidden" style={{ borderRight: "1px solid var(--border)" }}>
+        <div
+          className="w-80 flex-shrink-0 h-full overflow-hidden"
+          style={{ borderRight: "1px solid var(--border)" }}
+        >
           <ChatList onSelectConv={handleSelectConv} />
         </div>
 

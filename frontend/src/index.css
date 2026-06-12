@@ -5,8 +5,12 @@
    Theme switching via CSS variables + data-theme attribute on <html>
    ───────────────────────────────────────────────────────────────────────────── */
 
-/* Google Fonts — Inter */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+/* ── Font custom properties ─────────────────────────────────────────────────── */
+/* Loaded via <link> in index.html — no @import needed here. */
+:root {
+  --font-body:    'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+}
 
 /* Tailwind base layers */
 @tailwind base;
@@ -22,9 +26,10 @@
   --text-primary:  #2d2416;   /* Headings, names, main content */
   --text-secondary:#8a7a6a;   /* Meta info, timestamps, placeholders */
   --text-muted:    #b8a898;   /* Disabled, very subtle labels */
-  --accent:        #14b8a6;   /* Buttons, active tabs, liked state, links */
-  --accent-hover:  #0d9488;   /* Hover state on teal elements */
-  --accent-light:  #e8f8f6;   /* Teal tinted backgrounds, avatar bg */
+  --accent:        #e8643a;   /* Buttons, active tabs, liked state, links */
+  --accent-hover:  #d4572f;   /* Hover state on accent elements */
+  --accent-light:  #fde8e0;   /* Accent-tinted backgrounds, avatar bg */
+  --accent-border: #f5b8a0;   /* Accent-tinted border */
   --error:         #ef4444;   /* Error messages, delete actions */
   --success:       #10b981;   /* Online dot only */
 }
@@ -38,9 +43,10 @@
   --text-primary:  #f5f0e8;   /* Headings, names, main content */
   --text-secondary:#8a8278;   /* Meta info, timestamps */
   --text-muted:    #4a4640;   /* Disabled, very subtle labels */
-  --accent:        #14b8a6;   /* Buttons, active tabs, liked state, links */
-  --accent-hover:  #0d9488;   /* Hover state on teal elements */
-  --accent-light:  #1a2e2c;   /* Teal tinted backgrounds in dark mode */
+  --accent:        #e8643a;   /* Buttons, active tabs, liked state, links */
+  --accent-hover:  #d4572f;   /* Hover state on accent elements */
+  --accent-light:  #2e1a14;   /* Accent-tinted backgrounds in dark mode */
+  --accent-border: #5a2a1a;   /* Accent-tinted border in dark mode */
   --error:         #ef4444;   /* Error messages, delete actions */
   --success:       #10b981;   /* Online dot only */
 }
@@ -62,11 +68,43 @@
 
   body {
     /* Theme-aware background and text via CSS variables */
-    @apply font-sans antialiased;
+    font-family: var(--font-body);
+    @apply antialiased;
     background-color: var(--bg-primary);
     color: var(--text-primary);
     /* Prevent iOS tap highlight */
     -webkit-tap-highlight-color: transparent;
+    /* Sub-pixel rendering for sharp text */
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Tabular figures for numeric content globally */
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  /* Form elements should inherit the body font by default */
+  input, textarea, select, button {
+    font-family: inherit;
+  }
+
+  /* Headings use display font */
+  h1, h2, h3 {
+    font-family: var(--font-display);
+  }
+
+  /* iOS zoom prevention — inputs must be >= 16px on mobile */
+  @media screen and (max-width: 767px) {
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="search"],
+    input[type="number"],
+    input[type="date"],
+    input[type="file"],
+    select,
+    textarea {
+      font-size: 16px;
+    }
   }
 
   /* Enforce minimum touch target height on interactive elements */
@@ -91,10 +129,12 @@
   /* Primary button — accent bg, white text */
   .btn-primary {
     @apply inline-flex items-center justify-center min-h-[44px] px-5 py-2.5
-           text-white text-sm font-semibold rounded-xl
+           text-white text-sm font-bold rounded-xl
            transition-colors duration-200 ease-in-out
            focus:outline-none focus:ring-2 focus:ring-offset-2
            disabled:opacity-50 disabled:cursor-not-allowed;
+    font-family: var(--font-body);
+    letter-spacing: 0.01em;
     background-color: var(--accent);
     /* Skip the global 0.2s background transition so active:scale-95 works cleanly */
     transition: background-color 0.15s ease, transform 0.1s ease;
@@ -104,10 +144,12 @@
   /* Secondary / outline button */
   .btn-secondary {
     @apply inline-flex items-center justify-center min-h-[44px] px-5 py-2.5
-           text-sm font-medium rounded-xl
+           text-sm font-semibold rounded-xl
            transition-all duration-200 ease-in-out
            focus:outline-none focus:ring-2 focus:ring-offset-2
            disabled:opacity-50 disabled:cursor-not-allowed;
+    font-family: var(--font-body);
+    letter-spacing: 0.005em;
     border: 1px solid var(--border);
     color: var(--text-primary);
     background-color: transparent;
@@ -120,11 +162,17 @@
            rounded-xl text-sm
            focus:outline-none focus:ring-2
            transition duration-200;
+    font-family: var(--font-body);
+    font-weight: 400;
+    line-height: 1.5;
     border: 1px solid var(--border);
     background-color: var(--bg-elevated);
     color: var(--text-primary);
   }
-  .input-field::placeholder { color: var(--text-muted); }
+  .input-field::placeholder {
+    color: var(--text-muted);
+    font-weight: 400;
+  }
   .input-field:focus {
     border-color: var(--accent);
     --tw-ring-color: var(--accent);
@@ -138,8 +186,106 @@
   }
 }
 
+/* ── Reduced motion — disable all animations for users who prefer it ─────────── */
+/* This must come BEFORE animation definitions so it takes highest priority.      */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration:        0.01ms !important;
+    animation-iteration-count: 1      !important;
+    transition-duration:       0.01ms !important;
+  }
+}
+
 /* ── Typing indicator bounce animation ──────────────────────────────────────── */
+/* Used by ChatWindow's typing dots — inline animationDelay handles stagger.     */
 @keyframes typing-bounce {
   0%, 60%, 100% { transform: translateY(0);    opacity: 0.4; }
   30%            { transform: translateY(-6px); opacity: 1;   }
+}
+
+/* ── Float animation for landing page decorative shapes ─────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50%      { transform: translateY(-8px); }
+  }
+}
+
+/* ── Message / panel entry animations ───────────────────────────────────────── */
+/* These match the Tailwind animate-* utilities defined in tailwind.config.js.   */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+/* ── Custom utility classes ──────────────────────────────────────────────────── */
+@layer utilities {
+  /* Animate: fade in with subtle upward movement (messages, search results) */
+  .animate-fade-in {
+    animation: fade-in 0.18s ease-out both;
+  }
+
+  /* Animate: slide up from below (mobile ChatWindow entry) */
+  .animate-slide-up {
+    animation: slide-up 0.22s ease-out both;
+  }
+
+  /* Page entry transition class — apply to page root wrappers */
+  .page-enter {
+    animation: fade-in 0.2s ease-out;
+  }
+
+  /* Consistent focus ring utility */
+  .focus-ring {
+    outline:    none;
+    box-shadow: 0 0 0 2px var(--accent);
+  }
+
+  /* Floating decorative shape animations — landing page hero */
+  .float-slow   { animation: float 4.0s ease-in-out infinite; }
+  .float-medium { animation: float 3.0s ease-in-out infinite 1s; }
+  .float-fast   { animation: float 2.5s ease-in-out infinite 0.5s; }
+
+  /* Shimmer skeleton loader — replaces animate-pulse on loading placeholders */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--bg-elevated) 25%,
+      var(--bg-surface)  50%,
+      var(--bg-elevated) 75%
+    );
+    background-size: 200% 100%;
+    animation:       shimmer 1.5s infinite linear;
+    border-radius:   8px;
+  }
+
+  /* Hide scrollbar on all browsers (mobile lists) */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Thin, styled scrollbar (desktop message area) */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: var(--border);
+    border-radius: 99px;
+  }
 }

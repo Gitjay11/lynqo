@@ -32,6 +32,12 @@ const SignupPage = () => {
   const [errors, setErrors]     = useState(INITIAL_ERRORS);
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading]   = useState(false);
+  const [shaking, setShaking]   = useState(false);
+
+  const shake = () => {
+    setShaking(true);
+    setTimeout(() => setShaking(false), 400);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -63,7 +69,7 @@ const SignupPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate()) { shake(); return; }
     setLoading(true);
     try {
       const { data } = await api.post("/auth/register", {
@@ -89,7 +95,9 @@ const SignupPage = () => {
       style={{ backgroundColor: "var(--bg-primary)" }}
     >
       <div className="w-full sm:max-w-md sm:mx-auto">
-        <div className="sm:bg-bg-surface sm:border sm:border-app-border sm:rounded-2xl sm:shadow-lg sm:p-8 md:p-10 w-full">
+        <div className={`sm:bg-bg-surface sm:border sm:border-app-border sm:rounded-2xl sm:shadow-lg sm:p-8 md:p-10 w-full animate-fade-in ${
+          shaking ? "animate-shake" : ""
+        }`}>
 
           {/* ── Branding ───────────────────────────────────────────────────── */}
           <div className="text-center mb-8">
@@ -99,8 +107,8 @@ const SignupPage = () => {
             >
               <span className="text-white text-xl font-bold tracking-tight">L</span>
             </div>
-            <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>Create your account</h1>
-            <p className="mt-1 text-sm" style={{ color: "var(--text-secondary)" }}>Join your campus community on Lynqo</p>
+            <h1 className="text-2xl font-bold font-display tracking-snug" style={{ color: "var(--text-primary)" }}>Create your account</h1>
+            <p className="mt-1 text-sm font-normal" style={{ color: "var(--text-secondary)" }}>Join your campus community on Lynqo</p>
           </div>
 
           {/* ── Form ─────────────────────────────────────────────────────────── */}
@@ -108,7 +116,7 @@ const SignupPage = () => {
 
             {/* Full Name */}
             <div>
-              <label htmlFor="signup-name" className="block text-sm font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>
+              <label htmlFor="signup-name" className="block text-sm font-semibold mb-1.5" style={{ color: "var(--text-secondary)" }}>
                 Full Name
               </label>
               <input
@@ -122,7 +130,7 @@ const SignupPage = () => {
 
             {/* Email */}
             <div>
-              <label htmlFor="signup-email" className="block text-sm font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>
+              <label htmlFor="signup-email" className="block text-sm font-semibold mb-1.5" style={{ color: "var(--text-secondary)" }}>
                 College Email
               </label>
               <input
@@ -136,7 +144,7 @@ const SignupPage = () => {
 
             {/* Password */}
             <div>
-              <label htmlFor="signup-password" className="block text-sm font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>
+              <label htmlFor="signup-password" className="block text-sm font-semibold mb-1.5" style={{ color: "var(--text-secondary)" }}>
                 Password
               </label>
               <div className="relative">
@@ -163,7 +171,7 @@ const SignupPage = () => {
 
             {/* Branch */}
             <div>
-              <label htmlFor="signup-branch" className="block text-sm font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>
+              <label htmlFor="signup-branch" className="block text-sm font-semibold mb-1.5" style={{ color: "var(--text-secondary)" }}>
                 Branch
               </label>
               <select
@@ -182,7 +190,7 @@ const SignupPage = () => {
 
             {/* Semester */}
             <div>
-              <label htmlFor="signup-semester" className="block text-sm font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>
+              <label htmlFor="signup-semester" className="block text-sm font-semibold mb-1.5" style={{ color: "var(--text-secondary)" }}>
                 Semester
               </label>
               <select
@@ -204,7 +212,7 @@ const SignupPage = () => {
               id="signup-submit"
               type="submit"
               disabled={loading}
-              className="btn-primary w-full h-12 mt-2 rounded-xl text-base font-semibold
+              className="btn-primary w-full h-12 mt-2 rounded-xl text-base font-bold tracking-wide
                          disabled:opacity-60 disabled:cursor-not-allowed
                          flex items-center justify-center gap-2"
             >
@@ -223,7 +231,7 @@ const SignupPage = () => {
             <Link
               to="/login"
               id="signup-login-link"
-              className="font-semibold underline-offset-2 hover:underline transition-colors min-h-[44px] inline-flex items-center"
+              className="font-bold underline-offset-2 hover:underline transition-colors min-h-[44px] inline-flex items-center"
               style={{ color: "var(--accent)" }}
             >
               Log in

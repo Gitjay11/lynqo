@@ -97,7 +97,7 @@ const SectionCard = ({ icon: Icon, title, onEdit, isOwn, children }) => (
         >
           <Icon size={14} style={{ color: "var(--accent)" }} />
         </span>
-        <h2 className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>{title}</h2>
+        <h2 className="text-sm font-bold font-display" style={{ color: "var(--text-primary)" }}>{title}</h2>
       </div>
       {isOwn && onEdit && (
         <button
@@ -129,7 +129,7 @@ const FieldBox = ({ label, value }) => {
       </p>
       {isEmpty
         ? <p className="text-xs italic mt-1" style={{ color: "var(--text-muted)" }}>Not set</p>
-        : <p className="text-xs font-semibold mt-1 break-words" style={{ color: "var(--text-primary)" }}>{value}</p>
+        : <p className="text-xs font-medium mt-1 break-words" style={{ color: "var(--text-primary)" }}>{value}</p>
       }
     </div>
   );
@@ -212,7 +212,7 @@ const SocialRow = ({ platform, icon: Icon, iconBg, iconColor, value, onEditClick
 
       {/* Platform + link */}
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-bold" style={{ color: "var(--text-primary)" }}>{platform}</p>
+        <p className="text-xs font-bold font-display" style={{ color: "var(--text-primary)" }}>{platform}</p>
         {hasValue
           ? <p className="text-xs mt-0.5 truncate" style={{ color: "var(--accent)" }}>{value}</p>
           : <p className="text-xs italic mt-0.5" style={{ color: "var(--text-muted)" }}>Not set</p>
@@ -484,7 +484,7 @@ const ProfilePage = () => {
               onMouseLeave={e => e.currentTarget.style.borderColor = "var(--border)"}
             >
               <p
-                className="text-xs leading-relaxed mb-2"
+                className="text-xs font-normal leading-[1.65] mb-2"
                 style={{ color: "var(--text-primary)", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}
               >
                 {post.content}
@@ -615,8 +615,8 @@ const ProfilePage = () => {
 
                   {/* Name */}
                   <h1
-                    className="text-xl font-black leading-tight break-words"
-                    style={{ color: "var(--text-primary)", letterSpacing: "-0.03em" }}
+                    className="text-xl font-black font-display leading-tight break-words"
+                    style={{ color: "var(--text-primary)", letterSpacing: "-0.035em" }}
                   >
                     {profile.name}
                   </h1>
@@ -624,7 +624,7 @@ const ProfilePage = () => {
                   {/* Meta pills */}
                   <div className="flex items-center gap-2 flex-wrap mt-2">
                     {profile.branch && (
-                      <span className="flex items-center gap-1 text-xs" style={{ color: "var(--text-secondary)" }}>
+                      <span className="flex items-center gap-1 text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
                         <BookOpen size={12} style={{ color: "var(--accent)" }} />
                         {profile.branch}
                       </span>
@@ -633,7 +633,7 @@ const ProfilePage = () => {
                       <span style={{ color: "var(--border)", fontSize: "12px" }}>·</span>
                     )}
                     {profile.semester && (
-                      <span className="flex items-center gap-1 text-xs" style={{ color: "var(--text-secondary)" }}>
+                      <span className="flex items-center gap-1 text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
                         <GraduationCap size={12} style={{ color: "var(--accent)" }} />
                         Sem {profile.semester}
                       </span>
@@ -641,7 +641,7 @@ const ProfilePage = () => {
                     {profile.yearOfJoining && (
                       <>
                         <span style={{ color: "var(--border)", fontSize: "12px" }}>·</span>
-                        <span className="flex items-center gap-1 text-xs" style={{ color: "var(--text-secondary)" }}>
+                        <span className="flex items-center gap-1 text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
                           <Calendar size={12} style={{ color: "var(--accent)" }} />
                           {profile.yearOfJoining}
                         </span>
@@ -651,7 +651,7 @@ const ProfilePage = () => {
 
                   {/* Bio */}
                   {profile.bio ? (
-                    <p className="text-xs leading-relaxed mt-2 max-w-xs" style={{ color: "var(--text-secondary)" }}>
+                    <p className="text-xs font-normal leading-[1.65] mt-2 max-w-xs" style={{ color: "var(--text-secondary)" }}>
                       {profile.bio}
                     </p>
                   ) : (
@@ -721,7 +721,7 @@ const ProfilePage = () => {
                           onClick={handleMessage}
                           disabled={msgLoading}
                           className="
-                            inline-flex items-center gap-1.5 text-xs font-semibold
+                            inline-flex items-center gap-1.5 text-xs font-bold
                             px-3 py-2 rounded-lg
                             transition-all duration-150 active:scale-95
                             min-h-0 focus:outline-none
@@ -759,7 +759,7 @@ const ProfilePage = () => {
                   onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--bg-elevated)"}
                   onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
                 >
-                  <p className="text-xl font-black tracking-tight" style={{ color: "var(--text-primary)", letterSpacing: "-0.02em" }}>
+                  <p className="text-xl font-black tabular-nums tracking-tight" style={{ color: "var(--text-primary)", letterSpacing: "-0.02em" }}>
                     {profile.postCount ?? recentPosts.length ?? 0}
                   </p>
                   <p className="text-[9px] font-bold uppercase tracking-widest mt-1" style={{ color: "var(--text-muted)" }}>
@@ -776,7 +776,7 @@ const ProfilePage = () => {
                   onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--bg-elevated)"}
                   onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
                 >
-                  <p className="text-xl font-black tracking-tight" style={{ color: "var(--accent)", letterSpacing: "-0.02em" }}>
+                  <p className="text-xl font-black tabular-nums tracking-tight" style={{ color: "var(--accent)", letterSpacing: "-0.02em" }}>
                     {profile.followerCount ?? 0}
                   </p>
                   <p className="text-[9px] font-bold uppercase tracking-widest mt-1" style={{ color: "var(--text-muted)" }}>
@@ -792,7 +792,7 @@ const ProfilePage = () => {
                   onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--bg-elevated)"}
                   onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
                 >
-                  <p className="text-xl font-black tracking-tight" style={{ color: "var(--text-primary)", letterSpacing: "-0.02em" }}>
+                  <p className="text-xl font-black tabular-nums tracking-tight" style={{ color: "var(--text-primary)", letterSpacing: "-0.02em" }}>
                     {profile.followingCount ?? 0}
                   </p>
                   <p className="text-[9px] font-bold uppercase tracking-widest mt-1" style={{ color: "var(--text-muted)" }}>
@@ -805,7 +805,7 @@ const ProfilePage = () => {
               {isOwnProfile && (
                 <div className="mt-4 pt-4" style={{ borderTop: "1px solid var(--border)" }}>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold" style={{ color: "var(--text-secondary)" }}>
+                    <span className="text-xs font-bold" style={{ color: "var(--text-secondary)" }}>
                       Profile completion
                     </span>
                     <span className="text-xs font-bold" style={{ color: "var(--accent)" }}>

@@ -26,7 +26,7 @@ const MESSAGES = [
 // ── Feature pill ──────────────────────────────────────────────────────────────
 const FeaturePill = ({ emoji, text }) => (
   <span
-    className="rounded-full px-3 py-1.5 text-xs flex items-center gap-1.5"
+    className="rounded-full px-3 py-1.5 text-xs font-medium flex items-center gap-1.5"
     style={{
       backgroundColor: "var(--bg-elevated)",
       border: "1px solid var(--border)",
@@ -57,7 +57,7 @@ const ChatPreviewSection = () => (
 
         {/* Badge */}
         <div
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
           style={{
             backgroundColor: "var(--accent-light)",
             border: "0.5px solid var(--accent-border)",
@@ -70,15 +70,15 @@ const ChatPreviewSection = () => (
 
         {/* Headline */}
         <h2
-          className="text-3xl md:text-4xl font-black mt-3 mb-2"
-          style={{ color: "var(--text-primary)", letterSpacing: "-0.03em" }}
+          className="text-3xl md:text-4xl font-black font-display mt-3 mb-2"
+          style={{ color: "var(--text-primary)", letterSpacing: "-0.035em" }}
         >
           Talk to anyone on campus. Instantly.
         </h2>
 
         {/* Subtitle */}
         <p
-          className="text-sm leading-relaxed mt-2"
+          className="text-sm font-normal leading-relaxed mt-2"
           style={{ color: "var(--text-secondary)" }}
         >
           No number needed. Find any student and start chatting. See when they
@@ -118,14 +118,14 @@ const ChatPreviewSection = () => (
             </div>
             {/* Name */}
             <span
-              className="text-sm font-semibold flex-1"
+              className="text-sm font-bold font-display flex-1"
               style={{ color: "var(--text-primary)" }}
             >
               Ritika Sharma
             </span>
             {/* Online dot + label */}
             <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
-            <span className="text-xs text-green-500 ml-1">Online</span>
+            <span className="text-xs font-medium text-green-500 ml-1">Online</span>
           </div>
 
           {/* Messages area — 4 alternating bubbles */}
@@ -149,7 +149,7 @@ const ChatPreviewSection = () => (
                 /* Sent bubble */
                 <div key={i} className="flex justify-end">
                   <p
-                    className="text-xs px-3 py-2 rounded-2xl rounded-tr-sm font-medium text-white"
+                    className="text-xs font-normal px-3 py-2 rounded-2xl rounded-tr-sm text-white"
                     style={{
                       maxWidth: "78%",
                       backgroundColor: "#e8643a",
@@ -169,7 +169,7 @@ const ChatPreviewSection = () => (
           >
             {/* Fake input */}
             <div
-              className="flex-1 rounded-full px-3 py-2 text-xs select-none"
+              className="flex-1 rounded-full px-3 py-2 text-xs font-normal select-none"
               style={{
                 backgroundColor: "var(--bg-elevated)",
                 color: "var(--text-muted)",

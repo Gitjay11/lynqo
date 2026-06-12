@@ -13,25 +13,25 @@ const NotFoundPage = () => {
 
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-center px-4 text-center"
+      className="min-h-screen flex flex-col items-center justify-center px-4 text-center animate-fade-in"
       style={{ backgroundColor: "var(--bg-primary)" }}
     >
 
       {/* 1. Giant decorative 404 */}
       <p
-        className="text-8xl md:text-9xl font-bold select-none leading-none"
+        className="text-8xl md:text-9xl font-bold font-display tabular-nums select-none leading-none"
         style={{ color: "var(--text-muted)" }}
       >
         404
       </p>
 
       {/* 2. Headline */}
-      <h1 className="text-xl md:text-2xl font-semibold mt-6 text-center" style={{ color: "var(--text-primary)" }}>
+      <h1 className="text-xl md:text-2xl font-bold font-display tracking-snug mt-6 text-center" style={{ color: "var(--text-primary)" }}>
         Looks like this page got lost on campus.
       </h1>
 
       {/* 3. Subtext */}
-      <p className="mt-2 text-center text-sm max-w-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+      <p className="mt-2 text-center text-sm font-normal max-w-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
         The page you are looking for does not exist or has been moved.
       </p>
 
@@ -45,7 +45,7 @@ const NotFoundPage = () => {
             w-full sm:w-auto
             inline-flex items-center justify-center
             min-h-[48px] px-6 py-3
-            text-white font-semibold text-sm
+            text-white font-bold tracking-wide text-sm
             rounded-full
             transition-all duration-200
             focus:outline-none focus:ring-2 focus:ring-offset-2
@@ -64,7 +64,7 @@ const NotFoundPage = () => {
             w-full sm:w-auto
             inline-flex items-center justify-center
             min-h-[48px] px-6 py-3
-            font-semibold text-sm
+            font-bold text-sm
             rounded-full
             transition-all duration-200
             focus:outline-none focus:ring-2 focus:ring-offset-2
@@ -82,7 +82,7 @@ const NotFoundPage = () => {
 
       {/* 5. Lynqo wordmark */}
       <p
-        className="font-bold mt-16 text-sm tracking-wide"
+        className="font-bold mt-16 text-sm tracking-widest"
         style={{ color: "var(--text-muted)" }}
       >
         Lynqo

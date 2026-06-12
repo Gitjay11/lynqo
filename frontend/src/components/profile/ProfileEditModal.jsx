@@ -102,7 +102,7 @@ const ProfileEditModal = ({ isOpen, onClose, formData, onChange, onSave, saving 
     <>
       {/* ── Backdrop ─────────────────────────────────────────────────────── */}
       <div
-        className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+        className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm animate-fade-in-fast"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -123,7 +123,7 @@ const ProfileEditModal = ({ isOpen, onClose, formData, onChange, onSave, saving 
             max-h-[92dvh]
             rounded-t-2xl sm:rounded-2xl
             flex flex-col overflow-hidden
-            animate-fade-in
+            animate-slide-up sm:animate-scale-in
           "
           style={{
             backgroundColor: "var(--bg-surface)",
@@ -137,7 +137,7 @@ const ProfileEditModal = ({ isOpen, onClose, formData, onChange, onSave, saving 
             className="flex items-center justify-between px-5 py-4 flex-shrink-0"
             style={{ borderBottom: "1px solid var(--border)" }}
           >
-            <h2 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>
+            <h2 className="text-base font-bold font-display" style={{ color: "var(--text-primary)" }}>
               Edit Profile
             </h2>
             <button
@@ -392,7 +392,7 @@ const ProfileEditModal = ({ isOpen, onClose, formData, onChange, onSave, saving 
               onClick={onClose}
               disabled={saving}
               className="
-                flex-1 py-2.5 rounded-xl text-sm font-semibold
+                flex-1 py-2.5 rounded-xl text-sm font-bold tracking-wide
                 transition-all duration-150 active:scale-95
                 min-h-[44px] focus:outline-none
                 disabled:opacity-50 disabled:cursor-not-allowed

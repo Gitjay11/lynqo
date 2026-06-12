@@ -67,11 +67,11 @@ const UserRow = ({ user, query, onClick }) => (
   >
     <Avatar src={user.profilePicture} name={user.name} size="sm" />
     <div className="flex-1 min-w-0">
-      <p className="text-sm font-medium truncate leading-tight" style={{ color: "var(--text-primary)" }}>
+      <p className="text-sm font-semibold truncate leading-tight" style={{ color: "var(--text-primary)" }}>
         <Highlight text={user.name} query={query} />
       </p>
       {(user.branch || user.semester) && (
-        <p className="text-xs truncate leading-tight" style={{ color: "var(--text-secondary)" }}>
+        <p className="text-xs font-normal truncate leading-tight" style={{ color: "var(--text-secondary)" }}>
           {[user.branch, user.semester ? `Sem ${user.semester}` : null]
             .filter(Boolean).join(" · ")}
         </p>
@@ -224,7 +224,7 @@ const UserSearch = () => {
                 w-full h-9
                 pl-9 pr-8
                 rounded-full
-                text-sm
+                text-sm font-normal
                 focus:outline-none
                 transition-colors duration-150
               "
@@ -347,14 +347,14 @@ const Navbar = () => {
           className="
             w-8 h-8 rounded-xl
             flex items-center justify-center
-            text-sm font-black
+            text-sm font-black font-display
           "
         >
           L
         </span>
         <span
-          className="hidden sm:block text-xl font-black"
-          style={{ color: "var(--text-primary)", letterSpacing: "-0.03em" }}
+          className="hidden sm:block text-xl font-black font-display"
+          style={{ color: "var(--text-primary)", letterSpacing: "-0.035em" }}
         >
           Lynq<span style={{ color: "var(--accent)" }}>o</span>
         </span>
@@ -391,7 +391,7 @@ const Navbar = () => {
 
             {/* Name + chevron — desktop only */}
             <span className="hidden lg:flex items-center gap-1">
-              <span className="text-sm font-medium max-w-[120px] truncate" style={{ color: "var(--text-primary)" }}>
+              <span className="text-sm font-semibold max-w-[120px] truncate" style={{ color: "var(--text-primary)" }}>
                 {user.name}
               </span>
               <ChevronDown
@@ -422,8 +422,8 @@ const Navbar = () => {
             >
               {/* User info header */}
               <div className="px-4 py-2.5" style={{ borderBottom: "1px solid var(--border)" }}>
-                <p className="text-xs font-semibold truncate" style={{ color: "var(--text-primary)" }}>{user.name}</p>
-                <p className="text-xs truncate" style={{ color: "var(--text-secondary)" }}>{user.email}</p>
+                <p className="text-xs font-bold truncate" style={{ color: "var(--text-primary)" }}>{user.name}</p>
+                <p className="text-xs font-normal truncate mt-0.5" style={{ color: "var(--text-secondary)" }}>{user.email}</p>
               </div>
 
               {/* My Profile */}
@@ -433,7 +433,7 @@ const Navbar = () => {
                 style={{ color: "var(--text-secondary)" }}
                 className="
                   w-full flex items-center gap-3 px-4 py-2.5
-                  text-sm
+                  text-sm font-medium
                   transition-colors duration-100
                   min-h-[44px]
                 "
@@ -450,7 +450,7 @@ const Navbar = () => {
                 onClick={handleLogout}
                 className="
                   w-full flex items-center gap-3 px-4 py-2.5
-                  text-sm text-red-500 hover:bg-red-500/10
+                  text-sm font-medium text-red-500 hover:bg-red-500/10
                   transition-colors duration-100
                   min-h-[44px]
                 "

@@ -1,15 +1,13 @@
 /**
  * PostCardSkeleton.jsx — Shimmer placeholder for feed posts (Themed)
  *
- * Uses bg-bg-elevated shimmer on bg-bg-surface card background.
+ * Uses .skeleton (shimmer gradient) instead of animate-pulse.
+ * Colors derived from CSS variables; no hardcoded values.
  */
 
 // ── Shimmer bar helper ────────────────────────────────────────────────────────
 const Bar = ({ className }) => (
-  <div
-    className={`rounded-lg animate-pulse ${className}`}
-    style={{ backgroundColor: "var(--bg-elevated)" }}
-  />
+  <div className={`skeleton ${className}`} />
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -26,10 +24,7 @@ const PostCardSkeleton = () => (
     {/* ── Header row: avatar + name/timestamp ─────────────────────────────── */}
     <div className="flex items-center gap-3 px-4 pt-4 pb-2">
       {/* Avatar shimmer */}
-      <div
-        className="w-8 h-8 rounded-full animate-pulse flex-shrink-0"
-        style={{ backgroundColor: "var(--bg-elevated)" }}
-      />
+      <div className="skeleton w-8 h-8 rounded-full flex-shrink-0" />
 
       {/* Name + time shimmer */}
       <div className="flex-1 space-y-2">
@@ -59,3 +54,4 @@ const PostCardSkeleton = () => (
 );
 
 export default PostCardSkeleton;
+

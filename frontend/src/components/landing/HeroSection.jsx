@@ -40,8 +40,9 @@ const AppPreviewMockup = () => (
     >
       <span
         style={{
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
           fontWeight: 900,
-          letterSpacing: "-0.03em",
+          letterSpacing: "-0.035em",
           fontSize: "0.875rem",
           color: "var(--text-primary)",
         }}
@@ -156,11 +157,12 @@ const HeroSection = () => (
 
       {/* ── Badge ──────────────────────────────────────────────────────────── */}
       <div
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold mb-5"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wide mb-5 animate-fade-in"
         style={{
           backgroundColor: "var(--accent-light)",
           border: "0.5px solid var(--accent-border)",
           color: "#9a3412",
+          animationDelay: "0.05s",
         }}
       >
         <GraduationCap size={13} />
@@ -169,8 +171,8 @@ const HeroSection = () => (
 
       {/* ── Main headline ───────────────────────────────────────────────────── */}
       <h1
-        className="text-4xl md:text-5xl lg:text-6xl font-black leading-[1.1] mb-4"
-        style={{ color: "var(--text-primary)", letterSpacing: "-0.04em" }}
+        className="text-4xl md:text-5xl lg:text-6xl font-black font-display leading-[1.1] mb-4 animate-fade-in"
+        style={{ color: "var(--text-primary)", letterSpacing: "-0.04em", animationDelay: "0.12s" }}
       >
         Everything happening on campus —
         <br />
@@ -179,8 +181,8 @@ const HeroSection = () => (
 
       {/* ── Subheadline ─────────────────────────────────────────────────────── */}
       <p
-        className="text-base md:text-lg leading-relaxed max-w-sm mx-auto mb-8"
-        style={{ color: "var(--text-secondary)" }}
+        className="text-base md:text-lg font-normal leading-relaxed max-w-sm mx-auto mb-8 animate-fade-in"
+        style={{ color: "var(--text-secondary)", animationDelay: "0.19s" }}
       >
         The private space our campus was missing. Post, chat, confess, and belong.
       </p>
@@ -191,13 +193,14 @@ const HeroSection = () => (
         id="hero-cta-signup"
         className="
           inline-flex items-center justify-center
-          text-sm font-bold text-white
+          text-sm font-bold tracking-wide text-white
           px-8 py-3.5 rounded-xl
-          transition-all duration-150 active:scale-95
+          transition-all duration-150 active:scale-95 hover:shadow-lg
           w-full sm:w-auto
           focus:outline-none
+          animate-fade-in
         "
-        style={{ backgroundColor: "#e8643a" }}
+        style={{ backgroundColor: "#e8643a", animationDelay: "0.26s" }}
         onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#d4572f")}
         onMouseLeave={e => (e.currentTarget.style.backgroundColor = "#e8643a")}
       >
@@ -205,13 +208,16 @@ const HeroSection = () => (
       </Link>
 
       {/* ── Avatar row ──────────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-center gap-2 mt-4">
+      <div
+        className="flex items-center justify-center gap-2 mt-4 animate-fade-in"
+        style={{ animationDelay: "0.33s" }}
+      >
         {/* Overlapping avatars */}
         <div className="flex items-center">
           {AVATARS.map(({ initials, bg }, i) => (
             <div
               key={initials}
-              className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0"
+              className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold tabular-nums text-white flex-shrink-0"
               style={{
                 backgroundColor: bg,
                 border: "2px solid var(--bg-primary)",
@@ -224,13 +230,15 @@ const HeroSection = () => (
             </div>
           ))}
         </div>
-        <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+        <p className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>
           Students already on Lynqo
         </p>
       </div>
 
       {/* ── App preview mockup ──────────────────────────────────────────────── */}
-      <AppPreviewMockup />
+      <div className="animate-fade-in" style={{ animationDelay: "0.42s" }}>
+        <AppPreviewMockup />
+      </div>
 
     </div>
   </section>
