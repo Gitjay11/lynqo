@@ -7,14 +7,14 @@
  */
 
 import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth.js";
-import Loader from "./Loader.jsx";
+import { useAuth }          from "../../hooks/useAuth.js";
+import Loader               from "./Loader.jsx";
 
 const ProtectedRoute = () => {
   const { user, loading } = useAuth();
 
   // Show loader while /api/auth/me is in-flight
-  if (loading) return <Loader fullScreen />;
+  if (loading) return <Loader fullScreen text="Loading Lynqo..." />;
 
   // Not authenticated → redirect to login
   if (!user) return <Navigate to="/login" replace />;

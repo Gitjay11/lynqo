@@ -49,14 +49,16 @@ if (process.env.NODE_ENV !== "production") {
   app.use(morgan("dev"));
 }
 
-// ── General API rate limiter — 100 requests per 15 minutes per IP ──────────
-// Applied to all /api/* routes. Auth routes use a stricter limiter
-// configured directly in authRoutes.js (10 req / 15 min).
+// ── General API rate limiter — production only ──────────────────────────────
+// In development this limiter is DISABLED — you'll hit it constantly while
+// testing (page loads, likes, comments, etc. all fire API calls).
+// In production it limits to 300 requests per 15 minutes per IP.
 const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
-  standardHeaders: true,  // Return rate-limit info in RateLimit-* headers
-  legacyHeaders: false,   // Disable X-RateLimit-* headers
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV === "production" ? 300 : 0, // 0 = unlimited in dev
+  skip: () => process.env.NODE_ENV !== "production",    // skip entirely in dev
+  standardHeaders: true,
+  legacyHeaders:   false,
   message: {
     success: false,
     message: "Too many requests. Please wait a few minutes and try again.",
@@ -94,10 +96,9 @@ app.get("/", (req, res) => {
   res.status(200).json({ message: "Campus Platform API running" });
 });
 
-// ── API Routes ─────────────────────────────────────────────────────────────
+// ── API Routes ────────────────────────────────────────────────────────────────
 // Apply the general limiter to all API routes.
-// The auth-specific limiter (10 req / 15 min) is mounted inside authRoutes.js
-// so it is applied BEFORE the controllers, giving the tighter limit priority.
+// Auth-specific limiter (stricter) is applied inside authRoutes.js.
 app.use("/api", generalLimiter);
 
 app.use("/api/auth",          authRoutes);

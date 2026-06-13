@@ -1,23 +1,35 @@
 /**
- * SignupPage.jsx — User Registration Page (Themed)
+ * SignupPage.jsx — User Registration Page (Upgraded)
  *
  * Mobile: full-screen form on bg-bg-primary, no card.
  * sm+: bg-bg-surface card, max-w-md mx-auto.
+ *
+ * Uses shared components: Input, Button, Divider
  */
 
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
-import toast from "react-hot-toast";
+import { Link, useNavigate }   from "react-router-dom";
+import { Eye, EyeOff }         from "lucide-react";
+import toast                   from "react-hot-toast";
 
-import api from "../../api/axios.js";
-import { useAuth } from "../../hooks/useAuth.js";
+import api          from "../../api/axios.js";
+import { useAuth }  from "../../hooks/useAuth.js";
+import Input        from "../../components/common/Input.jsx";
+import Button       from "../../components/common/Button.jsx";
+import Divider      from "../../components/common/Divider.jsx";
 
-const BRANCHES = ["Computer Science", "Information Technology", "Electronics", "Mechanical", "Civil", "Other"];
-const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
+const BRANCHES  = ["Computer Science","Information Technology","Electronics","Mechanical","Civil","Other"];
+const SEMESTERS = [1,2,3,4,5,6,7,8];
 
 const INITIAL_FORM   = { name: "", email: "", password: "", branch: "", semester: "" };
 const INITIAL_ERRORS = { name: "", email: "", password: "", branch: "", semester: "" };
+
+// ── Shared select style (no Input component for <select>) ─────────────────────
+const selectStyle = {
+  backgroundColor: "var(--bg-elevated)",
+  border:          "1px solid var(--border)",
+  color:           "var(--text-primary)",
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 const SignupPage = () => {
@@ -39,7 +51,13 @@ const SignupPage = () => {
     setTimeout(() => setShaking(false), 400);
   };
 
-  const handleChange = (e) => {
+  const handleChange = (field) => (e) => {
+    setForm((prev) => ({ ...prev, [field]: e.target.value }));
+    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: "" }));
+  };
+
+  // For <select> which uses native onChange event
+  const handleNativeChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
@@ -49,19 +67,19 @@ const SignupPage = () => {
     const newErrors = { ...INITIAL_ERRORS };
     let valid = true;
 
-    if (!form.name.trim())               { newErrors.name     = "Full name is required.";                   valid = false; }
-    else if (form.name.trim().length < 2){ newErrors.name     = "Name must be at least 2 characters.";      valid = false; }
+    if (!form.name.trim())                { newErrors.name     = "Full name is required.";                   valid = false; }
+    else if (form.name.trim().length < 2) { newErrors.name     = "Name must be at least 2 characters.";      valid = false; }
 
-    if (!form.email.trim())              { newErrors.email    = "College email is required.";                valid = false; }
+    if (!form.email.trim())               { newErrors.email    = "College email is required.";                valid = false; }
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
       newErrors.email = "Enter a valid email address."; valid = false;
     }
 
-    if (!form.password)                  { newErrors.password = "Password is required.";                    valid = false; }
-    else if (form.password.length < 6)   { newErrors.password = "Password must be at least 6 characters."; valid = false; }
+    if (!form.password)                   { newErrors.password = "Password is required.";                    valid = false; }
+    else if (form.password.length < 6)    { newErrors.password = "Password must be at least 6 characters."; valid = false; }
 
-    if (!form.branch)                    { newErrors.branch   = "Please select your branch.";               valid = false; }
-    if (!form.semester)                  { newErrors.semester = "Please select your semester.";             valid = false; }
+    if (!form.branch)                     { newErrors.branch   = "Please select your branch.";               valid = false; }
+    if (!form.semester)                   { newErrors.semester = "Please select your semester.";             valid = false; }
 
     setErrors(newErrors);
     return valid;
@@ -88,6 +106,22 @@ const SignupPage = () => {
     }
   };
 
+  // ── Show/hide password toggle icon ────────────────────────────────────────
+  const TogglePass = (
+    <button
+      type="button"
+      onClick={() => setShowPass((p) => !p)}
+      aria-label={showPass ? "Hide password" : "Show password"}
+      className="
+        flex items-center justify-center w-5 h-5
+        text-[var(--text-muted)] hover:text-[var(--text-secondary)]
+        transition-colors duration-150 focus:outline-none
+      "
+    >
+      {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+    </button>
+  );
+
   // ─────────────────────────────────────────────────────────────────────────
   return (
     <div
@@ -95,9 +129,14 @@ const SignupPage = () => {
       style={{ backgroundColor: "var(--bg-primary)" }}
     >
       <div className="w-full sm:max-w-md sm:mx-auto">
-        <div className={`sm:bg-bg-surface sm:border sm:border-app-border sm:rounded-2xl sm:shadow-lg sm:p-8 md:p-10 w-full animate-fade-in ${
-          shaking ? "animate-shake" : ""
-        }`}>
+        <div
+          className={`
+            sm:bg-bg-surface sm:border sm:border-app-border
+            sm:rounded-2xl sm:shadow-lg sm:p-8 md:p-10
+            w-full animate-fade-in
+            ${shaking ? "animate-shake" : ""}
+          `}
+        >
 
           {/* ── Branding ───────────────────────────────────────────────────── */}
           <div className="text-center mb-8">
@@ -115,123 +154,119 @@ const SignupPage = () => {
           <form onSubmit={handleSubmit} noValidate className="space-y-5">
 
             {/* Full Name */}
-            <div>
-              <label htmlFor="signup-name" className="block text-sm font-semibold mb-1.5" style={{ color: "var(--text-secondary)" }}>
-                Full Name
-              </label>
-              <input
-                id="signup-name" type="text" name="name" value={form.name} onChange={handleChange}
-                placeholder="e.g. Arjun Mehta" autoComplete="name"
-                aria-describedby={errors.name ? "signup-name-error" : undefined}
-                className={`input-field h-12 ${errors.name ? "border-red-400 focus:ring-red-400" : ""}`}
-              />
-              {errors.name && <p id="signup-name-error" className="mt-1.5 text-xs text-red-500">{errors.name}</p>}
-            </div>
+            <Input
+              id="signup-name"
+              type="text"
+              label="Full Name"
+              value={form.name}
+              onChange={handleChange("name")}
+              placeholder="e.g. Arjun Mehta"
+              error={errors.name}
+              autoComplete="name"
+              required
+            />
 
             {/* Email */}
-            <div>
-              <label htmlFor="signup-email" className="block text-sm font-semibold mb-1.5" style={{ color: "var(--text-secondary)" }}>
-                College Email
-              </label>
-              <input
-                id="signup-email" type="email" name="email" value={form.email} onChange={handleChange}
-                placeholder="you@college.edu" autoComplete="email" inputMode="email"
-                aria-describedby={errors.email ? "signup-email-error" : undefined}
-                className={`input-field h-12 ${errors.email ? "border-red-400 focus:ring-red-400" : ""}`}
-              />
-              {errors.email && <p id="signup-email-error" className="mt-1.5 text-xs text-red-500">{errors.email}</p>}
-            </div>
+            <Input
+              id="signup-email"
+              type="email"
+              label="College Email"
+              value={form.email}
+              onChange={handleChange("email")}
+              placeholder="you@college.edu"
+              error={errors.email}
+              autoComplete="email"
+              inputMode="email"
+              required
+            />
 
             {/* Password */}
-            <div>
-              <label htmlFor="signup-password" className="block text-sm font-semibold mb-1.5" style={{ color: "var(--text-secondary)" }}>
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  id="signup-password" type={showPass ? "text" : "password"} name="password"
-                  value={form.password} onChange={handleChange}
-                  placeholder="Min. 6 characters" autoComplete="new-password"
-                  aria-describedby={errors.password ? "signup-password-error" : undefined}
-                  className={`input-field h-12 pr-12 ${errors.password ? "border-red-400 focus:ring-red-400" : ""}`}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPass((p) => !p)}
-                  aria-label={showPass ? "Hide password" : "Show password"}
-                  style={{ color: "var(--text-secondary)" }}
-                  className="absolute right-0 top-0 h-12 w-12 flex items-center justify-center
-                             transition-colors focus:outline-none focus-visible:ring-2 rounded-r-xl min-h-[44px]"
-                >
-                  {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-              {errors.password && <p id="signup-password-error" className="mt-1.5 text-xs text-red-500">{errors.password}</p>}
-            </div>
+            <Input
+              id="signup-password"
+              type={showPass ? "text" : "password"}
+              label="Password"
+              value={form.password}
+              onChange={handleChange("password")}
+              placeholder="Min. 6 characters"
+              error={errors.password}
+              autoComplete="new-password"
+              iconRight={TogglePass}
+              required
+            />
 
-            {/* Branch */}
+            {/* Branch — <select> (not wrapping in Input since we need a <select>) */}
             <div>
-              <label htmlFor="signup-branch" className="block text-sm font-semibold mb-1.5" style={{ color: "var(--text-secondary)" }}>
-                Branch
+              <label htmlFor="signup-branch" className="font-sans font-bold text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1.5 block">
+                Branch <span className="text-red-500 ml-0.5" aria-hidden="true">*</span>
               </label>
               <select
-                id="signup-branch" name="branch" value={form.branch} onChange={handleChange}
+                id="signup-branch"
+                name="branch"
+                value={form.branch}
+                onChange={handleNativeChange}
                 aria-describedby={errors.branch ? "signup-branch-error" : undefined}
-                className={`input-field h-12 ${errors.branch ? "border-red-400 focus:ring-red-400" : ""}`}
-                style={{ color: !form.branch ? "var(--text-muted)" : "var(--text-primary)" }}
+                className="w-full px-4 py-2.5 rounded-xl text-sm outline-none transition-colors duration-150 border border-[var(--border)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]"
+                style={{ backgroundColor: "var(--bg-elevated)", color: !form.branch ? "var(--text-muted)" : "var(--text-primary)" }}
               >
                 <option value="" disabled>Select your branch</option>
-                {BRANCHES.map((b) => (
-                  <option key={b} value={b}>{b}</option>
-                ))}
+                {BRANCHES.map((b) => <option key={b} value={b}>{b}</option>)}
               </select>
-              {errors.branch && <p id="signup-branch-error" className="mt-1.5 text-xs text-red-500">{errors.branch}</p>}
+              {errors.branch && (
+                <p id="signup-branch-error" className="font-sans font-medium text-xs text-red-500 mt-1" role="alert">
+                  {errors.branch}
+                </p>
+              )}
             </div>
 
             {/* Semester */}
             <div>
-              <label htmlFor="signup-semester" className="block text-sm font-semibold mb-1.5" style={{ color: "var(--text-secondary)" }}>
-                Semester
+              <label htmlFor="signup-semester" className="font-sans font-bold text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1.5 block">
+                Semester <span className="text-red-500 ml-0.5" aria-hidden="true">*</span>
               </label>
               <select
-                id="signup-semester" name="semester" value={form.semester} onChange={handleChange}
+                id="signup-semester"
+                name="semester"
+                value={form.semester}
+                onChange={handleNativeChange}
                 aria-describedby={errors.semester ? "signup-semester-error" : undefined}
-                className={`input-field h-12 ${errors.semester ? "border-red-400 focus:ring-red-400" : ""}`}
-                style={{ color: !form.semester ? "var(--text-muted)" : "var(--text-primary)" }}
+                className="w-full px-4 py-2.5 rounded-xl text-sm outline-none transition-colors duration-150 border border-[var(--border)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]"
+                style={{ backgroundColor: "var(--bg-elevated)", color: !form.semester ? "var(--text-muted)" : "var(--text-primary)" }}
               >
                 <option value="" disabled>Select your semester</option>
-                {SEMESTERS.map((s) => (
-                  <option key={s} value={s}>Semester {s}</option>
-                ))}
+                {SEMESTERS.map((s) => <option key={s} value={s}>Semester {s}</option>)}
               </select>
-              {errors.semester && <p id="signup-semester-error" className="mt-1.5 text-xs text-red-500">{errors.semester}</p>}
+              {errors.semester && (
+                <p id="signup-semester-error" className="font-sans font-medium text-xs text-red-500 mt-1" role="alert">
+                  {errors.semester}
+                </p>
+              )}
             </div>
 
             {/* Submit */}
-            <button
+            <Button
               id="signup-submit"
               type="submit"
-              disabled={loading}
-              className="btn-primary w-full h-12 mt-2 rounded-xl text-base font-bold tracking-wide
-                         disabled:opacity-60 disabled:cursor-not-allowed
-                         flex items-center justify-center gap-2"
+              variant="primary"
+              size="full"
+              loading={loading}
+              className="mt-2 h-12 text-base"
             >
-              {loading ? (
-                <>
-                  <Loader2 size={18} className="animate-spin" aria-hidden="true" />
-                  <span>Creating account…</span>
-                </>
-              ) : "Create account"}
-            </button>
+              Create account
+            </Button>
           </form>
 
+          {/* ── Divider ──────────────────────────────────────────────────────── */}
+          <div className="mt-6">
+            <Divider />
+          </div>
+
           {/* ── Footer link ──────────────────────────────────────────────────── */}
-          <p className="mt-6 text-center text-sm" style={{ color: "var(--text-secondary)" }}>
+          <p className="mt-4 text-center text-sm" style={{ color: "var(--text-secondary)" }}>
             Already have an account?{" "}
             <Link
               to="/login"
               id="signup-login-link"
-              className="font-bold underline-offset-2 hover:underline transition-colors min-h-[44px] inline-flex items-center"
+              className="font-bold underline-offset-2 hover:underline transition-colors"
               style={{ color: "var(--accent)" }}
             >
               Log in

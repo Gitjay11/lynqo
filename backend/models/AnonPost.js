@@ -29,6 +29,28 @@
 
 import mongoose from "mongoose";
 
+// ── Anonymous Comment Subdocument Schema ──────────────────────────────────
+// realCommenter is stored only for isOwner computation and moderation.
+// It is NEVER sent to the client — same two-layer defence as realAuthor.
+const anonCommentSchema = new mongoose.Schema(
+  {
+    // SENSITIVE — hidden from all API responses (select: false)
+    realCommenter: {
+      type:     mongoose.Schema.Types.ObjectId,
+      ref:      "User",
+      required: true,
+      select:   false,
+    },
+    content: {
+      type:      String,
+      required:  true,
+      trim:      true,
+      maxlength: [300, "Comment cannot exceed 300 characters"],
+    },
+  },
+  { timestamps: { createdAt: true, updatedAt: false } }
+);
+
 // ── Anonymous Post Schema ──────────────────────────────────────────────────
 const anonPostSchema = new mongoose.Schema(
   {
@@ -82,10 +104,16 @@ const anonPostSchema = new mongoose.Schema(
     },
 
     // When true, this post is excluded from the public feed.
-    // Set automatically by auto-moderation, or manually by an admin.
     isHidden: {
-      type: Boolean,
+      type:    Boolean,
       default: false,
+    },
+
+    // ── Anonymous comments ──────────────────────────────────────────────
+    // realCommenter is select:false — isOwner is computed server-side.
+    comments: {
+      type:    [anonCommentSchema],
+      default: [],
     },
   },
   {

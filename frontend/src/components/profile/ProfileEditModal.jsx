@@ -1,18 +1,26 @@
 /**
- * ProfileEditModal.jsx — Full Profile Edit Modal (Redesigned)
+ * ProfileEditModal.jsx — Full Profile Edit Modal (Upgraded)
  *
  * Mobile:  slides up from bottom — rounded-t-2xl, fixed inset-x-0 bottom-0
  * Desktop: centered dialog — fixed inset-0 flex items-center justify-center
  *
  * Sections (all in one scrollable modal, unchanged logic):
- *   Core Info → Personal → Academic → Campus Life → Skills & Interests → Social Links
+ *  Core Info → Personal → Academic → Campus Life → Skills & Interests → Social Links
+ *
+ * Uses shared components:
+ *  - Button    for footer actions
+ *  - Input     for all text/number/date fields
+ *  - Textarea  for bio
+ *  - Badge     for "Looking For" active chip state indicator
  *
  * All API calls and data-flow logic are unchanged.
- * Only visual improvements: typography, input styles, footer buttons, animation.
  */
 
-import { X, Loader2, Check } from "lucide-react";
-import TagInput from "./TagInput.jsx";
+import { X }        from "lucide-react";
+import Button        from "../common/Button.jsx";
+import Input         from "../common/Input.jsx";
+import Textarea      from "../common/Textarea.jsx";
+import TagInput      from "./TagInput.jsx";
 
 const BRANCH_OPTIONS    = ["CSE","IT","ECE","EEE","ME","CE","Chemical","Biotech","MCA","MBA"];
 const SEMESTER_OPTIONS  = [1,2,3,4,5,6,7,8];
@@ -22,10 +30,7 @@ const HOSTEL_OPTIONS    = ["","Hostel","Day Scholar"];
 
 // ── Section divider label ─────────────────────────────────────────────────────
 const SectionLabel = ({ children }) => (
-  <p
-    className="text-[9px] font-bold uppercase tracking-widest mb-3"
-    style={{ color: "var(--text-muted)" }}
-  >
+  <p className="text-[9px] font-bold uppercase tracking-widest mb-3" style={{ color: "var(--text-muted)" }}>
     {children}
   </p>
 );
@@ -33,42 +38,19 @@ const SectionLabel = ({ children }) => (
 // ── Field wrapper ─────────────────────────────────────────────────────────────
 const Field = ({ label, children }) => (
   <div className="flex flex-col gap-1.5">
-    <label
-      className="text-[9px] font-bold uppercase tracking-widest block"
-      style={{ color: "var(--text-muted)" }}
-    >
+    <label className="text-[9px] font-bold uppercase tracking-widest block" style={{ color: "var(--text-muted)" }}>
       {label}
     </label>
     {children}
   </div>
 );
 
-// ── Shared input class builder ────────────────────────────────────────────────
-const inputStyle = {
+// ── Shared select style ───────────────────────────────────────────────────────
+const selectStyle = {
   backgroundColor: "var(--bg-elevated)",
   border:          "1px solid var(--border)",
   color:           "var(--text-primary)",
 };
-
-const InputField = ({ id, value, onChange, placeholder, maxLength, type = "text", ...rest }) => (
-  <input
-    id={id}
-    type={type}
-    value={value}
-    onChange={onChange}
-    placeholder={placeholder}
-    maxLength={maxLength}
-    className="
-      w-full px-4 py-2.5 rounded-xl text-sm
-      outline-none transition-colors duration-150
-      placeholder:text-[color:var(--text-muted)]
-    "
-    style={inputStyle}
-    onFocus={e  => e.currentTarget.style.borderColor = "var(--accent)"}
-    onBlur={e   => e.currentTarget.style.borderColor = "var(--border)"}
-    {...rest}
-  />
-);
 
 const SelectField = ({ id, value, onChange, children }) => (
   <select
@@ -76,7 +58,7 @@ const SelectField = ({ id, value, onChange, children }) => (
     value={value}
     onChange={onChange}
     className="w-full px-4 py-2.5 rounded-xl text-sm outline-none transition-colors duration-150"
-    style={inputStyle}
+    style={selectStyle}
     onFocus={e  => e.currentTarget.style.borderColor = "var(--accent)"}
     onBlur={e   => e.currentTarget.style.borderColor = "var(--border)"}
   >
@@ -140,28 +122,14 @@ const ProfileEditModal = ({ isOpen, onClose, formData, onChange, onSave, saving 
             <h2 className="text-base font-bold font-display" style={{ color: "var(--text-primary)" }}>
               Edit Profile
             </h2>
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="xs"
               onClick={onClose}
               aria-label="Close edit modal"
-              className="
-                flex items-center justify-center
-                w-8 h-8 rounded-lg min-h-0
-                transition-colors duration-150
-                focus:outline-none
-              "
-              style={{ color: "var(--text-secondary)" }}
-              onMouseEnter={e => {
-                e.currentTarget.style.backgroundColor = "var(--bg-elevated)";
-                e.currentTarget.style.color           = "var(--text-primary)";
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.backgroundColor = "transparent";
-                e.currentTarget.style.color           = "var(--text-secondary)";
-              }}
-            >
-              <X size={18} strokeWidth={2.5} />
-            </button>
+              icon={<X size={16} strokeWidth={2.5} />}
+            />
           </div>
 
           {/* ── Scrollable body ───────────────────────────────────────────── */}
@@ -172,7 +140,7 @@ const ProfileEditModal = ({ isOpen, onClose, formData, onChange, onSave, saving 
               <SectionLabel>Core Info</SectionLabel>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Full Name">
-                  <InputField
+                  <Input
                     id="edit-name"
                     value={formData.name ?? ""}
                     onChange={set("name")}
@@ -195,25 +163,21 @@ const ProfileEditModal = ({ isOpen, onClose, formData, onChange, onSave, saving 
               </div>
               <div className="mt-3">
                 <Field label="Bio (optional)">
-                  <textarea
-                    id="edit-bio"
-                    value={formData.bio ?? ""}
-                    onChange={set("bio")}
-                    placeholder="Tell people about yourself…"
-                    maxLength={160}
-                    rows={3}
-                    className="
-                      w-full px-4 py-2.5 rounded-xl text-sm resize-none
-                      outline-none transition-colors duration-150
-                      placeholder:text-[color:var(--text-muted)]
-                    "
-                    style={inputStyle}
-                    onFocus={e => e.currentTarget.style.borderColor = "var(--accent)"}
-                    onBlur={e  => e.currentTarget.style.borderColor = "var(--border)"}
-                  />
-                  <p className="text-xs text-right mt-0.5" style={{ color: "var(--text-muted)" }}>
-                    {(formData.bio ?? "").length}/160
-                  </p>
+                  {/* Textarea lives inside a bordered card wrapper */}
+                  <div
+                    className="rounded-xl px-4 py-2.5 transition-colors duration-150 focus-within:ring-1 focus-within:ring-[var(--accent)] focus-within:border-[var(--accent)]"
+                    style={{ backgroundColor: "var(--bg-elevated)", border: "1px solid var(--border)" }}
+                  >
+                    <Textarea
+                      id="edit-bio"
+                      value={formData.bio ?? ""}
+                      onChange={set("bio")}
+                      placeholder="Tell people about yourself…"
+                      maxLength={160}
+                      showCount
+                      minRows={3}
+                    />
+                  </div>
                 </Field>
               </div>
             </section>
@@ -223,7 +187,7 @@ const ProfileEditModal = ({ isOpen, onClose, formData, onChange, onSave, saving 
               <SectionLabel>Personal Information</SectionLabel>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Phone (optional)">
-                  <InputField
+                  <Input
                     id="edit-phone"
                     value={formData.phone ?? ""}
                     onChange={set("phone")}
@@ -236,7 +200,7 @@ const ProfileEditModal = ({ isOpen, onClose, formData, onChange, onSave, saving 
                   </SelectField>
                 </Field>
                 <Field label="Date of Birth (optional)">
-                  <InputField
+                  <Input
                     id="edit-dob"
                     type="date"
                     value={formData.dateOfBirth ? new Date(formData.dateOfBirth).toISOString().split("T")[0] : ""}
@@ -251,7 +215,7 @@ const ProfileEditModal = ({ isOpen, onClose, formData, onChange, onSave, saving 
               <SectionLabel>Academic Information</SectionLabel>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Year of Joining (optional)">
-                  <InputField
+                  <Input
                     id="edit-year"
                     type="number"
                     value={formData.yearOfJoining ?? ""}
@@ -262,7 +226,7 @@ const ProfileEditModal = ({ isOpen, onClose, formData, onChange, onSave, saving 
                   />
                 </Field>
                 <Field label="Roll Number (optional)">
-                  <InputField
+                  <Input
                     id="edit-roll"
                     value={formData.rollNumber ?? ""}
                     onChange={set("rollNumber")}
@@ -282,7 +246,7 @@ const ProfileEditModal = ({ isOpen, onClose, formData, onChange, onSave, saving 
                   </SelectField>
                 </Field>
                 <Field label="Clubs / Societies (optional)">
-                  <InputField
+                  <Input
                     id="edit-clubs"
                     value={formData.clubs ?? ""}
                     onChange={set("clubs")}
@@ -315,10 +279,7 @@ const ProfileEditModal = ({ isOpen, onClose, formData, onChange, onSave, saving 
 
                 {/* Looking For chips */}
                 <div>
-                  <p
-                    className="text-[9px] font-bold uppercase tracking-widest mb-2"
-                    style={{ color: "var(--text-muted)" }}
-                  >
+                  <p className="text-[9px] font-bold uppercase tracking-widest mb-2" style={{ color: "var(--text-muted)" }}>
                     Looking For
                   </p>
                   <div className="flex flex-wrap gap-2">
@@ -354,7 +315,7 @@ const ProfileEditModal = ({ isOpen, onClose, formData, onChange, onSave, saving 
               <SectionLabel>Social Links</SectionLabel>
               <div className="space-y-3">
                 <Field label="GitHub URL">
-                  <InputField
+                  <Input
                     id="edit-github"
                     value={formData.github ?? ""}
                     onChange={set("github")}
@@ -362,7 +323,7 @@ const ProfileEditModal = ({ isOpen, onClose, formData, onChange, onSave, saving 
                   />
                 </Field>
                 <Field label="LinkedIn URL">
-                  <InputField
+                  <Input
                     id="edit-linkedin"
                     value={formData.linkedin ?? ""}
                     onChange={set("linkedin")}
@@ -370,7 +331,7 @@ const ProfileEditModal = ({ isOpen, onClose, formData, onChange, onSave, saving 
                   />
                 </Field>
                 <Field label="Instagram Handle">
-                  <InputField
+                  <Input
                     id="edit-instagram"
                     value={formData.instagram ?? ""}
                     onChange={set("instagram")}
@@ -387,43 +348,27 @@ const ProfileEditModal = ({ isOpen, onClose, formData, onChange, onSave, saving 
             className="flex gap-3 px-5 py-4 flex-shrink-0"
             style={{ borderTop: "1px solid var(--border)" }}
           >
-            <button
+            <Button
               type="button"
+              variant="secondary"
+              size="lg"
+              fullWidth
               onClick={onClose}
               disabled={saving}
-              className="
-                flex-1 py-2.5 rounded-xl text-sm font-bold tracking-wide
-                transition-all duration-150 active:scale-95
-                min-h-[44px] focus:outline-none
-                disabled:opacity-50 disabled:cursor-not-allowed
-              "
-              style={{ border: "1px solid var(--border)", color: "var(--text-primary)" }}
-              onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--bg-elevated)"}
-              onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               id="edit-save-btn"
               type="button"
+              variant="primary"
+              size="lg"
+              fullWidth
               onClick={onSave}
-              disabled={saving}
-              className="
-                flex-1 flex items-center justify-center gap-2
-                py-2.5 rounded-xl text-sm font-bold text-white
-                transition-all duration-150 active:scale-95
-                min-h-[44px] focus:outline-none
-                disabled:opacity-40 disabled:cursor-not-allowed disabled:scale-100
-              "
-              style={{ backgroundColor: "var(--accent)" }}
-              onMouseEnter={e => { if (!saving) e.currentTarget.style.backgroundColor = "#d4572f"; }}
-              onMouseLeave={e => { e.currentTarget.style.backgroundColor = "var(--accent)"; }}
+              loading={saving}
             >
-              {saving
-                ? <><Loader2 size={14} className="animate-spin" /> Saving…</>
-                : <><Check size={14} strokeWidth={2.5} /> Save Changes</>
-              }
-            </button>
+              Save Changes
+            </Button>
           </div>
 
         </div>

@@ -18,10 +18,12 @@
  */
 
 import { useState, useRef, useEffect } from "react";
-import { Image, X, Loader2, Tag, SendHorizonal } from "lucide-react";
+import { Image, X, Tag, SendHorizonal } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "../../api/axios.js";
 import Avatar from "../common/Avatar.jsx";
+import Button from "../common/Button.jsx";
+import Badge from "../common/Badge.jsx";
 
 const MAX_CHARS       = 500;
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MB
@@ -337,24 +339,17 @@ const PostForm = ({ currentUser, onPost }) => {
 
           {/* Selected tag pill */}
           {selectedTag && (
-            <span
-              className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full"
-              style={{
-                backgroundColor: "var(--accent-light)",
-                border:          "1px solid var(--accent-border)",
-                color:           "#9a3412",
-              }}
-            >
+            <Badge variant="accent">
               {TAG_OPTIONS.find((t) => t.value === selectedTag)?.label ?? selectedTag}
               <button
                 type="button"
                 onClick={() => setSelectedTag(null)}
                 aria-label="Remove tag"
-                className="min-h-0 flex items-center"
+                className="ml-0.5 flex items-center focus:outline-none"
               >
                 <X size={11} strokeWidth={2.5} />
               </button>
-            </span>
+            </Badge>
           )}
 
           {/* ── Spacer ─────────────────────────────────────────────────── */}
@@ -404,29 +399,16 @@ const PostForm = ({ currentUser, onPost }) => {
             </span>
 
             {/* Post button */}
-            <button
-              type="submit"
+            <Button
               id="post-submit-btn"
+              type="submit"
+              variant="primary"
+              size="sm"
               disabled={!canPost}
-              className="
-                text-white text-xs font-bold tracking-wide px-4 py-2 rounded-lg
-                transition-all duration-150
-                active:scale-95
-                disabled:opacity-40 disabled:cursor-not-allowed disabled:scale-100
-                focus:outline-none focus:ring-2
-              "
-              style={{ backgroundColor: "var(--accent)" }}
-              onMouseEnter={e => { if (canPost) e.currentTarget.style.backgroundColor = "#d4572f"; }}
-              onMouseLeave={e => { e.currentTarget.style.backgroundColor = "var(--accent)"; }}
+              loading={loading}
             >
-              {loading
-                ? <span className="flex items-center gap-1.5">
-                    <Loader2 size={12} className="animate-spin" />
-                    Posting…
-                  </span>
-                : "Post"
-              }
-            </button>
+              Post
+            </Button>
           </div>
         </div>
       </form>

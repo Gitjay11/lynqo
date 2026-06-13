@@ -1,81 +1,25 @@
 /**
- * NotificationPanel.jsx — Dropdown Notification Panel (Themed)
+ * NotificationPanel.jsx — Dropdown Notification Panel (Upgraded)
  *
- * bg-bg-surface card with border-app-border shadow.
- * Unread badge: bg-app-accent text-white.
+ * Dropdown card showing recent notifications.
+ * Uses NotificationItem for each row, EmptyState for empty list.
  */
 
-import { useEffect, useRef } from "react";
-import { Loader2, Bell, Check } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { useEffect }        from "react";
 import { useNotifications } from "../../hooks/useNotifications.js";
+import NotificationItem     from "./NotificationItem.jsx";
+import EmptyState           from "../common/EmptyState.jsx";
 
-// ── Relative timestamp ────────────────────────────────────────────────────────
-const relTime = (d) => {
-  try { return formatDistanceToNow(new Date(d), { addSuffix: true }); }
-  catch { return ""; }
-};
-
-// ── Notification icon map ─────────────────────────────────────────────────────
-const ICONS = {
-  like:     "👍",
-  dislike:  "👎",
-  comment:  "💬",
-  follow:   "👤",
-  message:  "📩",
-  default:  "🔔",
-};
-const notifIcon = (type) => ICONS[type] ?? ICONS.default;
-
-// ── Single notification row ───────────────────────────────────────────────────
-const NotificationRow = ({ notif, onMarkRead }) => {
-  const unread = !notif.read;
-
-  return (
-    <button
-      onClick={() => !notif.read && onMarkRead(notif._id)}
-      disabled={notif.read}
-      aria-label={notif.read ? notif.message : `Mark as read: ${notif.message}`}
-      style={{
-        backgroundColor: unread ? "var(--accent-light)" : "transparent",
-        borderBottom:    "1px solid var(--border)",
-      }}
-      className="
-        w-full flex items-start gap-3 px-4 py-3
-        min-h-[60px] text-left
-        transition-colors duration-100
-        focus:outline-none
-        disabled:cursor-default
-      "
-      onMouseEnter={e => { if (notif.read) e.currentTarget.style.backgroundColor = "var(--bg-elevated)"; }}
-      onMouseLeave={e => { if (notif.read) e.currentTarget.style.backgroundColor = "transparent"; }}
-    >
-      {/* Type icon */}
-      <span className="flex-shrink-0 mt-0.5 text-base" aria-hidden="true">
-        {notifIcon(notif.type)}
-      </span>
-
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        <p className="text-sm leading-snug" style={{ color: "var(--text-primary)", fontWeight: unread ? 600 : 400 }}>
-          {notif.message}
-        </p>
-        <p className="text-[11px] mt-0.5" style={{ color: "var(--text-secondary)" }}>
-          {relTime(notif.createdAt)}
-        </p>
-      </div>
-
-      {/* Unread dot */}
-      {unread && (
-        <span
-          className="flex-shrink-0 mt-1 w-2 h-2 rounded-full"
-          style={{ backgroundColor: "var(--accent)" }}
-          aria-hidden="true"
-        />
-      )}
-    </button>
-  );
-};
+// ── Skeleton row — shown while loading ────────────────────────────────────────
+const SkeletonRow = () => (
+  <div className="flex items-start gap-3 px-4 py-3 border-b border-[var(--border)] last:border-b-0">
+    <div className="skeleton w-8 h-8 rounded-full flex-shrink-0" />
+    <div className="flex-1 space-y-2 pt-0.5">
+      <div className="skeleton h-3 w-4/5 rounded-full" />
+      <div className="skeleton h-2.5 w-1/3 rounded-full" />
+    </div>
+  </div>
+);
 
 // ─────────────────────────────────────────────────────────────────────────────
 const NotificationPanel = ({ onClose }) => {
@@ -85,102 +29,107 @@ const NotificationPanel = ({ onClose }) => {
     unreadCount,
     markAsRead,
     markAllAsRead,
+    deleteNotification,
   } = useNotifications();
 
-  const panelRef = useRef(null);
-
-  // ── Close on Escape ────────────────────────────────────────────────────────
+  // ── Close on Escape ──────────────────────────────────────────────────────
   useEffect(() => {
     const handler = (e) => { if (e.key === "Escape") onClose(); };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
   }, [onClose]);
 
+  // ── Handle notification click: mark read + close panel ───────────────────
+  const handleNotifClick = (notification) => {
+    if (!notification.read) {
+      markAsRead(notification._id);
+    }
+    onClose();
+  };
+
+  // ── Handle delete ────────────────────────────────────────────────────────
+  const handleDelete = (e, id) => {
+    e.stopPropagation();
+    deleteNotification?.(id);
+  };
+
   // ─────────────────────────────────────────────────────────────────────────
   return (
     <div
-      ref={panelRef}
       role="dialog"
       aria-modal="false"
       aria-label="Notifications"
-      style={{
-        backgroundColor: "var(--bg-surface)",
-        border:          "1px solid var(--border)",
-      }}
       className="
-        absolute right-0 top-[calc(100%+8px)]
-        w-80 sm:w-96
-        max-h-[480px]
-        rounded-2xl
-        shadow-xl shadow-black/20
+        absolute right-0 top-[calc(100%+8px)] z-50
+        w-80
+        max-h-96
+        bg-[var(--bg-surface)] border border-[var(--border)]
+        rounded-2xl shadow-xl
         overflow-hidden
         flex flex-col
-        z-50
         animate-slide-up
       "
     >
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      {/* ── Header ────────────────────────────────────────────────────────── */}
       <div
-        className="flex items-center justify-between px-4 py-3 flex-shrink-0"
+        className="flex items-center justify-between px-4 pt-4 pb-3 flex-shrink-0"
         style={{ borderBottom: "1px solid var(--border)" }}
       >
-        <div className="flex items-center gap-2">
-          <Bell size={16} style={{ color: "var(--text-secondary)" }} />
-          <h2 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-            Notifications
-          </h2>
-          {unreadCount > 0 && (
-            <span
-              className="flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[11px] font-bold rounded-full"
-              style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}
-            >
-              {unreadCount > 9 ? "9+" : unreadCount}
-            </span>
-          )}
-        </div>
+        {/* Title */}
+        <h2 className="font-display font-bold text-sm text-[var(--text-primary)]">
+          Notifications
+        </h2>
 
+        {/* Mark all read — only when there are unread */}
         {unreadCount > 0 && (
           <button
             onClick={markAllAsRead}
-            className="flex items-center gap-1 text-xs transition-colors min-h-0"
-            style={{ color: "var(--text-secondary)" }}
-            onMouseEnter={e => e.currentTarget.style.color = "var(--accent)"}
-            onMouseLeave={e => e.currentTarget.style.color = "var(--text-secondary)"}
+            className="
+              font-sans font-semibold text-xs text-[var(--accent)]
+              cursor-pointer hover:underline
+              transition-colors duration-150
+              focus:outline-none
+            "
           >
-            <Check size={12} />
             Mark all read
           </button>
         )}
       </div>
 
-      {/* ── Body ───────────────────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto">
+      {/* ── Scrollable notification list ─────────────────────────────────── */}
+      <div className="overflow-y-auto max-h-[320px] flex-1">
+
+        {/* Loading — 3 skeleton rows */}
         {loading && (
-          <div className="flex items-center justify-center py-10">
-            <Loader2 size={20} className="animate-spin" style={{ color: "var(--text-secondary)" }} />
-          </div>
+          <>
+            <SkeletonRow />
+            <SkeletonRow />
+            <SkeletonRow />
+          </>
         )}
 
+        {/* Empty state */}
         {!loading && notifications.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
-            <div
-              className="w-12 h-12 rounded-full flex items-center justify-center mb-3"
-              style={{ backgroundColor: "var(--bg-elevated)" }}
-            >
-              <Bell size={22} style={{ color: "var(--text-muted)" }} />
-            </div>
-            <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-              No notifications yet
-            </p>
-            <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
-              We'll let you know when something happens.
-            </p>
-          </div>
+          <EmptyState
+            emoji="🔔"
+            title="You're all caught up"
+            subtitle="No new notifications"
+          />
         )}
 
-        {!loading && notifications.map((n) => (
-          <NotificationRow key={n._id} notif={n} onMarkRead={markAsRead} />
-        ))}
+        {/* Notification rows */}
+        {!loading && notifications.length > 0 && (
+          <ul role="list" className="divide-y-0">
+            {notifications.map((n) => (
+              <NotificationItem
+                key={n._id}
+                notification={n}
+                onClick={handleNotifClick}
+                onDelete={handleDelete}
+              />
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );

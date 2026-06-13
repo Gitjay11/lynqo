@@ -359,3 +359,146 @@ export const reportAnonPost = async (req, res, next) => {
     next(error);
   }
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// @desc    Get comments for an anonymous post
+// @route   GET /api/anon/:id/comments
+// @access  Protected
+//
+// PRIVACY: All comments are shown as "Anonymous". The isOwner flag lets the
+// current user know which comments are theirs (for delete button) without
+// revealing any identity to other users.
+// ─────────────────────────────────────────────────────────────────────────────
+export const getAnonComments = async (req, res, next) => {
+  try {
+    // Fetch only the comments subdocument, excluding realAuthor on the parent
+    // and realCommenter on each subdocument (select:false handles that).
+    const post = await AnonPost.findById(req.params.id)
+      .select("-realAuthor comments")
+      .lean();
+
+    if (!post) {
+      res.status(404);
+      return next(new Error("Anonymous post not found"));
+    }
+
+    const userId = req.user._id.toString();
+
+    // For each comment, fetch realCommenter separately just to compute isOwner,
+    // then discard it. This avoids a full populate that might expose the field.
+    const PostModel = (await import("../models/AnonPost.js")).default;
+    const postWithCommenters = await PostModel.findById(req.params.id)
+      .select("comments")
+      .populate({ path: "comments.realCommenter", select: "_id" });
+
+    const comments = (post.comments ?? []).map((c, idx) => {
+      const realId = postWithCommenters?.comments?.[idx]?.realCommenter?._id?.toString();
+      return {
+        _id:       c._id,
+        content:   c.content,
+        createdAt: c.createdAt,
+        isOwner:   realId === userId,
+      };
+    });
+
+    return res.status(200).json({ success: true, comments });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// @desc    Add a comment to an anonymous post
+// @route   POST /api/anon/:id/comment
+// @access  Protected
+//
+// PRIVACY: realCommenter stored but never returned. The returned comment only
+// contains _id, content, createdAt, and isOwner: true (it's always the
+// commenter's own comment on creation).
+// ─────────────────────────────────────────────────────────────────────────────
+export const addAnonComment = async (req, res, next) => {
+  try {
+    const { content } = req.body;
+
+    if (!content || content.trim() === "") {
+      res.status(400);
+      return next(new Error("Comment content is required"));
+    }
+    if (content.trim().length > 300) {
+      res.status(400);
+      return next(new Error("Comment cannot exceed 300 characters"));
+    }
+
+    const post = await AnonPost.findById(req.params.id).select("-realAuthor");
+    if (!post) {
+      res.status(404);
+      return next(new Error("Anonymous post not found"));
+    }
+    if (post.isHidden) {
+      res.status(403);
+      return next(new Error("This post has been removed"));
+    }
+
+    post.comments.push({
+      realCommenter: req.user._id,
+      content:       content.trim(),
+    });
+    await post.save();
+
+    const newComment = post.comments[post.comments.length - 1];
+
+    return res.status(201).json({
+      success: true,
+      comment: {
+        _id:       newComment._id,
+        content:   newComment.content,
+        createdAt: newComment.createdAt,
+        isOwner:   true, // always true — user just posted it
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// @desc    Delete a comment from an anonymous post (own comment only)
+// @route   DELETE /api/anon/:id/comment/:commentId
+// @access  Protected
+// ─────────────────────────────────────────────────────────────────────────────
+export const deleteAnonComment = async (req, res, next) => {
+  try {
+    // Need realCommenter to verify ownership — fetch with +realCommenter workaround
+    const post = await AnonPost.findById(req.params.id).select("-realAuthor");
+    if (!post) {
+      res.status(404);
+      return next(new Error("Anonymous post not found"));
+    }
+
+    const comment = post.comments.id(req.params.commentId);
+    if (!comment) {
+      res.status(404);
+      return next(new Error("Comment not found"));
+    }
+
+    // Fetch realCommenter for ownership check (NOT returned in response)
+    const PostModel = (await import("../models/AnonPost.js")).default;
+    const postWithCommenter = await PostModel.findOne(
+      { _id: req.params.id, "comments._id": req.params.commentId },
+      { "comments.$": 1 }
+    ).populate({ path: "comments.realCommenter", select: "_id" });
+
+    const realCommenter = postWithCommenter?.comments?.[0]?.realCommenter?._id?.toString();
+    if (realCommenter !== req.user._id.toString()) {
+      res.status(403);
+      return next(new Error("You can only delete your own comments"));
+    }
+
+    post.comments.pull({ _id: req.params.commentId });
+    await post.save();
+
+    return res.status(200).json({ success: true, message: "Comment deleted" });
+  } catch (error) {
+    next(error);
+  }
+};

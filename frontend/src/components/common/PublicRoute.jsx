@@ -13,15 +13,15 @@
  */
 
 import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth.js";
-import Loader from "./Loader.jsx";
+import { useAuth }          from "../../hooks/useAuth.js";
+import Loader               from "./Loader.jsx";
 
 const PublicRoute = () => {
   const { user, loading } = useAuth();
 
   // Show loader while /api/auth/me is in-flight — prevents a flash of the
   // landing page before we know the user is actually authenticated.
-  if (loading) return <Loader fullScreen />;
+  if (loading) return <Loader fullScreen text="Loading Lynqo..." />;
 
   // Authenticated → redirect to the feed (they don't belong here)
   if (user) return <Navigate to="/feed" replace />;

@@ -28,8 +28,10 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { RefreshCw, Newspaper, Search, Loader2 } from "lucide-react";
-import toast                                       from "react-hot-toast";
+import { RefreshCw, Newspaper, Search } from "lucide-react";
+import toast                             from "react-hot-toast";
+import Button                            from "../components/common/Button.jsx";
+import EmptyState                        from "../components/common/EmptyState.jsx";
 import api                                         from "../api/axios.js";
 import { useAuth }                                 from "../hooks/useAuth.js";
 import PostForm                                    from "../components/feed/PostForm.jsx";
@@ -275,22 +277,11 @@ const FeedPage = () => {
 
               {/* Search empty state */}
               {!searchLoading && !searchError && displayedSearchResults.length === 0 && (
-                <div className="flex flex-col items-center gap-3 py-16 text-center">
-                  <div
-                    className="w-14 h-14 rounded-full flex items-center justify-center"
-                    style={{ backgroundColor: "var(--bg-elevated)" }}
-                  >
-                    <Search size={22} style={{ color: "var(--text-muted)" }} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold font-display" style={{ color: "var(--text-primary)" }}>
-                      No posts found for &ldquo;{searchQuery}&rdquo;
-                    </p>
-                    <p className="text-xs font-normal mt-1" style={{ color: "var(--text-secondary)" }}>
-                      Try a different keyword
-                    </p>
-                  </div>
-                </div>
+                <EmptyState
+                  icon={<Search size={28} />}
+                  title={`No posts found for \u201c${searchQuery}\u201d`}
+                  subtitle="Try a different keyword"
+                />
               )}
 
               {/* Search results */}
@@ -335,39 +326,22 @@ const FeedPage = () => {
 
               {/* Error with retry */}
               {!loading && error && (
-                <div className="flex flex-col items-center gap-3 py-12">
-                  <p className="text-sm text-center" style={{ color: "var(--text-secondary)" }}>{error}</p>
-                  <button
-                    onClick={() => fetchPosts(1, false)}
-                    className="flex items-center gap-2 text-sm px-4 py-2 rounded-xl transition-colors duration-150"
-                    style={{
-                      backgroundColor: "var(--bg-surface)",
-                      border:          "1px solid var(--border)",
-                      color:           "var(--text-secondary)",
-                    }}
-                  >
-                    <RefreshCw size={14} />
-                    Try again
-                  </button>
-                </div>
+                <EmptyState
+                  emoji="⚠️"
+                  title="Failed to load posts"
+                  subtitle={error}
+                  action={() => fetchPosts(1, false)}
+                  actionLabel="Try again"
+                />
               )}
 
               {/* Empty state */}
               {!loading && !error && displayedPosts.length === 0 && (
-                <div className="flex flex-col items-center gap-3 py-16 text-center">
-                  <div
-                    className="w-16 h-16 rounded-full flex items-center justify-center mb-1"
-                    style={{ backgroundColor: "var(--bg-elevated)" }}
-                  >
-                    <Newspaper size={28} style={{ color: "var(--text-secondary)" }} />
-                  </div>
-                  <p className="text-base font-bold font-display" style={{ color: "var(--text-primary)" }}>
-                    {selectedTag ? `No ${selectedTag} posts yet` : "No posts yet"}
-                  </p>
-                  <p className="text-sm font-normal max-w-[240px] leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                    {selectedTag ? "Try a different filter or be the first to post!" : "Be the first to post something!"}
-                  </p>
-                </div>
+                <EmptyState
+                  icon={<Newspaper size={28} />}
+                  title={selectedTag ? `No ${selectedTag} posts yet` : "No posts yet"}
+                  subtitle={selectedTag ? "Try a different filter or be the first to post!" : "Be the first to post something!"}
+                />
               )}
 
               {/* Post list */}
@@ -395,44 +369,16 @@ const FeedPage = () => {
 
                   {/* ── Load More / End of feed ───────────────────────── */}
                   {page < totalPages ? (
-                    <button
+                    <Button
                       id="load-more-btn"
+                      variant="secondary"
+                      size="full"
                       onClick={handleLoadMore}
-                      disabled={loadingMore}
-                      className="
-                        w-full py-3 rounded-2xl
-                        text-sm font-bold
-                        transition-all duration-150
-                        active:scale-95
-                        disabled:opacity-60 disabled:cursor-not-allowed disabled:scale-100
-                        focus:outline-none
-                        mt-2
-                      "
-                      style={{
-                        backgroundColor: "var(--bg-surface)",
-                        border:          "1px solid var(--border)",
-                        color:           "var(--text-secondary)",
-                      }}
-                      onMouseEnter={e => {
-                        if (!loadingMore) {
-                          e.currentTarget.style.backgroundColor = "var(--bg-elevated)";
-                          e.currentTarget.style.color           = "var(--text-primary)";
-                        }
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.backgroundColor = "var(--bg-surface)";
-                        e.currentTarget.style.color           = "var(--text-secondary)";
-                      }}
+                      loading={loadingMore}
+                      className="mt-2 rounded-2xl py-3"
                     >
-                      {loadingMore ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <Loader2 size={15} className="animate-spin" />
-                          Loading…
-                        </span>
-                      ) : (
-                        "Load more posts"
-                      )}
-                    </button>
+                      Load more posts
+                    </Button>
                   ) : (
                     <p
                       className="text-xs text-center py-4"

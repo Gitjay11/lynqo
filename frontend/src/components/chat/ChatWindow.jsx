@@ -19,7 +19,6 @@ import {
   Smile,
   MoreVertical,
   SendHorizonal,
-  Loader2,
   AlertCircle,
 } from "lucide-react";
 import toast             from "react-hot-toast";
@@ -27,6 +26,7 @@ import { useAuth }       from "../../hooks/useAuth.js";
 import { useSocket }     from "../../hooks/useSocket.js";
 import api               from "../../api/axios.js";
 import Avatar            from "../common/Avatar.jsx";
+import Loader            from "../common/Loader.jsx";
 import OnlineDot         from "./OnlineDot.jsx";
 import MessageBubble     from "./MessageBubble.jsx";
 
@@ -367,7 +367,7 @@ const ChatWindow = ({ convId }) => {
         {/* Loading spinner */}
         {loading && (
           <div className="flex justify-center items-center flex-1">
-            <Loader2 size={24} className="animate-spin" style={{ color: "var(--text-secondary)" }} />
+            <Loader size="md" text="" />
           </div>
         )}
 

@@ -26,13 +26,13 @@ import {
   logoutUser,
 } from "../controllers/authController.js";
 
-// ── Auth-specific rate limiter: 10 requests per 15 minutes per IP ──────────
-// Applied only to the public login + register endpoints to prevent brute‑force
-// and credential‑stuffing attacks. /me and /logout are already behind
-// the JWT `protect` guard, so they don’t need this extra layer.
+// ── Auth-specific rate limiter ────────────────────────────────────────────────
+// Production: 10 req / 15 min — prevents brute-force / credential stuffing.
+// Development: 100 req / 15 min — no one wants to be locked out while testing.
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10,
+  max: process.env.NODE_ENV === "production" ? 10 : 100,
+  skip: () => process.env.NODE_ENV !== "production", // skip entirely in dev
   standardHeaders: true,
   legacyHeaders: false,
   message: {

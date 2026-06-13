@@ -1,31 +1,35 @@
 /**
- * FollowListModal.jsx — Followers / Following List Modal (Redesigned)
+ * FollowListModal.jsx — Followers / Following List Modal (Upgraded)
  *
  * Mobile:  full-height bottom sheet — fixed inset-x-0 bottom-0, rounded-t-2xl
  * Desktop: centered dialog — fixed inset-0 flex items-center justify-center
  *
- * Features:
- *  - Client-side search filter (no extra API call)
- *  - Redesigned user rows with bg-elevated card style
- *  - Ghost empty state
- *  - Backdrop click + Escape key to close
- *  - Body scroll lock while open
+ * Uses shared components:
+ *  - Input     for the search field
+ *  - Button    for the close button
+ *  - Loader    for loading state
+ *  - EmptyState for empty/error states
+ *  - Avatar    for user rows
  *
  * Props (unchanged):
- *  - isOpen      {boolean}
- *  - onClose     {function}
- *  - title       {string}   — "Followers" | "Following"
- *  - userId      {string}
- *  - type        {string}   — "followers" | "following"
+ *  isOpen  — boolean
+ *  onClose — function
+ *  title   — string   — "Followers" | "Following"
+ *  userId  — string
+ *  type    — string   — "followers" | "following"
  *
  * API calls unchanged: GET /api/users/:userId/followers  |  /following
  */
 
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate }                       from "react-router-dom";
-import { X, Loader2, Users }                 from "lucide-react";
-import api    from "../../api/axios.js";
-import Avatar from "../common/Avatar.jsx";
+import { X }                                 from "lucide-react";
+import api        from "../../api/axios.js";
+import Avatar     from "../common/Avatar.jsx";
+import Button     from "../common/Button.jsx";
+import Input      from "../common/Input.jsx";
+import Loader     from "../common/Loader.jsx";
+import EmptyState from "../common/EmptyState.jsx";
 
 // ─────────────────────────────────────────────────────────────────────────────
 const FollowListModal = ({ isOpen, onClose, title, userId, type }) => {
@@ -87,17 +91,21 @@ const FollowListModal = ({ isOpen, onClose, title, userId, type }) => {
       )
     : users;
 
+  // Empty state message
+  const emptyTitle    = searchQuery.trim() ? "No results found" : type === "followers" ? "No followers yet" : "Not following anyone yet";
+  const emptySubtitle = searchQuery.trim() ? `No users match "${searchQuery}"` : type === "followers" ? "When someone follows this user, they'll appear here." : "This user isn't following anyone yet.";
+
   // ─────────────────────────────────────────────────────────────────────────
   return (
     <>
-      {/* ── Backdrop ───────────────────────────────────────────────────── */}
+      {/* ── Backdrop ────────────────────────────────────────────────────── */}
       <div
         className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm animate-fade-in-fast"
         onClick={onClose}
         aria-hidden="true"
       />
 
-      {/* ── Modal — bottom sheet on mobile, centered on md+ ───────────── */}
+      {/* ── Modal — bottom sheet on mobile, centered on md+ ─────────────── */}
       <div
         className="
           fixed inset-x-0 bottom-0 z-50
@@ -123,7 +131,7 @@ const FollowListModal = ({ isOpen, onClose, title, userId, type }) => {
           onClick={(e) => e.stopPropagation()}
         >
 
-          {/* ── Header ──────────────────────────────────────────────────── */}
+          {/* ── Header ────────────────────────────────────────────────────── */}
           <div
             className="flex items-center justify-between px-5 py-4 flex-shrink-0"
             style={{ borderBottom: "1px solid var(--border)" }}
@@ -131,81 +139,48 @@ const FollowListModal = ({ isOpen, onClose, title, userId, type }) => {
             <h2 className="text-base font-bold font-display" style={{ color: "var(--text-primary)" }}>
               {title}
             </h2>
-            <button
+            <Button
               id="follow-modal-close-btn"
+              variant="ghost"
+              size="xs"
               onClick={onClose}
               aria-label="Close modal"
-              className="
-                flex items-center justify-center
-                w-8 h-8 rounded-lg min-h-0
-                transition-colors duration-150
-                focus:outline-none
-              "
-              style={{ color: "var(--text-secondary)" }}
-              onMouseEnter={e => {
-                e.currentTarget.style.backgroundColor = "var(--bg-elevated)";
-                e.currentTarget.style.color           = "var(--text-primary)";
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.backgroundColor = "transparent";
-                e.currentTarget.style.color           = "var(--text-secondary)";
-              }}
-            >
-              <X size={18} strokeWidth={2.5} />
-            </button>
-          </div>
-
-          {/* ── Search ──────────────────────────────────────────────────── */}
-          <div className="px-4 pt-3 pb-2 flex-shrink-0">
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="
-                w-full px-4 py-2 rounded-xl text-sm font-normal
-                outline-none transition-colors duration-150
-              "
-              style={{
-                backgroundColor: "var(--bg-elevated)",
-                border:          "1px solid var(--border)",
-                color:           "var(--text-primary)",
-              }}
-              onFocus={e  => e.currentTarget.style.borderColor = "var(--accent)"}
-              onBlur={e   => e.currentTarget.style.borderColor = "var(--border)"}
+              icon={<X size={16} strokeWidth={2.5} />}
             />
           </div>
 
-          {/* ── Body — scrollable ────────────────────────────────────────── */}
+          {/* ── Search ────────────────────────────────────────────────────── */}
+          <div className="px-4 pt-3 pb-2 flex-shrink-0">
+            <Input
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              id="follow-modal-search"
+            />
+          </div>
+
+          {/* ── Body — scrollable ──────────────────────────────────────────── */}
           <div className="overflow-y-auto flex-1 overscroll-contain px-4 pb-4 space-y-2">
 
             {/* Loading */}
-            {loading && (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 size={24} className="animate-spin" style={{ color: "var(--text-muted)" }} />
-              </div>
-            )}
+            {loading && <Loader size="md" text="Loading..." />}
 
             {/* Error */}
             {!loading && error && (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <p className="text-sm text-red-500">{error}</p>
-              </div>
+              <EmptyState
+                emoji="⚠️"
+                title="Something went wrong"
+                subtitle={error}
+              />
             )}
 
             {/* Empty state — no users or search yields nothing */}
             {!loading && !error && filtered.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-12 gap-3">
-                <Users size={32} style={{ color: "var(--text-muted)" }} />
-                <p className="text-xs font-normal" style={{ color: "var(--text-muted)" }}>
-                  {searchQuery.trim()
-                    ? "No results found"
-                    : type === "followers"
-                      ? "No followers yet"
-                      : "Not following anyone yet"
-                  }
-                </p>
-              </div>
+              <EmptyState
+                emoji="👤"
+                title={emptyTitle}
+                subtitle={emptySubtitle}
+              />
             )}
 
             {/* User list */}
@@ -227,17 +202,15 @@ const FollowListModal = ({ isOpen, onClose, title, userId, type }) => {
                 onMouseLeave={e => e.currentTarget.style.borderColor = "transparent"}
               >
                 {/* Avatar */}
-                <div className="flex-shrink-0">
-                  <Avatar
-                    src={person.profilePicture || null}
-                    name={person.name}
-                    size="sm"
-                  />
-                </div>
+                <Avatar
+                  src={person.profilePicture || null}
+                  name={person.name}
+                  size="sm"
+                />
 
                 {/* Name + meta */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold font-display tracking-snug truncate" style={{ color: "var(--text-primary)" }}>
+                  <p className="text-sm font-bold font-display truncate" style={{ color: "var(--text-primary)" }}>
                     {person.name}
                   </p>
                   <p className="text-xs font-normal truncate mt-0.5" style={{ color: "var(--text-secondary)" }}>

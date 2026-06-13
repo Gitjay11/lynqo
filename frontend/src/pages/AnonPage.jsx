@@ -17,11 +17,10 @@
  */
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import {
-  RefreshCw, Search,
-  Flame, Clock, Heart, MessageCircle,
-} from "lucide-react";
+import { Flame, Clock, Heart, MessageCircle } from "lucide-react";
 import toast              from "react-hot-toast";
+import Button             from "../components/common/Button.jsx";
+import EmptyState         from "../components/common/EmptyState.jsx";
 import api                from "../api/axios.js";
 import { useAuth }        from "../hooks/useAuth.js";
 import AnonPostForm       from "../components/anon/AnonPostForm.jsx";
@@ -150,16 +149,14 @@ const DesktopSidebar = ({ posts, onScrollToForm }) => {
         <p className="text-xs font-normal mb-3" style={{ color: "var(--text-secondary)" }}>
           Post it anonymously. No one will know.
         </p>
-        <button
+        <Button
           onClick={onScrollToForm}
-          className="w-full text-white text-xs font-bold py-2 rounded-xl
-                     active:scale-95 transition-all duration-150 min-h-0"
-          style={{ backgroundColor: "var(--accent)" }}
-          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "var(--accent-hover)"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "var(--accent)"; }}
+          variant="primary"
+          size="sm"
+          fullWidth
         >
           Post Anonymously
-        </button>
+        </Button>
       </div>
     </aside>
   );
@@ -383,23 +380,11 @@ const AnonPage = () => {
 
               {!searchLoading && !searchError && searchResults.length === 0 && (
                 /* Empty search state */
-                <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <div
-                    className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
-                    style={{
-                      backgroundColor: "var(--accent-light)",
-                      border:          "1px solid var(--accent-border)",
-                    }}
-                  >
-                    <span className="text-3xl select-none">👻</span>
-                  </div>
-                  <p className="text-base font-bold font-display mb-2" style={{ color: "var(--text-primary)" }}>
-                    No results for &ldquo;{searchQuery}&rdquo;
-                  </p>
-                  <p className="text-xs font-normal leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                    Try a different search term
-                  </p>
-                </div>
+                <EmptyState
+                  emoji="👻"
+                  title={`No results for \u201c${searchQuery}\u201d`}
+                  subtitle="Try a different search term"
+                />
               )}
 
               {!searchLoading && searchResults.length > 0 && (
@@ -451,37 +436,22 @@ const AnonPage = () => {
 
               {/* Error with retry */}
               {!loading && error && (
-                <div className="flex flex-col items-center gap-3 py-12 text-center">
-                  <p className="text-sm" style={{ color: "var(--text-secondary)" }}>{error}</p>
-                  <button
-                    onClick={() => fetchPosts(1, false)}
-                    className="btn-secondary flex items-center gap-2 text-sm"
-                  >
-                    <RefreshCw size={15} />
-                    Try again
-                  </button>
-                </div>
+                <EmptyState
+                  emoji="⚠️"
+                  title="Failed to load confessions"
+                  subtitle={error}
+                  action={() => fetchPosts(1, false)}
+                  actionLabel="Try again"
+                />
               )}
 
               {/* Empty state */}
               {!loading && !error && posts.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <div
-                    className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
-                    style={{
-                      backgroundColor: "var(--accent-light)",
-                      border:          "1px solid var(--accent-border)",
-                    }}
-                  >
-                    <span className="text-3xl select-none">👻</span>
-                  </div>
-                  <p className="text-base font-bold font-display mb-2" style={{ color: "var(--text-primary)" }}>
-                    No confessions yet
-                  </p>
-                  <p className="text-xs font-normal leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                    You go first. No one will know.
-                  </p>
-                </div>
+                <EmptyState
+                  emoji="👻"
+                  title="No confessions yet"
+                  subtitle="You go first. No one will know."
+                />
               )}
 
               {/* Post list */}
@@ -511,38 +481,16 @@ const AnonPage = () => {
                   {/* Load more / end of feed */}
                   <div className="mt-2">
                     {page < totalPages ? (
-                      <button
+                    <Button
                         id="anon-load-more-btn"
+                        variant="secondary"
+                        size="full"
                         onClick={handleLoadMore}
-                        disabled={loadingMore}
-                        className="w-full rounded-2xl py-3 text-sm font-bold tracking-wide
-                                   active:scale-95 transition-all duration-150 min-h-0"
-                        style={{
-                          backgroundColor: "var(--bg-surface)",
-                          border:          "1px solid var(--border)",
-                          color:           "var(--text-secondary)",
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = "var(--bg-elevated)";
-                          e.currentTarget.style.color           = "var(--text-primary)";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = "var(--bg-surface)";
-                          e.currentTarget.style.color           = "var(--text-secondary)";
-                        }}
+                        loading={loadingMore}
+                        className="rounded-2xl py-3"
                       >
-                        {loadingMore ? (
-                          <span className="flex items-center justify-center gap-2">
-                            <span
-                              className="w-4 h-4 border-2 rounded-full animate-spin"
-                              style={{ borderColor: "var(--border)", borderTopColor: "var(--accent)" }}
-                            />
-                            Loading…
-                          </span>
-                        ) : (
-                          "Load more confessions"
-                        )}
-                      </button>
+                        Load more confessions
+                      </Button>
                     ) : (
                       <p className="text-xs text-center py-4" style={{ color: "var(--text-muted)" }}>
                         You&apos;ve seen all confessions 👻

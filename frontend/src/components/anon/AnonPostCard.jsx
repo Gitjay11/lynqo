@@ -26,6 +26,10 @@ import {
 import toast                   from "react-hot-toast";
 import { formatDistanceToNow } from "date-fns";
 import api                     from "../../api/axios.js";
+import Badge                   from "../common/Badge.jsx";
+import Button                  from "../common/Button.jsx";
+import Loader                  from "../common/Loader.jsx";
+import ConfirmDialog           from "../common/ConfirmDialog.jsx";
 
 // ── Relative time helper ─────────────────────────────────────────────────────
 const relTime = (dateStr) => {
@@ -77,33 +81,24 @@ const ReportConfirm = ({ onConfirm, onCancel, loading }) => (
         If 5 or more users report it, the post will be hidden automatically.
       </p>
       <div className="flex gap-2 mt-2">
-        <button
+        <Button
           onClick={onConfirm}
           disabled={loading}
-          className="flex items-center gap-1.5 px-3 py-1.5 min-h-0 text-xs font-bold
-                     text-white rounded-lg transition-all duration-150
-                     disabled:opacity-50 active:scale-95"
-          style={{ backgroundColor: "var(--accent)" }}
-          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "var(--accent-hover)"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "var(--accent)"; }}
+          loading={loading}
+          variant="primary"
+          size="xs"
+          icon={<Flag size={11} />}
         >
-          {loading
-            ? <span className="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-            : <Flag size={11} />
-          }
           Yes, Report
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={onCancel}
           disabled={loading}
-          className="px-3 py-1.5 min-h-0 text-xs font-medium rounded-lg
-                     transition-colors duration-150 disabled:opacity-50"
-          style={{ color: "var(--text-secondary)" }}
-          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "var(--bg-elevated)"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+          variant="ghost"
+          size="xs"
         >
           Cancel
-        </button>
+        </Button>
       </div>
     </div>
   </div>
@@ -111,11 +106,12 @@ const ReportConfirm = ({ onConfirm, onCancel, loading }) => (
 
 // ── Comment section ───────────────────────────────────────────────────────────
 const CommentSection = ({ postId }) => {
-  const [comments,     setComments]     = useState([]);
-  const [loaded,       setLoaded]       = useState(false);
-  const [loading,      setLoading]      = useState(true);
-  const [commentText,  setCommentText]  = useState("");
-  const [submitting,   setSubmitting]   = useState(false);
+  const [comments,       setComments]       = useState([]);
+  const [loading,        setLoading]        = useState(true);
+  const [commentText,    setCommentText]    = useState("");
+  const [submitting,     setSubmitting]     = useState(false);
+  const [deletingId,     setDeletingId]     = useState(null);   // commentId being deleted
+  const [confirmDelete,  setConfirmDelete]  = useState(null);   // commentId awaiting confirm
 
   // Load comments on mount (GET /api/anon/:id/comments)
   useEffect(() => {
@@ -123,12 +119,9 @@ const CommentSection = ({ postId }) => {
     const load = async () => {
       try {
         const { data } = await api.get(`/anon/${postId}/comments`);
-        if (!cancelled) {
-          setComments(data.comments ?? []);
-          setLoaded(true);
-        }
+        if (!cancelled) setComments(data.comments ?? []);
       } catch {
-        if (!cancelled) setLoaded(true); // show empty rather than spinner forever
+        // show empty rather than spinner forever
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -138,6 +131,7 @@ const CommentSection = ({ postId }) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [postId]);
 
+  // POST /api/anon/:id/comment
   const submitComment = async () => {
     const trimmed = commentText.trim();
     if (!trimmed || submitting) return;
@@ -153,77 +147,83 @@ const CommentSection = ({ postId }) => {
     }
   };
 
-  const deleteComment = async (commentId) => {
+  // DELETE /api/anon/:id/comment/:commentId  (after confirm)
+  const handleDeleteConfirmed = async () => {
+    if (!confirmDelete) return;
+    const commentId = confirmDelete;
+    setConfirmDelete(null);
+    setDeletingId(commentId);
     try {
-      await api.delete(`/anon/comment/${commentId}`);
+      await api.delete(`/anon/${postId}/comment/${commentId}`);
       setComments((prev) => prev.filter((c) => c._id !== commentId));
     } catch (err) {
       toast.error(err.response?.data?.message ?? "Failed to delete comment");
+    } finally {
+      setDeletingId(null);
     }
   };
 
   return (
-    <div
-      className="mt-3 pt-3"
-      style={{ borderTop: "1px solid var(--border)" }}
-    >
-      {/* Loading state */}
-      {loading && (
-        <div className="flex justify-center py-4">
-          <Loader2 size={16} className="animate-spin" style={{ color: "var(--text-muted)" }} />
-        </div>
-      )}
+    <div className="mt-3 pt-3" style={{ borderTop: "1px solid var(--border)" }}>
+
+      {/* Loading */}
+      {loading && <Loader size="sm" text="" />}
 
       {/* Comment list */}
-      {!loading && loaded && (
+      {!loading && (
         <>
           {comments.length === 0 && (
             <p className="text-xs text-center py-3" style={{ color: "var(--text-muted)" }}>
               No comments yet. Be the first!
             </p>
           )}
-          {comments.map((comment) => (
-            <div key={comment._id} className="flex gap-3 mb-3">
-              {/* Ghost avatar — ALL commenters shown as ghost */}
-              <GhostAvatar size="sm" />
 
-              <div className="flex-1 min-w-0">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-xs font-bold" style={{ color: "var(--text-primary)" }}>
-                    Anonymous
-                  </span>
-                  <span className="text-[10px] font-normal tabular-nums" style={{ color: "var(--text-muted)" }}>
-                    {relTime(comment.createdAt)}
-                  </span>
+          <div className="flex flex-col gap-3 mb-3">
+            {comments.map((comment) => (
+              <div key={comment._id} className="flex gap-2.5">
+                <GhostAvatar size="sm" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold" style={{ color: "var(--text-primary)" }}>
+                      Anonymous
+                    </span>
+                    <span className="text-[10px] tabular-nums" style={{ color: "var(--text-muted)" }}>
+                      {relTime(comment.createdAt)}
+                    </span>
 
-                  {/* Delete own comment */}
-                  {comment.isOwner && (
-                    <button
-                      onClick={() => deleteComment(comment._id)}
-                      aria-label="Delete comment"
-                      className="ml-auto text-xs min-h-0 transition-colors duration-150
-                                 hover:text-red-500"
-                      style={{ color: "var(--text-muted)" }}
-                    >
-                      <X size={12} />
-                    </button>
-                  )}
+                    {/* Delete own comment — shows after confirm */}
+                    {comment.isOwner && (
+                      <button
+                        onClick={() => setConfirmDelete(comment._id)}
+                        disabled={deletingId === comment._id}
+                        aria-label="Delete comment"
+                        className="ml-auto flex-shrink-0 p-1 rounded-lg min-h-0
+                                   transition-colors duration-150
+                                   disabled:opacity-50 disabled:cursor-not-allowed"
+                        style={{ color: "var(--text-muted)" }}
+                        onMouseEnter={(e) => e.currentTarget.style.color = "#ef4444"}
+                        onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-muted)"}
+                      >
+                        {deletingId === comment._id
+                          ? <Loader2 size={11} className="animate-spin" />
+                          : <Trash2 size={11} />
+                        }
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-xs leading-[1.65] mt-0.5 break-words" style={{ color: "var(--text-primary)" }}>
+                    {comment.content}
+                  </p>
                 </div>
-                <p
-                  className="text-xs leading-[1.65] mt-0.5"
-                  style={{ color: "var(--text-primary)" }}
-                >
-                  {comment.content}
-                </p>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </>
       )}
 
       {/* Comment input */}
       <div
-        className="flex gap-2 items-center mt-2 pt-3"
+        className="flex gap-2 items-center pt-3"
         style={{ borderTop: comments.length > 0 ? "1px solid var(--border)" : "none" }}
       >
         <GhostAvatar size="sm" />
@@ -242,8 +242,6 @@ const CommentSection = ({ postId }) => {
           onFocus={(e)  => { e.currentTarget.style.borderColor = "var(--accent)"; }}
           onBlur={(e)   => { e.currentTarget.style.borderColor = "var(--border)"; }}
         />
-
-        {/* Send button — only visible when input has text */}
         {commentText.trim() && (
           <button
             onClick={submitComment}
@@ -261,6 +259,17 @@ const CommentSection = ({ postId }) => {
           </button>
         )}
       </div>
+
+      {/* Delete comment confirmation dialog */}
+      <ConfirmDialog
+        isOpen={!!confirmDelete}
+        title="Delete comment?"
+        message="This will permanently remove your anonymous comment."
+        confirmLabel="Delete"
+        confirmVariant="destructive"
+        onConfirm={handleDeleteConfirmed}
+        onClose={() => setConfirmDelete(null)}
+      />
     </div>
   );
 };
@@ -271,6 +280,7 @@ const AnonPostCard = ({ post, currentUser, onHidden, onDelete }) => {
   const isHot   = (post.likes?.length ?? 0) > 30;
 
   const [deleting,          setDeleting]          = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [likeCount,         setLikeCount]         = useState(post.likes?.length ?? 0);
   const [isLiked,           setIsLiked]           = useState(
     () => (post.likes ?? []).some((id) => id?.toString() === userId)
@@ -384,9 +394,10 @@ const AnonPostCard = ({ post, currentUser, onHidden, onDelete }) => {
     }
   }, [post._id, post.content]);
 
-  // ── Delete (DELETE /api/anon/:id) ─────────────────────────────────────────
+  // ── Delete (called after confirmation) ──────────────────────────────────
   const handleDelete = async () => {
     if (deleting) return;
+    setShowDeleteConfirm(false);
     setDeleting(true);
     try {
       await api.delete(`/anon/${post._id}`);
@@ -453,18 +464,9 @@ const AnonPostCard = ({ post, currentUser, onHidden, onDelete }) => {
 
         {/* Hot badge — shows when likes > 30 */}
         {isHot && (
-          <span
-            className="ml-auto inline-flex items-center gap-1 text-[9px] font-bold
-                       px-2 py-1 rounded-full flex-shrink-0"
-            style={{
-              backgroundColor: "var(--accent-light)",
-              border:          "1px solid var(--accent-border)",
-              color:           "var(--accent)",
-            }}
-          >
-            <Flame size={10} />
+          <Badge variant="accent" icon={<Flame size={10} />} className="ml-auto flex-shrink-0">
             Hot
-          </span>
+          </Badge>
         )}
       </header>
 
@@ -544,21 +546,21 @@ const AnonPostCard = ({ post, currentUser, onHidden, onDelete }) => {
           {likeCount > 0 && <span className="tabular-nums">{likeCount}</span>}
         </button>
 
-        {/* Dislike button — ThumbsDown */}
+        {/* Dislike button — clicking while liked: un-likes then dislikes (social media behaviour) */}
         <button
           onClick={handleDislike}
-          disabled={dislikingInFlight || isLiked}
+          disabled={dislikingInFlight}
           aria-label={isDisliked ? "Remove dislike" : "Dislike post"}
           aria-pressed={isDisliked}
-          className={`${actionBtn} disabled:cursor-not-allowed disabled:opacity-40`}
+          className={`${actionBtn} disabled:cursor-not-allowed disabled:opacity-60`}
           style={isDisliked
             ? { color: "#ef4444", backgroundColor: "rgba(239,68,68,0.1)" }
             : { color: "var(--text-muted)" }
           }
           onMouseEnter={(e) => {
-            if (!isDisliked && !isLiked) {
+            if (!isDisliked) {
               e.currentTarget.style.backgroundColor = "var(--bg-elevated)";
-              e.currentTarget.style.color           = "var(--text-primary)";
+              e.currentTarget.style.color           = "#ef4444";
             }
           }}
           onMouseLeave={(e) => {
@@ -601,10 +603,10 @@ const AnonPostCard = ({ post, currentUser, onHidden, onDelete }) => {
         {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Delete button (owner only) */}
+        {/* Delete button (owner only) — shows confirm dialog */}
         {onDelete && (
           <button
-            onClick={handleDelete}
+            onClick={() => setShowDeleteConfirm(true)}
             disabled={deleting}
             aria-label="Delete post"
             className={`${actionBtn} hover:text-red-500 hover:bg-red-500/10
@@ -696,6 +698,18 @@ const AnonPostCard = ({ post, currentUser, onHidden, onDelete }) => {
           )}
         </div>
       </div>
+      {/* ── Delete confirmation dialog ─────────────────────────────────────────── */}
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        title="Delete anonymous post?"
+        message="This will permanently remove your post. This action cannot be undone."
+        confirmLabel="Delete"
+        confirmVariant="destructive"
+        loading={deleting}
+        onConfirm={handleDelete}
+        onClose={() => setShowDeleteConfirm(false)}
+      />
+
     </article>
   );
 };

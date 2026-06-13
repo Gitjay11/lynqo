@@ -9,9 +9,10 @@
  */
 
 import { useState, useRef } from "react";
-import { ImagePlus, X, Loader2, ShieldCheck } from "lucide-react";
+import { ImagePlus, X, ShieldCheck } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "../../api/axios.js";
+import Button from "../common/Button.jsx";
 
 const MAX_CHARS       = 500;
 const MAX_IMAGE_BYTES = 2 * 1024 * 1024; // 2 MB
@@ -239,29 +240,15 @@ const AnonPostForm = ({ onPost }) => {
           </span>
 
           {/* Post Anonymously button */}
-          <button
+          <Button
             type="submit"
+            variant="primary"
+            size="sm"
             disabled={!canPost}
-            className="text-white text-xs font-bold tracking-wide px-4 py-2 rounded-lg
-                       active:scale-95 transition-all duration-150
-                       disabled:opacity-40 disabled:cursor-not-allowed min-h-0"
-            style={{ backgroundColor: "var(--accent)" }}
-            onMouseEnter={(e) => {
-              if (canPost) e.currentTarget.style.backgroundColor = "var(--accent-hover)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "var(--accent)";
-            }}
+            loading={loading}
           >
-            {loading ? (
-              <span className="flex items-center gap-1.5">
-                <Loader2 size={12} className="animate-spin" />
-                Posting…
-              </span>
-            ) : (
-              "Post Anonymously"
-            )}
-          </button>
+            Post Anonymously
+          </Button>
         </div>
       </form>
     </div>

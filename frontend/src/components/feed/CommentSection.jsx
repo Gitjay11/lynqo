@@ -1,21 +1,21 @@
 /**
- * CommentSection.jsx — Collapsible Post Comments (Redesigned)
+ * CommentSection.jsx — Collapsible Post Comments
  *
- * Visual spec:
- *  - Flat comment list (no bubble) — avatar + name/time row + text
- *  - Delete own comment button (trash icon, far right)
+ * Features:
+ *  - Flat comment list — avatar + name/time row + text
+ *  - Delete own comment: trash icon → confirmation dialog → delete
  *  - Comment input: rounded-full bg-elevated, focus → accent border
- *  - Send button (SendHorizonal icon) appears only when input has text
+ *  - Send button appears only when input has text
  *  - Avatar 24px (xs) on input row
- *  - Animated open/close via grid-template-rows
  *
- * All API calls unchanged:
- *  - POST /api/posts/:id/comments  — add comment
- *  - DELETE /api/posts/:id/comments/:commentId — delete comment (if backend supports)
+ * API routes:
+ *  - POST   /api/posts/:id/comment               — add comment
+ *  - DELETE /api/posts/:id/comment/:commentId     — delete comment
  */
 
 import { useState, useCallback } from "react";
 import { SendHorizonal, Loader2, Trash2 } from "lucide-react";
+import ConfirmDialog from "../common/ConfirmDialog.jsx";
 import { formatDistanceToNow } from "date-fns";
 import toast from "react-hot-toast";
 import api from "../../api/axios.js";
@@ -27,17 +27,29 @@ const relTime = (d) => {
   catch { return ""; }
 };
 
+// ── Normalise a raw comment from the backend ──────────────────────────────────
+// Backend schema stores the author as `user` (populated), not `author`.
+// We normalise here so the rest of the component always uses `comment.author`.
+const normaliseComment = (c) => ({
+  ...c,
+  // If the backend returns { user: {...} }, map it to { author: {...} }
+  author: c.author ?? c.user ?? null,
+});
+
 // ── Single comment row ────────────────────────────────────────────────────────
 const CommentRow = ({ comment, currentUser, onDelete }) => {
-  const [deleting, setDeleting] = useState(false);
+  const [deleting,       setDeleting]       = useState(false);
+  const [showConfirm,    setShowConfirm]    = useState(false);
   const userId  = currentUser?._id ?? currentUser?.id;
   const isOwner = String(comment.author?._id ?? comment.author) === String(userId);
 
-  const handleDelete = async () => {
+  const handleDeleteConfirmed = async () => {
     if (deleting) return;
+    setShowConfirm(false);
     setDeleting(true);
     try {
-      await api.delete(`/posts/${comment.postId}/comments/${comment._id}`);
+      // Route: DELETE /api/posts/:id/comment/:commentId  (singular)
+      await api.delete(`/posts/${comment.postId}/comment/${comment._id}`);
       onDelete?.(comment._id);
     } catch (err) {
       toast.error(err.response?.data?.message ?? "Failed to delete comment");
@@ -47,69 +59,85 @@ const CommentRow = ({ comment, currentUser, onDelete }) => {
   };
 
   return (
-    <div className="flex gap-3 mb-3 last:mb-0">
-      {/* Avatar — xs = 24px */}
-      <div className="flex-shrink-0 mt-0.5">
-        <Avatar
-          src={comment.author?.profilePicture}
-          name={comment.author?.name ?? ""}
-          size="xs"
-        />
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        {/* Name + time row */}
-        <div className="flex items-baseline gap-2">
-          <span className="text-xs font-bold leading-none" style={{ color: "var(--text-primary)" }}>
-            {comment.author?.name ?? "Unknown"}
-          </span>
-          <span className="text-[10px] font-normal tabular-nums" style={{ color: "var(--text-muted)" }}>
-            {relTime(comment.createdAt)}
-          </span>
+    <>
+      <div className="flex gap-3 mb-3 last:mb-0">
+        {/* Avatar — xs = 24px */}
+        <div className="flex-shrink-0 mt-0.5">
+          <Avatar
+            src={comment.author?.profilePicture}
+            name={comment.author?.name ?? ""}
+            size="xs"
+          />
         </div>
-        {/* Comment text */}
-        <p className="text-xs leading-[1.65] mt-0.5 break-words whitespace-pre-wrap" style={{ color: "var(--text-primary)" }}>
-          {comment.text}
-        </p>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          {/* Name + time row */}
+          <div className="flex items-baseline gap-2">
+            <span className="text-xs font-bold leading-none" style={{ color: "var(--text-primary)" }}>
+              {comment.author?.name ?? "Unknown"}
+            </span>
+            <span className="text-[10px] font-normal tabular-nums" style={{ color: "var(--text-muted)" }}>
+              {relTime(comment.createdAt)}
+            </span>
+          </div>
+          {/* Comment text */}
+          <p className="text-xs leading-[1.65] mt-0.5 break-words whitespace-pre-wrap" style={{ color: "var(--text-primary)" }}>
+            {comment.text}
+          </p>
+        </div>
+
+        {/* Delete own comment — opens confirm dialog */}
+        {isOwner && (
+          <button
+            onClick={() => setShowConfirm(true)}
+            disabled={deleting}
+            aria-label="Delete comment"
+            className="
+              flex-shrink-0 self-start mt-0.5 ml-auto
+              p-1 rounded-lg min-h-0
+              transition-colors duration-150
+              focus:outline-none focus:ring-2 focus:ring-red-400
+              disabled:opacity-50 disabled:cursor-not-allowed
+            "
+            style={{ color: "var(--text-muted)" }}
+            onMouseEnter={e => e.currentTarget.style.color = "#ef4444"}
+            onMouseLeave={e => e.currentTarget.style.color = "var(--text-muted)"}
+          >
+            {deleting
+              ? <Loader2 size={12} className="animate-spin" />
+              : <Trash2 size={12} />
+            }
+          </button>
+        )}
       </div>
 
-      {/* Delete own comment */}
-      {isOwner && (
-        <button
-          onClick={handleDelete}
-          disabled={deleting}
-          aria-label="Delete comment"
-          className="
-            flex-shrink-0 self-start mt-0.5 ml-auto
-            p-1 rounded-lg min-h-0
-            transition-colors duration-150
-            focus:outline-none focus:ring-2 focus:ring-red-400
-            disabled:opacity-50 disabled:cursor-not-allowed
-          "
-          style={{ color: "var(--text-muted)" }}
-          onMouseEnter={e => e.currentTarget.style.color = "#ef4444"}
-          onMouseLeave={e => e.currentTarget.style.color = "var(--text-muted)"}
-        >
-          {deleting
-            ? <Loader2 size={12} className="animate-spin" />
-            : <Trash2 size={12} />
-          }
-        </button>
-      )}
-    </div>
+      {/* Per-comment delete confirmation */}
+      <ConfirmDialog
+        isOpen={showConfirm}
+        title="Delete comment?"
+        message="This will permanently remove your comment."
+        confirmLabel="Delete"
+        confirmVariant="destructive"
+        loading={deleting}
+        onConfirm={handleDeleteConfirmed}
+        onClose={() => setShowConfirm(false)}
+      />
+    </>
   );
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
 const CommentSection = ({ postId, initialComments = [], currentUser }) => {
-  const [comments, setComments] = useState(initialComments);
+  // Normalise on mount so .author always exists (backend returns .user)
+  const [comments, setComments] = useState(() => initialComments.map(normaliseComment));
   const [text,     setText]     = useState("");
   const [loading,  setLoading]  = useState(false);
 
   const canSubmit = text.trim().length > 0 && !loading;
 
   // ── Submit new comment ────────────────────────────────────────────────────
+  // Route: POST /api/posts/:id/comment  (singular — matches backend)
   const handleSubmit = useCallback(async (e) => {
     e?.preventDefault();
     if (!canSubmit) return;
@@ -118,8 +146,12 @@ const CommentSection = ({ postId, initialComments = [], currentUser }) => {
     setText("");
     setLoading(true);
     try {
-      const { data } = await api.post(`/posts/${postId}/comments`, { text: trimmed });
-      setComments((prev) => [...prev, data.comment]);
+      // Backend returns { comments: [...all comments] }
+      const { data } = await api.post(`/posts/${postId}/comment`, { text: trimmed });
+      // Take the last comment in the returned array (the one we just posted)
+      const all = data.comments ?? [];
+      const newest = all[all.length - 1];
+      if (newest) setComments((prev) => [...prev, normaliseComment(newest)]);
     } catch (err) {
       toast.error(err.response?.data?.message ?? "Failed to post comment");
       setText(trimmed);

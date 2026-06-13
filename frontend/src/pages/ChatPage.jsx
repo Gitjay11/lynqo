@@ -26,6 +26,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { MessageCircle }          from "lucide-react";
 import ChatList                   from "../components/chat/ChatList.jsx";
 import ChatWindow                 from "../components/chat/ChatWindow.jsx";
+import EmptyState                 from "../components/common/EmptyState.jsx";
 
 // ── Desktop right-panel empty state ──────────────────────────────────────────
 const NoConversationSelected = () => (
@@ -33,26 +34,11 @@ const NoConversationSelected = () => (
     className="flex flex-col items-center justify-center h-full text-center px-8"
     style={{ backgroundColor: "var(--bg-primary)" }}
   >
-    {/* Icon container */}
-    <div
-      className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5"
-      style={{ backgroundColor: "var(--accent-light)" }}
-    >
-      <MessageCircle size={30} style={{ color: "var(--accent)" }} />
-    </div>
-
-    <h2
-      className="text-base font-bold mb-2"
-      style={{ color: "var(--text-primary)" }}
-    >
-      Select a conversation
-    </h2>
-    <p
-      className="text-sm max-w-[220px] leading-relaxed"
-      style={{ color: "var(--text-secondary)" }}
-    >
-      Choose a thread on the left or search for a classmate to start chatting.
-    </p>
+    <EmptyState
+      icon={<MessageCircle size={28} />}
+      title="Select a conversation"
+      subtitle="Choose a thread on the left or search for a classmate to start chatting."
+    />
   </div>
 );
 

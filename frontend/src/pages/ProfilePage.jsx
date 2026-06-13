@@ -33,7 +33,7 @@ import { useParams, useNavigate }                    from "react-router-dom";
 import toast                                          from "react-hot-toast";
 import { formatDistanceToNow }                        from "date-fns";
 import {
-  Pencil, Camera, Check, X, Loader2,
+  Pencil, Camera, Check, X,
   BookOpen, GraduationCap, Calendar,
   Building2, Code2, Link2,
   ExternalLink, ChevronRight,
@@ -44,6 +44,9 @@ import {
 import api              from "../api/axios.js";
 import { useAuth }      from "../hooks/useAuth.js";
 import Avatar           from "../components/common/Avatar.jsx";
+import Button           from "../components/common/Button.jsx";
+import Loader           from "../components/common/Loader.jsx";
+import EmptyState       from "../components/common/EmptyState.jsx";
 import FollowListModal  from "../components/profile/FollowListModal.jsx";
 import ProfileEditModal from "../components/profile/ProfileEditModal.jsx";
 
@@ -448,11 +451,11 @@ const ProfilePage = () => {
   if (!profile) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: "var(--bg-primary)" }}>
-        <div className="text-center">
-          <p className="text-5xl mb-4">👤</p>
-          <h2 className="text-xl font-semibold mb-2" style={{ color: "var(--text-primary)" }}>User not found</h2>
-          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>This profile doesn&apos;t exist or has been removed.</p>
-        </div>
+        <EmptyState
+          emoji="👤"
+          title="User not found"
+          subtitle="This profile doesn't exist or has been removed."
+        />
       </div>
     );
   }
@@ -468,9 +471,7 @@ const ProfilePage = () => {
   const RecentPostsSection = () => (
     <SectionCard icon={LayoutGrid} title="Recent Posts" isOwn={isOwnProfile}>
       {recentPostsLoading ? (
-        <div className="flex justify-center py-4">
-          <Loader2 size={18} className="animate-spin" style={{ color: "var(--text-muted)" }} />
-        </div>
+        <Loader size="sm" text="" />
       ) : recentPosts.length === 0 ? (
         <p className="text-xs italic text-center py-4" style={{ color: "var(--text-muted)" }}>No posts yet</p>
       ) : (
@@ -575,27 +576,27 @@ const ProfilePage = () => {
                   {/* Avatar confirm / cancel */}
                   {avatarPreview && (
                     <div className="flex gap-1.5 mt-1">
-                      <button
+                      <Button
                         id="avatar-confirm-btn"
                         onClick={handleAvatarConfirm}
                         disabled={uploading}
-                        className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold rounded-lg min-h-0 disabled:opacity-50 transition-all active:scale-95"
-                        style={{ backgroundColor: "var(--accent)", color: "#ffffff" }}
+                        loading={uploading}
+                        variant="primary"
+                        size="xs"
+                        icon={<Check size={11} strokeWidth={2.5} />}
                       >
-                        {uploading ? <Loader2 size={11} className="animate-spin" /> : <Check size={11} strokeWidth={2.5} />}
                         {uploading ? "Uploading…" : "Save"}
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         id="avatar-cancel-btn"
                         onClick={handleAvatarCancel}
                         disabled={uploading}
-                        className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg min-h-0 disabled:opacity-50 transition-colors"
-                        style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}
-                        onMouseEnter={e => { e.currentTarget.style.color = "#ef4444"; e.currentTarget.style.borderColor = "#ef4444"; }}
-                        onMouseLeave={e => { e.currentTarget.style.color = "var(--text-secondary)"; e.currentTarget.style.borderColor = "var(--border)"; }}
+                        variant="secondary"
+                        size="xs"
+                        icon={<X size={11} strokeWidth={2.5} />}
                       >
-                        <X size={11} strokeWidth={2.5} /> Cancel
-                      </button>
+                        Cancel
+                      </Button>
                     </div>
                   )}
 
@@ -664,79 +665,42 @@ const ProfilePage = () => {
                   <div className="flex gap-2 mt-3 flex-wrap">
                     {isOwnProfile ? (
                       /* Edit Profile */
-                      <button
+                      <Button
                         id="edit-profile-btn"
                         onClick={enterEditMode}
-                        className="
-                          inline-flex items-center gap-1.5 text-xs font-bold
-                          px-3 py-2 rounded-lg
-                          transition-all duration-150 active:scale-95 cursor-pointer min-h-0
-                          focus:outline-none
-                        "
-                        style={{
-                          backgroundColor: "var(--accent-light)",
-                          border:          "1px solid var(--accent-border)",
-                          color:           "#9a3412",
-                        }}
-                        onMouseEnter={e => e.currentTarget.style.backgroundColor = "#f9d5c8"}
-                        onMouseLeave={e => e.currentTarget.style.backgroundColor = "var(--accent-light)"}
+                        variant="accent-light"
+                        size="sm"
+                        icon={<Pencil size={13} />}
                       >
-                        <Pencil size={13} />
                         Edit Profile
-                      </button>
+                      </Button>
                     ) : (
                       <>
                         {/* Follow / Unfollow */}
-                        <button
+                        <Button
                           id="follow-toggle-btn"
                           onClick={handleFollowToggle}
                           disabled={followLoading}
+                          loading={followLoading}
+                          variant={isFollowing ? "secondary" : "primary"}
+                          size="sm"
                           aria-label={isFollowing ? "Unfollow user" : "Follow user"}
-                          className="
-                            text-xs font-bold px-4 py-2 rounded-lg
-                            transition-all duration-150 active:scale-95
-                            min-h-0 focus:outline-none
-                            disabled:opacity-60 disabled:cursor-not-allowed disabled:scale-100
-                          "
-                          style={isFollowing
-                            ? { border: "1px solid var(--border)", color: "var(--text-primary)", backgroundColor: "transparent" }
-                            : { backgroundColor: "var(--accent)", color: "#ffffff", border: "1px solid var(--accent)" }
-                          }
-                          onMouseEnter={e => {
-                            if (!followLoading) e.currentTarget.style.backgroundColor = isFollowing ? "var(--bg-elevated)" : "#d4572f";
-                          }}
-                          onMouseLeave={e => {
-                            e.currentTarget.style.backgroundColor = isFollowing ? "transparent" : "var(--accent)";
-                          }}
                         >
-                          {followLoading
-                            ? <Loader2 size={13} className="animate-spin" />
-                            : (isFollowing ? "Unfollow" : "Follow")
-                          }
-                        </button>
+                          {isFollowing ? "Unfollow" : "Follow"}
+                        </Button>
 
                         {/* Message */}
-                        <button
+                        <Button
                           id="message-btn"
                           onClick={handleMessage}
                           disabled={msgLoading}
-                          className="
-                            inline-flex items-center gap-1.5 text-xs font-bold
-                            px-3 py-2 rounded-lg
-                            transition-all duration-150 active:scale-95
-                            min-h-0 focus:outline-none
-                            disabled:opacity-60 disabled:cursor-not-allowed disabled:scale-100
-                          "
-                          style={{ border: "1px solid var(--border)", color: "var(--text-secondary)" }}
-                          onMouseEnter={e => { if (!msgLoading) e.currentTarget.style.backgroundColor = "var(--bg-elevated)"; }}
-                          onMouseLeave={e => { e.currentTarget.style.backgroundColor = "transparent"; }}
+                          loading={msgLoading}
+                          variant="secondary"
+                          size="sm"
+                          icon={<MessageCircle size={13} />}
                         >
-                          {msgLoading
-                            ? <Loader2 size={13} className="animate-spin" />
-                            : <MessageCircle size={13} />
-                          }
                           Message
-                        </button>
+                        </Button>
                       </>
                     )}
                   </div>

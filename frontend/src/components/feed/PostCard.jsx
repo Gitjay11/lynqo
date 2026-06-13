@@ -28,6 +28,8 @@ import toast from "react-hot-toast";
 import { formatDistanceToNow } from "date-fns";
 import api from "../../api/axios.js";
 import Avatar from "../common/Avatar.jsx";
+import Badge from "../common/Badge.jsx";
+import ConfirmDialog from "../common/ConfirmDialog.jsx";
 import CommentSection from "./CommentSection.jsx";
 
 // ── Tag metadata (emoji + label) ──────────────────────────────────────────────
@@ -108,9 +110,10 @@ const PostCard = ({ post, currentUser, onDelete }) => {
   // ── "Show more" for long posts ────────────────────────────────────────────
   const [expanded, setExpanded] = useState(false);
 
-  // ── Delete / report state ─────────────────────────────────────────────────
-  const [deleting,  setDeleting]  = useState(false);
-  const [reporting, setReporting] = useState(false);
+  // ── Delete / report state ──────────────────────────────────────────────────
+  const [deleting,          setDeleting]          = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [reporting,         setReporting]         = useState(false);
 
   const isOwner = String(post.author?._id ?? post.author) === String(userId);
 
@@ -202,9 +205,10 @@ const PostCard = ({ post, currentUser, onDelete }) => {
     }
   }, [post._id, post.content]);
 
-  // ── Delete ────────────────────────────────────────────────────────────────
+  // ── Delete (called after user confirms) ────────────────────────────────────
   const handleDelete = async () => {
     if (deleting) return;
+    setShowDeleteConfirm(false);
     setDeleting(true);
     try {
       await api.delete(`/posts/${post._id}`);
@@ -290,7 +294,7 @@ const PostCard = ({ post, currentUser, onDelete }) => {
         {/* Owner → delete; non-owner → report */}
         {isOwner ? (
           <button
-            onClick={handleDelete}
+            onClick={() => setShowDeleteConfirm(true)}
             disabled={deleting}
             aria-label="Delete post"
             className="
@@ -328,19 +332,12 @@ const PostCard = ({ post, currentUser, onDelete }) => {
         )}
       </header>
 
-      {/* ── Category tag badge ─────────────────────────────────────────────── */}
+      {/* ── Category tag badge ───────────────────────────────────────────── */}
       {post.tag && TAG_META[post.tag] && (
         <div className="px-4 pb-2">
-          <span
-            className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full"
-            style={{
-              backgroundColor: "var(--accent-light)",
-              border:          "1px solid var(--accent-border)",
-              color:           "#9a3412",
-            }}
-          >
+          <Badge variant="accent">
             {TAG_META[post.tag]}
-          </span>
+          </Badge>
         </div>
       )}
 
@@ -408,14 +405,14 @@ const PostCard = ({ post, currentUser, onDelete }) => {
           {likeCount > 0 && <span className="tabular-nums">{likeCount}</span>}
         </ActionBtn>
 
-        {/* Dislike — disabled/faded when post is liked */}
+        {/* Dislike — clicking while liked: un-likes then dislikes (real social media behaviour) */}
         <ActionBtn
           onClick={handleDislike}
-          disabled={dislikingInFlight || likingInFlight || isLiked}
+          disabled={dislikingInFlight}
           ariaLabel={isDisliked ? "Remove dislike" : "Dislike post"}
           ariaPressed={isDisliked}
-          activeStyle={{ color: "var(--text-secondary)", backgroundColor: "var(--bg-elevated)" }}
-          inactiveStyle={{ color: "var(--text-muted)", backgroundColor: "transparent", opacity: isLiked ? 0.4 : 1 }}
+          activeStyle={{ color: "#ef4444", backgroundColor: "rgba(239,68,68,0.1)" }}
+          inactiveStyle={{ color: "var(--text-muted)", backgroundColor: "transparent" }}
         >
           <ThumbsDown size={16} strokeWidth={isDisliked ? 2.5 : 2} className="flex-shrink-0" />
           {dislikeCount > 0 && <span className="tabular-nums">{dislikeCount}</span>}
@@ -451,7 +448,7 @@ const PostCard = ({ post, currentUser, onDelete }) => {
         </ActionBtn>
       </footer>
 
-      {/* ── Comment section — animated grid expand ────────────────────────── */}
+      {/* ── Comment section — animated grid expand ───────────────────────────── */}
       <div
         style={{
           display:          "grid",
@@ -469,6 +466,18 @@ const PostCard = ({ post, currentUser, onDelete }) => {
           </div>
         </div>
       </div>
+
+      {/* ── Delete confirmation dialog ──────────────────────────────────────────── */}
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        title="Delete post?"
+        message="This will permanently remove your post and all its comments. This action cannot be undone."
+        confirmLabel="Delete"
+        confirmVariant="destructive"
+        loading={deleting}
+        onConfirm={handleDelete}
+        onClose={() => setShowDeleteConfirm(false)}
+      />
 
     </article>
   );

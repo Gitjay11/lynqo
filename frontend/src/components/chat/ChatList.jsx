@@ -16,6 +16,8 @@ import { useAuth }        from "../../hooks/useAuth.js";
 import { useSocket }      from "../../hooks/useSocket.js";
 import api                from "../../api/axios.js";
 import Avatar             from "../common/Avatar.jsx";
+import Loader             from "../common/Loader.jsx";
+import EmptyState         from "../common/EmptyState.jsx";
 import OnlineDot          from "./OnlineDot.jsx";
 import ChatListSkeleton   from "../common/ChatListSkeleton.jsx";
 
@@ -213,7 +215,7 @@ const ChatList = ({ onSelectConv }) => {
           <div className="flex flex-col gap-1 px-3">
             {searching ? (
               <div className="flex items-center justify-center py-10">
-                <Loader2 size={20} className="animate-spin" style={{ color: "var(--text-muted)" }} />
+                <Loader size="sm" text="" />
               </div>
             ) : searchResults.length === 0 ? (
               <p
@@ -284,26 +286,11 @@ const ChatList = ({ onSelectConv }) => {
               <ChatListSkeleton />
             ) : conversations.length === 0 ? (
               /* Empty state */
-              <div className="flex flex-col items-center justify-center px-6 text-center pt-12 pb-16">
-                <div
-                  className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
-                  style={{ backgroundColor: "var(--accent-light)" }}
-                >
-                  <MessageCircle size={26} style={{ color: "var(--accent)" }} />
-                </div>
-                <p
-                  className="text-base font-bold font-display mb-2"
-                  style={{ color: "var(--text-primary)" }}
-                >
-                  No conversations yet
-                </p>
-                <p
-                  className="text-xs font-normal leading-relaxed"
-                  style={{ color: "var(--text-secondary)" }}
-                >
-                  Find a student and say hi. Search by name above to start chatting.
-                </p>
-              </div>
+              <EmptyState
+                icon={<MessageCircle size={26} />}
+                title="No conversations yet"
+                subtitle="Find a student and say hi. Search by name above to start chatting."
+              />
             ) : (
               <>
                 {/* Section label */}

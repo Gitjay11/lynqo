@@ -22,6 +22,9 @@ import {
   toggleAnonDislike,
   reportAnonPost,
   deleteAnonPost,
+  getAnonComments,
+  addAnonComment,
+  deleteAnonComment,
 } from "../controllers/anonController.js";
 
 const router = express.Router();
@@ -30,9 +33,6 @@ const router = express.Router();
 router.get("/", protect, getAnonPosts);
 
 // ── Create ──────────────────────────────────────────────────────────────────
-// Image is optional — multer skips silently when no file is uploaded.
-// uploadPostImage.single("image") returns a middleware array that Express
-// spreads correctly via the rest parameter (...) syntax below.
 router.post("/", protect, ...uploadPostImage.single("image"), createAnonPost);
 
 // ── Reactions & Moderation ──────────────────────────────────────────────────
@@ -40,7 +40,12 @@ router.put("/:id/like",    protect, toggleAnonLike);
 router.put("/:id/dislike", protect, toggleAnonDislike);
 router.put("/:id/report",  protect, reportAnonPost);
 
-// ── Delete (owner only) ────────────────────────────────────────────────
+// ── Delete post (owner only) ─────────────────────────────────────────────────
 router.delete("/:id", protect, deleteAnonPost);
+
+// ── Comments ─────────────────────────────────────────────────────────────────
+router.get   ("/:id/comments",              protect, getAnonComments);
+router.post  ("/:id/comment",               protect, addAnonComment);
+router.delete("/:id/comment/:commentId",    protect, deleteAnonComment);
 
 export default router;

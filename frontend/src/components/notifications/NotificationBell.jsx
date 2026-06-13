@@ -1,18 +1,18 @@
 /**
- * NotificationBell.jsx — Navbar Notification Bell Icon (Themed)
+ * NotificationBell.jsx — Navbar Notification Bell Icon (Upgraded)
  *
  * Renders a bell button in the Navbar that:
- *  - Shows an unread count badge (accent bg)
+ *  - Shows an unread count badge (accent bg, border-bg-primary ring)
  *  - Toggles the NotificationPanel dropdown on click
  *  - Closes the panel on outside click or Escape key
  *
- * Touch target: min-h-[44px] min-w-[44px] per mobile-first spec.
+ * Touch target: w-9 h-9 (36px) — min 44px via combined padding in navbar.
  */
 
 import { useRef, useEffect, useState } from "react";
-import { Bell } from "lucide-react";
-import { useNotifications } from "../../hooks/useNotifications.js";
-import NotificationPanel from "./NotificationPanel.jsx";
+import { Bell }                        from "lucide-react";
+import { useNotifications }            from "../../hooks/useNotifications.js";
+import NotificationPanel               from "./NotificationPanel.jsx";
 
 // ─────────────────────────────────────────────────────────────────────────────
 const NotificationBell = () => {
@@ -37,7 +37,7 @@ const NotificationBell = () => {
     prevCountRef.current = unreadCount;
   }, [unreadCount]);
 
-  // ── Close on outside click or Escape key ──────────────────────────────────
+  // ── Close on outside click or Escape key ─────────────────────────────────
   useEffect(() => {
     if (!isPanelOpen) return;
 
@@ -66,58 +66,53 @@ const NotificationBell = () => {
   return (
     <div className="relative" ref={containerRef}>
 
-      {/* ── Bell trigger button ──────────────────────────────────────────── */}
+      {/* ── Bell trigger button ─────────────────────────────────────────── */}
       <button
         id="notification-bell-btn"
         aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`}
         aria-haspopup="dialog"
         aria-expanded={isPanelOpen}
         onClick={() => isPanelOpen ? closePanel() : openPanel()}
-        style={isPanelOpen
-          ? { color: "var(--text-primary)", backgroundColor: "var(--bg-elevated)" }
-          : { color: "var(--text-secondary)" }
-        }
-      className="
-          relative flex items-center justify-center
-          min-h-[44px] min-w-[44px]
-          rounded-xl
-          transition-all duration-150
+        className={`
+          relative w-9 h-9 rounded-xl
+          flex items-center justify-center
+          text-[var(--text-secondary)]
+          hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)]
           active:scale-90
-          focus:outline-none focus:ring-2 focus:ring-offset-1
-        "
-        onMouseEnter={e => { if (!isPanelOpen) e.currentTarget.style.backgroundColor = "var(--bg-elevated)"; }}
-        onMouseLeave={e => { if (!isPanelOpen) e.currentTarget.style.backgroundColor = "transparent"; }}
+          transition-all duration-150 cursor-pointer
+          focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]
+          ${isPanelOpen ? "bg-[var(--bg-elevated)] text-[var(--text-primary)]" : ""}
+        `.trim().replace(/\s+/g, " ")}
       >
         {/* Bell icon */}
         <Bell
-          size={20}
+          size={18}
           strokeWidth={isPanelOpen ? 2.5 : 2}
+          aria-hidden="true"
         />
 
-        {/* ── Unread count badge ─────────────────────────────────────────── */}
+        {/* ── Unread count badge ──────────────────────────────────────────── */}
         {unreadCount > 0 && (
           <span
             aria-hidden="true"
             className={`
-              absolute top-1.5 right-1.5
+              absolute -top-0.5 -right-0.5
               min-w-[16px] h-4 px-1
+              bg-[var(--accent)] text-white
+              font-sans font-bold text-[8px] tabular-nums
               rounded-full
               flex items-center justify-center
-              text-[9px] font-black leading-none
+              border-2 border-[var(--bg-primary)]
               pointer-events-none
               ${badgeAnimating ? "animate-badge-pop" : ""}
-            `}
-            style={{
-              backgroundColor: "var(--accent)",
-              color:           "#ffffff",
-            }}
+            `.trim().replace(/\s+/g, " ")}
           >
             {badgeLabel}
           </span>
         )}
       </button>
 
-      {/* ── Notification panel dropdown ────────────────────────────────────── */}
+      {/* ── Notification panel dropdown ─────────────────────────────────────── */}
       {isPanelOpen && (
         <NotificationPanel onClose={closePanel} />
       )}
