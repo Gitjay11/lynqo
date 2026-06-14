@@ -70,7 +70,7 @@ const SignupPage = () => {
     if (!form.name.trim())                { newErrors.name     = "Full name is required.";                   valid = false; }
     else if (form.name.trim().length < 2) { newErrors.name     = "Name must be at least 2 characters.";      valid = false; }
 
-    if (!form.email.trim())               { newErrors.email    = "College email is required.";                valid = false; }
+    if (!form.email.trim())               { newErrors.email    = "Email address is required.";                valid = false; }
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
       newErrors.email = "Enter a valid email address."; valid = false;
     }
@@ -170,10 +170,10 @@ const SignupPage = () => {
             <Input
               id="signup-email"
               type="email"
-              label="College Email"
+              label="Email Address"
               value={form.email}
               onChange={handleChange("email")}
-              placeholder="you@college.edu"
+              placeholder="you@gmail.com"
               error={errors.email}
               autoComplete="email"
               inputMode="email"

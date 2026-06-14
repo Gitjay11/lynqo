@@ -51,7 +51,7 @@ const LoginPage = () => {
     let valid = true;
 
     if (!form.email.trim()) {
-      newErrors.email = "College email is required.";
+      newErrors.email = "Email address is required.";
       valid = false;
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
       newErrors.email = "Enter a valid email address.";
@@ -139,10 +139,10 @@ const LoginPage = () => {
             <Input
               id="login-email"
               type="email"
-              label="College Email"
+              label="Email Address"
               value={form.email}
               onChange={handleChange("email")}
-              placeholder="you@college.edu"
+              placeholder="you@gmail.com"
               error={errors.email}
               autoComplete="email"
               inputMode="email"
